@@ -8,7 +8,11 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.shared import db, errors
-from app.routes import clinic, consultation, dictation, operations, patients, schedules, team
+from app.routes import clinic, consultation, dictation, operations, patients, schedules
+from app.modules.financial.collections import routes as collections
+from app.modules.financial.day_close import day_close
+from app.modules.operations.team.attendance import routes as attendance
+from app.modules.operations.team.leave import routes as leave
 
 FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
 
@@ -16,7 +20,7 @@ app = FastAPI(title="Clinic V1")
 
 
 errors.install(app)
-for r in (clinic, schedules, patients, operations, consultation, dictation, team):
+for r in (clinic, schedules, patients, operations, consultation, dictation, attendance, leave, collections, day_close):
     app.include_router(r.router)
 
 

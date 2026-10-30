@@ -10,9 +10,10 @@ from pydantic import BaseModel, Field
 from app.shared.auth import current_member, require_admin
 from app.shared.audit import log_event
 from app.shared.db import get_db, now, row, rows
-from app.rules import day_schedule, valid_day
-from .clinic import clinic_of
 from .schedules import Override, save_day
+from app.core.clinic import clinic_of
+from app.core.clinic.schedule import day_schedule
+from app.shared.validate import valid_day
 
 router = APIRouter(prefix="/api")
 LATE_AFTER = 10  # minutes after the usual start
@@ -81,7 +82,6 @@ def attendance_on(db, clinic_id: int, start: str, end: str) -> dict:
 
 def since(m: dict) -> str:
     return m["joined_on"] or (m["created_at"] or "")[:10]
-
 
 
 @router.get("/team/today")
@@ -177,7 +177,6 @@ def register(month: str, member_id: int | None = None, me=Depends(current_member
         c["leave"] = sum(1 for (mid, day) in leave if mid == m["id"] and since(m) <= day <= until.isoformat())
         out.append({"id": m["id"], "name": m["name"], "kind": m["kind"], "role": m["speciality"] if m["kind"] == "doctor" else m["designation"], **c})
     return {"month": month, "people": out}
-
 
 
 class LeaveIn(BaseModel):
@@ -283,7 +282,6 @@ def decide(leave_id: int, action: str, me=Depends(current_member), db=Depends(ge
         raise HTTPException(404, "Unknown action.")
     log_event(db, me["clinic_id"], me["id"], "member", l["member_id"], "leave_" + action, {"from": l["start_date"], "to": l["end_date"]})
     return leave_one(db, me, leave_id) | {"bookings_affected": bookings_between(db, l["member_id"], l["start_date"], l["end_date"]) if action == "approve" else 0}
-
 
 
 def money_rows(db, me, kind: str, start: str, end: str, doctor_id: int | None) -> list[dict]:

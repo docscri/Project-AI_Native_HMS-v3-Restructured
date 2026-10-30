@@ -9,8 +9,10 @@ from pydantic import BaseModel, Field
 from app.shared.auth import current_member
 from app.shared.audit import log_event
 from app.shared.db import get_db, now, row
-from app.rules import availability, clinic_doctor, day_schedule, valid_day, validate_sessions
-from .clinic import clinic_of
+from app.core.clinic import clinic_of
+from app.core.clinic.schedule import availability, day_schedule, validate_sessions
+from app.core.member import clinic_doctor
+from app.shared.validate import valid_day
 
 router = APIRouter(prefix="/api")
 

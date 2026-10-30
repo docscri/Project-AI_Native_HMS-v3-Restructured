@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field
 from app.shared.auth import require_any, require_screen
 from app.shared.audit import log_event
 from app.shared.db import get_db, now, row, rows
-from .clinic import clean_phone
+from app.core.patient import get_patient
+from app.shared.validate import clean_phone
 
 router = APIRouter(prefix="/api/patients")
 
@@ -66,13 +67,6 @@ def similar(db, clinic_id: int, name: str, phone: str, dob: str | None, exclude:
            and ((phone = ? and phone != '') or lower(name) = lower(?)) order by id""",
         (clinic_id, exclude, phone, name)))
     return [p for p in found if p["phone"] == phone and phone or not (dob and p["dob"] and p["dob"] != dob)]
-
-
-def get_patient(db, me, patient_id: int) -> dict:
-    p = row(db.execute("select * from patients where id = ? and clinic_id = ?", (patient_id, me["clinic_id"])).fetchone())
-    if not p:
-        raise HTTPException(404, "Patient not found.")
-    return p
 
 
 @router.get("/check")

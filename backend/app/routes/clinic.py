@@ -13,41 +13,12 @@ from app.shared.auth import (INVITE_DAYS, LOCK_MINUTES, MAX_FAILED_LOGINS, RESET
                     validate_password)
 from app.shared.audit import log_event
 from app.shared.db import get_db, now, row, rows
-from app.rules import limits, parse_sessions, valid_day, validate_sessions
+from app.core.clinic import clinic_of, public_clinic
+from app.core.clinic.schedule import limits, parse_sessions, validate_sessions
+from app.core.member import allowed_screens
+from app.shared.validate import clean_email, clean_phone, valid_day
 
 router = APIRouter(prefix="/api")
-
-
-def clinic_of(db, me) -> dict:
-    return row(db.execute("select * from clinics where id = ?", (me["clinic_id"],)).fetchone())
-
-
-def clean_email(email: str) -> str:
-    email = (email or "").strip().lower()
-    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
-        raise HTTPException(422, "Enter a valid email address.")
-    return email
-
-
-def clean_phone(phone: str | None) -> str:
-    phone = re.sub(r"[\s-]", "", phone or "")
-    if phone and not re.fullmatch(r"\+?\d{10,13}", phone):
-        raise HTTPException(422, "Enter a valid phone number.")
-    return phone
-
-
-def allowed_screens(screens: list[str], kind: str, is_admin: bool) -> list[str]:
-    return [x for x in screens if x in SCREENS and (x != "administration" or is_admin) and (x != "consultation" or kind == "doctor")]
-
-
-def public_clinic(c: dict) -> dict:
-    c = dict(c)
-    c["days"] = json.loads(c["days"])
-    c["onboarded"] = bool(c["onboarded"])
-    c["sessions"] = parse_sessions(c.get("sessions"), c["start"], c["end"])
-    c["derived"] = limits(c["sessions"][0]["start"], c["sessions"][0]["end"], c["limit_by"], c["limit_value"]) if c["sessions"] else None
-    return c
-
 
 
 class Login(BaseModel):
@@ -172,7 +143,6 @@ def edit_me(body: MyProfile, me=Depends(current_member), db=Depends(get_db)):
     return public_member(row(db.execute("select * from members where id = ?", (me["id"],)).fetchone()))
 
 
-
 class Owner(BaseModel):
     name: str = Field(min_length=1)
     email: str
@@ -288,7 +258,6 @@ def finish(me=Depends(require_admin), db=Depends(get_db)):
 @router.get("/clinic")
 def get_clinic(me=Depends(current_member), db=Depends(get_db)):
     return public_clinic(clinic_of(db, me))
-
 
 
 class NewMember(BaseModel):

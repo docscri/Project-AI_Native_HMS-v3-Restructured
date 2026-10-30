@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from fastapi import Depends, Header, HTTPException
 
-from .db import get_db, now, row
+from app.shared.db import get_db, now, row
 
 SCREENS = ["operations", "patients", "consultation", "administration"]
 SESSION_HOURS = 12          # sliding expiry

@@ -1,7 +1,7 @@
 """Login security."""
 from fastapi.testclient import TestClient
 
-from app import db as dbm
+from app.shared import db as dbm
 from app.main import app
 
 
@@ -119,7 +119,7 @@ def test_screen_rules_for_members():
 
 def test_admin_reset_and_invite_links_can_be_emailed_or_copied(monkeypatch):
     from fastapi.testclient import TestClient
-    from app import mailer
+    from app.shared import mail as mailer
     from app.main import app
     sent = []
     monkeypatch.setattr(mailer, "enabled", lambda: True)

@@ -7,12 +7,13 @@ from pydantic import BaseModel, Field
 
 from fastapi import Header
 
-from .. import mailer
-from ..auth import (INVITE_DAYS, LOCK_MINUTES, MAX_FAILED_LOGINS, RESET_HOURS, SCREENS, check_password, create_session,
+from app.shared import mail as mailer
+from app.shared.auth import (INVITE_DAYS, LOCK_MINUTES, MAX_FAILED_LOGINS, RESET_HOURS, SCREENS, check_password, create_session,
                     current_member, end_sessions, hash_password, later, new_code, public_member, require_admin, token_hash,
                     validate_password)
-from ..db import get_db, log_event, now, row, rows
-from ..rules import limits, parse_sessions, valid_day, validate_sessions
+from app.shared.audit import log_event
+from app.shared.db import get_db, now, row, rows
+from app.rules import limits, parse_sessions, valid_day, validate_sessions
 
 router = APIRouter(prefix="/api")
 

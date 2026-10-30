@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from app.db import connect
+from app.shared.db import connect
 from app.main import app
 
 TODAY = date.today().isoformat()
@@ -73,7 +73,7 @@ def test_upgrade_reconciles_old_undone_arrivals():
         db.execute("update visits set refund_amount = 300, refund_reason = 'Arrival undone', refunded_at = ? where id = ?", (f"{TODAY}T10:00:00", v["id"]))
         db.execute("insert into payments (clinic_id, visit_id, kind, amount, reason, at) select clinic_id, id, 'refund', 300, 'Arrival undone', ? from visits where id = ?",
                    (f"{TODAY}T10:00:00", v["id"]))
-        sql = Path("app/migrations/011_review_gaps.sql").read_text()
+        sql = Path("migrations/011_review_gaps.sql").read_text()
         db.execute(sql[sql.index("insert into payments"):].rstrip().rstrip(";"))
         db.commit()
         held = db.execute("select sum(case when kind = 'payment' then amount else -amount end) from payments where visit_id = ?", (v["id"],)).fetchone()[0]

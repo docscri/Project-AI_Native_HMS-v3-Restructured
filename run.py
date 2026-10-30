@@ -31,7 +31,7 @@ def ensure_packages() -> None:
 
 def main() -> None:
     os.chdir(HERE)
-    sys.path.insert(0, HERE)
+    sys.path.insert(0, os.path.join(HERE, "backend"))
     ensure_packages()
     import uvicorn
 
@@ -39,7 +39,7 @@ def main() -> None:
     url = f"http://localhost:{port}"
     print(f"\n  Clinic app: {url}\n  Login: anjali@demo.in / demo123\n  Stop: Ctrl+C\n")
     threading.Thread(target=lambda: (time.sleep(1.5), webbrowser.open(url)), daemon=True).start()
-    uvicorn.run("app.main:app", host="127.0.0.1", port=port)
+    uvicorn.run("app.main:app", host="127.0.0.1", port=port, app_dir=os.path.join(HERE, "backend"))
 
 
 if __name__ == "__main__":

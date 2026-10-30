@@ -5,8 +5,9 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from ..auth import require_any, require_screen
-from ..db import get_db, log_event, now, row, rows
+from app.shared.auth import require_any, require_screen
+from app.shared.audit import log_event
+from app.shared.db import get_db, now, row, rows
 from .clinic import clean_phone
 
 router = APIRouter(prefix="/api/patients")

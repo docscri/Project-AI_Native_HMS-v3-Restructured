@@ -4,8 +4,8 @@ import os
 import random
 from datetime import date, datetime, timedelta
 
-from .auth import SCREENS, hash_password
-from .db import connect, init, now
+from app.shared.auth import SCREENS, hash_password
+from app.shared.db import connect, init, now
 
 
 def _session_today() -> tuple[str, str]:
@@ -102,7 +102,7 @@ def seed() -> bool:
     visit("Aarav Nair", rahul, 1, "waiting")
     visit("Nisha Thomas", rahul, 2, "booked")
 
-    from .db import UPLOAD_DIR
+    from app.shared.db import UPLOAD_DIR
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     path = UPLOAD_DIR / "seed-blood-report.txt"
     path.write_text("Sunrise Diagnostics\nHbA1c: 8.9 %\nFasting glucose: 168 mg/dL\nCreatinine: 1.0 mg/dL\n")

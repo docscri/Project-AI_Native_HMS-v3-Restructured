@@ -4,9 +4,10 @@ from contextlib import suppress
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from starlette.websockets import WebSocketState
 
-from .. import ai, transcribe
-from ..auth import current_member, member_for_token, public_member
-from ..db import connect
+from app import ai
+from app.shared.ai.speech.providers import deepgram as transcribe
+from app.shared.auth import current_member, member_for_token, public_member
+from app.shared.db import connect
 from .consultation import editable
 from .operations import get_visit
 

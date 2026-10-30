@@ -4,8 +4,8 @@ import logging
 import re
 from datetime import date
 
-from . import ai
-from .db import connect, now, row, rows
+from app import ai
+from app.shared.db import connect, now, row, rows
 
 log = logging.getLogger(__name__)
 

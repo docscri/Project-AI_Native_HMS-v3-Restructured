@@ -6,19 +6,15 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import db
-from .routes import clinic, consultation, dictation, operations, patients, schedules, team
+from app.shared import db, errors
+from app.routes import clinic, consultation, dictation, operations, patients, schedules, team
 
-FRONTEND = Path(__file__).resolve().parent.parent / "frontend"
+FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
 
 app = FastAPI(title="Clinic V1")
 
 
-@app.exception_handler(ValueError)
-def bad_value(request, exc):
-    """Bad input is a 422, not a 500."""
-    from fastapi.responses import JSONResponse
-    return JSONResponse({"detail": "Check the dates."}, status_code=422)
+errors.install(app)
 for r in (clinic, schedules, patients, operations, consultation, dictation, team):
     app.include_router(r.router)
 
@@ -27,7 +23,7 @@ for r in (clinic, schedules, patients, operations, consultation, dictation, team
 def startup() -> None:
     db.init()
     if os.environ.get("SEED_DEMO", "0") == "1":
-        from .seed import seed
+        from app.demo.seed import seed
         seed()
 
 

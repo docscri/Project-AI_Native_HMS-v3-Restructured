@@ -6,12 +6,12 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from app.db import connect
+from app.shared.db import connect
 from app.main import app
 from tests.test_review_gaps import clinic, started_visit
 
 TODAY = date.today().isoformat()
-spec = importlib.util.spec_from_file_location("m012", "app/migrations/012_rebuild_legacy_ledger.py")
+spec = importlib.util.spec_from_file_location("m012", "migrations/012_rebuild_legacy_ledger.py")
 m012 = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m012)
 
@@ -45,7 +45,7 @@ def legacy(db, clinic_id, vid, events, **cols):
     if cols["refund_amount"] and cols["refunded_at"]:
         db.execute("insert into payments (clinic_id, visit_id, kind, amount, reason, at) values (?, ?, 'refund', ?, ?, ?)",
                    (clinic_id, vid, cols["refund_amount"], cols["refund_reason"], cols["refunded_at"]))
-    sql = Path("app/migrations/011_review_gaps.sql").read_text()
+    sql = Path("migrations/011_review_gaps.sql").read_text()
     db.execute(sql[sql.index("insert into payments"):].rstrip().rstrip(";") + f" and v.id = {vid}")
 
 

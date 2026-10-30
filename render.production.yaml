@@ -8,7 +8,7 @@ services:
     plan: starter            # always on; the free plan sleeps after 15 idle minutes
     region: singapore
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
+    startCommand: uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
     healthCheckPath: /health
     autoDeploy: true
     envVars:

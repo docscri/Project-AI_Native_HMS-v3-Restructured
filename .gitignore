@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 .ui-check.*.log
 .env
+.claude/

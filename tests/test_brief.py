@@ -3,7 +3,8 @@ import json
 
 from fastapi.testclient import TestClient
 
-from app import ai, brief
+from app.modules.clinical.brief import service as brief
+from app.shared.ai import llm
 from app.shared.db import connect
 from app.main import app
 from tests.test_review_gaps import clinic
@@ -68,13 +69,13 @@ def test_brief_without_ai(monkeypatch):
 
 def test_ai_sentences_without_valid_citations_are_dropped(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test")
-    monkeypatch.setattr(ai, "note_values", lambda soap: [])
+    monkeypatch.setattr(brief, "note_values", lambda soap: [])
     with TestClient(app) as c:
         monkeypatch.delenv("GEMINI_API_KEY")
         h, doc, pid, n1, n2 = setup(c, "b2@x.in")
         monkeypatch.setenv("GEMINI_API_KEY", "test")
         a, b_ = f"N{n2['id']}.A", f"N{n1['id']}.O"
-        monkeypatch.setattr(ai, "_gemini", lambda parts: {
+        monkeypatch.setattr(llm, "generate", lambda parts: {
             "new": [],
             "history": [{"text": "Hypertension is improving.", "cites": [a]},
                         {"text": "BP was 150/90 in March.", "cites": [b_]},

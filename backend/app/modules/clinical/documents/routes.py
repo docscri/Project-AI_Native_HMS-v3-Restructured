@@ -1,0 +1,27 @@
+import mimetypes
+
+from fastapi import APIRouter, BackgroundTasks, Depends, File, UploadFile
+from fastapi.responses import Response
+
+from app.shared import files as storage
+from app.shared.auth import require_any
+from app.shared.db import get_db
+from . import service
+
+router = APIRouter(prefix="/api")
+
+
+@router.post("/visits/{visit_id}/documents")
+async def upload(visit_id: int, tasks: BackgroundTasks, file: UploadFile = File(...),
+                 me=Depends(require_any("operations", "consultation", "patients")), db=Depends(get_db)):
+    mime = file.content_type or mimetypes.guess_type(file.filename or "")[0] or "application/octet-stream"
+    data = await file.read(storage.MAX_BYTES + 1)
+    out, did = service.upload(db, me, visit_id, file.filename, mime, data)
+    tasks.add_task(service.run_extraction, did)
+    return out
+
+
+@router.get("/documents/{doc_id}/file")
+def document_file(doc_id: int, me=Depends(require_any("consultation", "patients")), db=Depends(get_db)):
+    data, d = service.file_of(db, me, doc_id)
+    return Response(data, media_type=d["mime"], headers={"Content-Disposition": f'inline; filename="{d["filename"]}"'})

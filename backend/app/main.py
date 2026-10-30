@@ -1,5 +1,6 @@
 import hashlib
 import os
+import re
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -38,10 +39,8 @@ app.mount("/static", StaticFiles(directory=FRONTEND), name="static")
 def page() -> str:
     """Cache-bust assets by content hash."""
     html = (FRONTEND / "index.html").read_text()
-    for name in ("app.css", "app.js"):
-        tag = hashlib.sha1((FRONTEND / name).read_bytes()).hexdigest()[:10]
-        html = html.replace(f"/static/{name}\"", f"/static/{name}?v={tag}\"")
-    return html
+    tag = lambda m: f'/static/{m[1]}?v={hashlib.sha1((FRONTEND / m[1]).read_bytes()).hexdigest()[:10]}"'
+    return re.sub(r'/static/([\w./-]+\.(?:js|css))"', tag, html)
 
 
 @app.get("/{path:path}", include_in_schema=False)

@@ -8,11 +8,19 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.shared import db, errors
-from app.routes import clinic, consultation, dictation, patients
+from app.modules.clinical.brief import routes as brief
+from app.modules.clinical.consultation import routes as consultation
+from app.modules.clinical.dictation import routes as dictation
+from app.modules.clinical.documents import routes as documents
+from app.modules.clinical.notes import routes as notes
 from app.modules.financial.collections import routes as collections
 from app.modules.financial.day_close import day_close
 from app.modules.financial.payments import routes as payments
+from app.modules.operations.account import routes as account
+from app.modules.operations.administration import routes as administration
 from app.modules.operations.appointments import routes as appointments
+from app.modules.operations.onboarding import routes as onboarding
+from app.modules.operations.patients import routes as patients
 from app.modules.operations.scheduling import routes as scheduling
 from app.modules.operations.team.attendance import routes as attendance
 from app.modules.operations.team.leave import routes as leave
@@ -24,7 +32,9 @@ app = FastAPI(title="Clinic V1")
 
 
 errors.install(app)
-for r in (clinic, scheduling, patients, appointments, payments, waitlist, consultation, dictation, attendance, leave, collections, day_close):
+ROUTERS = (account, onboarding, administration, scheduling, patients, appointments, payments, waitlist,
+           consultation, brief, documents, notes, dictation, attendance, leave, collections, day_close)
+for r in ROUTERS:
     app.include_router(r.router)
 
 

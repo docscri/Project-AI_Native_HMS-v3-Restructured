@@ -43,6 +43,14 @@ class BadGateway(DomainError):
     status = 502
 
 
+class TooLarge(DomainError):
+    status = 413
+
+
+class Unsupported(DomainError):
+    status = 415
+
+
 def install(app: FastAPI) -> None:
     @app.exception_handler(DomainError)
     def domain(request: Request, exc: DomainError):

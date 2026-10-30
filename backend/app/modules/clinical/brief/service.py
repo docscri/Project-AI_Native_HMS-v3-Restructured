@@ -4,8 +4,11 @@ import logging
 import re
 from datetime import date
 
-from app import ai
-from app.shared.db import connect, now, row, rows
+from app.core.visit import get_visit
+from app.shared.ai import llm
+from app.shared.db import connect, now
+from app.shared.text import sentences
+from . import repo
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +26,47 @@ ALIASES = {"hba1c": "HbA1c", "glycatedhb": "HbA1c", "glycatedhaemoglobin": "HbA1
 RANGES = {"HbA1c": (4.0, 5.6, "%"), "Fasting sugar": (70, 99, "mg/dl"), "Random sugar": (70, 139, "mg/dl"),
           "Creatinine": (0.6, 1.3, "mg/dl"), "BP systolic": (90, 139, "mmhg"), "BP diastolic": (60, 89, "mmhg"),
           "Pulse": (60, 100, "/min"), "SpO2": (95, 100, "%"), "Temperature": (97, 99.5, "°f")}
+
+
+VITALS = [("BP", "mmHg", r"\b(?:BP|blood pressure)\D{0,6}(\d{2,3}\s*/\s*\d{2,3})"),
+          ("Temperature", "°F", r"\btemp(?:erature)?\D{0,6}(\d{2,3}(?:\.\d)?)"),
+          ("Pulse", "/min", r"\b(?:pulse|PR|HR|heart rate)\D{0,6}(\d{2,3})"),
+          ("SpO2", "%", r"\bSpO2\D{0,6}(\d{2,3})"),
+          ("Weight", "kg", r"\b(?:weight|wt)\D{0,6}(\d{2,3}(?:\.\d)?)"),
+          ("HbA1c", "%", r"\bHbA1c\D{0,6}(\d{1,2}(?:\.\d)?)"),
+          ("Fasting sugar", "mg/dL", r"\b(?:FBS|fasting (?:blood )?(?:sugar|glucose))\D{0,6}(\d{2,3})"),
+          ("Random sugar", "mg/dL", r"\b(?:RBS|random (?:blood )?(?:sugar|glucose))\D{0,6}(\d{2,3})")]
+
+
+def note_values(soap: dict) -> list[dict]:
+    """[{"test", "value", "unit", "section"}] read from a signed note; each value must appear in its section."""
+    if llm.enabled():
+        found = llm.generate([{"text": llm.prompt("values.txt") + "\n\nNOTE: " + json.dumps(soap)}]).get("values") or []
+    else:
+        found = [{"test": t, "value": m.group(1).replace(" ", ""), "unit": u, "section": k}
+                 for k in ("O", "S", "A", "P") for t, u, rx in VITALS for m in re.finditer(rx, soap.get(k) or "", re.I)]
+    return [f for f in found if isinstance(f, dict) and f.get("section") in soap
+            and str(f.get("value", "")).replace(" ", "") in (soap.get(f["section"]) or "").replace(" ", "")]
+
+
+def brief_text(patient: dict, sources: dict, new_ids: list[str], visits: list[dict], use_ai: bool = True) -> dict:
+    """{"new": [...], "history": [...], "events": [...]}; sentences are checked by the caller."""
+    if use_ai and llm.enabled():
+        listing = [{"id": k, "text": s["text"]} for k, s in sources.items()]
+        return llm.generate([{"text": llm.prompt("brief_text.txt") + "\n\nPATIENT: " + json.dumps(patient)
+                         + "\n\nNEW DOCUMENTS: " + json.dumps(new_ids) + "\n\nVISITS: " + json.dumps([v["note"] for v in visits])
+                         + "\n\nSOURCES:\n" + json.dumps(listing)}])
+    first = lambda t: (sentences(t) or [""])[0]
+    vals = lambda d: ", ".join(f'{f.get("name")} {f.get("value")} {f.get("unit") or ""}'.strip() for f in sources[d]["findings"][:6])
+    lead = lambda d: first(sources[d]["summary"]) if first(sources[d]["summary"]).lower().startswith(sources[d]["label"].lower()) else f"{sources[d]['label']}: {first(sources[d]['summary'])}"
+    new = [{"text": lead(d) + (f" {vals(d)}." if vals(d) else ""), "cites": [d]} for d in new_ids]
+    seen = {}   # one line per assessment, citing every visit it came from
+    for v in visits:
+        a = v["note"] + ".A"
+        if a in sources:
+            seen.setdefault(first(sources[a]["body"]), []).append((v["date_text"], a))
+    history = [{"text": t, "cites": [c for _, c in hits]} for t, hits in list(seen.items())[:4]]   # dates show on the citation chips
+    return {"new": new, "history": history, "events": []}
 
 
 def name_of(test) -> str:
@@ -91,22 +135,12 @@ def nice(d: str) -> str:
 
 def inputs(db, v: dict) -> tuple[list[dict], list[dict]]:
     """The patient's other signed notes (newest first) and readable documents."""
-    notes = rows(db.execute(
-        """select n.*, vv.date, vv.id as vid, m.name as doctor from notes n join visits vv on vv.id = n.visit_id
-           join members m on m.id = vv.doctor_id
-           where n.patient_id = ? and n.status = 'signed' and n.visit_id != ? order by vv.date desc, n.id desc""",
-        (v["patient_id"], v["id"])))
-    docs = rows(db.execute("select * from documents where patient_id = ? and ai_status = 'ready' order by id desc", (v["patient_id"],)))
-    for n in notes:
-        n["content"] = json.loads(n["content"])
-    for d in docs:
-        d["extracted"] = json.loads(d["extracted"]) if d["extracted"] else {}
-    return notes, docs
+    return repo.signed_notes(db, v["patient_id"], v["id"]), repo.ready_documents(db, v["patient_id"])
 
 
 def basis(notes: list[dict], docs: list[dict]) -> str:
     """Changes when a note is signed or a report is read, so the saved brief is reused until then."""
-    return "n" + ",".join(str(n["id"]) for n in notes) + ";d" + ",".join(str(d["id"]) for d in docs) + (";ai" if ai.enabled() else "")
+    return "n" + ",".join(str(n["id"]) for n in notes) + ";d" + ",".join(str(d["id"]) for d in docs) + (";ai" if llm.enabled() else "")
 
 
 def current_basis(db, v: dict) -> str:
@@ -116,8 +150,8 @@ def current_basis(db, v: dict) -> str:
 def values_of(db, n: dict) -> list[dict]:
     """Numbers in a signed note, read once and saved."""
     if n.get("vals") is None:
-        n["vals"] = json.dumps(ai.note_values(n["content"]["soap"]))
-        db.execute("update notes set vals = ? where id = ?", (n["vals"], n["id"]))
+        n["vals"] = json.dumps(note_values(n["content"]["soap"]))
+        repo.save_values(db, n["id"], n["vals"])
     return json.loads(n["vals"])
 
 
@@ -188,7 +222,7 @@ def charts(notes: list[dict], docs: list[dict], db) -> list[dict]:
 
 def build(db, v: dict) -> dict:
     notes, docs = inputs(db, v)
-    p = row(db.execute("select dob, sex from patients where id = ?", (v["patient_id"],)).fetchone())
+    p = repo.patient(db, v["patient_id"])
     sources = {}
     for n in notes:
         for k, label in SECTIONS.items():
@@ -212,9 +246,9 @@ def build(db, v: dict) -> dict:
     text = {}
     if sources:
         try:
-            text = ai.brief_text(patient, sources, new_ids, visits)
+            text = brief_text(patient, sources, new_ids, visits)
         except Exception:   # AI unavailable: the plain version still reaches the doctor
-            text = ai.brief_text(patient, sources, new_ids, visits, use_ai=False)
+            text = brief_text(patient, sources, new_ids, visits, use_ai=False)
     new = [s for s in checked(text.get("new"), sources) if all(c in new_ids for c in s["cites"])]
     lines = {e.get("note"): e for e in text.get("events") or [] if isinstance(e, dict)}
     events = []
@@ -222,7 +256,7 @@ def build(db, v: dict) -> dict:
         nid = f"N{n['id']}"
         got = checked([lines[nid]], sources) if nid in lines else []
         if not got:   # the note's own words: why they came, what was found
-            parts = [(f"{nid}.{k}", (ai.sentences(n["content"]["soap"].get(k) or "") or [""])[0]) for k in ("S", "A")]
+            parts = [(f"{nid}.{k}", (sentences(n["content"]["soap"].get(k) or "") or [""])[0]) for k in ("S", "A")]
             got = [{"text": " ".join(t for _, t in parts if t), "cites": [c for c, t in parts if t]}]
         own_docs = [{"id": d["id"], "filename": d["filename"], "title": title_of(d)} for d in docs if d["visit_id"] == n["vid"]]
         events.append({"visit_id": n["vid"], "date": n["date"], "doctor": n["doctor"], "text": got[0]["text"],
@@ -231,17 +265,25 @@ def build(db, v: dict) -> dict:
             "events": events, "charts": charts(notes, docs, db), "sources": sources, "basis": basis(notes, docs)}
 
 
+def make(db, me, visit_id: int) -> dict:
+    """Builds and saves the brief now."""
+    v = get_visit(db, me, visit_id)
+    b = build(db, v) | {"made_at": now()}
+    repo.save_brief(db, visit_id, json.dumps(b))
+    return b
+
+
 def prebuild(visit_id: int) -> None:
     """Builds the brief in the background when a patient arrives or a report is read, so it's ready when the doctor opens it."""
     db = connect()
     try:
-        v = row(db.execute("select * from visits where id = ?", (visit_id,)).fetchone())
+        v = repo.visit(db, visit_id)
         if not v or v["status"] not in ("waiting", "with_doctor"):
             return
         saved = json.loads(v["brief"]) if v["brief"] else None
         if saved and saved.get("basis") == current_basis(db, v):
             return
-        db.execute("update visits set brief = ? where id = ?", (json.dumps(build(db, v) | {"made_at": now()}), visit_id))
+        repo.save_brief(db, visit_id, json.dumps(build(db, v) | {"made_at": now()}))
         db.commit()
     except Exception:
         log.exception("Brief prebuild failed for visit %s", visit_id)

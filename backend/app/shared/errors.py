@@ -27,6 +27,22 @@ class Forbidden(DomainError):
     status = 403
 
 
+class Unauthorized(DomainError):
+    status = 401
+
+
+class Gone(DomainError):
+    status = 410
+
+
+class Locked(DomainError):
+    status = 423
+
+
+class BadGateway(DomainError):
+    status = 502
+
+
 def install(app: FastAPI) -> None:
     @app.exception_handler(DomainError)
     def domain(request: Request, exc: DomainError):

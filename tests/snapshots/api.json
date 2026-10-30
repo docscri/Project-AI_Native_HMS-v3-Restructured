@@ -1,0 +1,2346 @@
+{
+ "calls": {
+  "arrive": {
+   "body": {
+    "amount_paid": "int",
+    "arrived_at": "str",
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "NoneType",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "NoneType",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "NoneType",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "paid_at": "str",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "str",
+    "phone": "str",
+    "queue_order": "int",
+    "receipt_no": "int",
+    "refund_amount": "int",
+    "refund_reason": "NoneType",
+    "refundable": "int",
+    "refunded_at": "NoneType",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "NoneType",
+    "started_at": "NoneType",
+    "status": "str",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "attendance check-in": {
+   "body": {
+    "check_in": "str",
+    "check_out": "NoneType",
+    "date": "str"
+   },
+   "status": 200
+  },
+  "attendance check-out": {
+   "body": {
+    "check_in": "str",
+    "check_out": "str",
+    "date": "str"
+   },
+   "status": 200
+  },
+  "attendance mark": {
+   "body": {
+    "ok": "bool"
+   },
+   "status": 200
+  },
+  "attendance me": {
+   "body": {
+    "check_in": "str",
+    "check_out": "NoneType",
+    "date": "str"
+   },
+   "status": 200
+  },
+  "availability": {
+   "body": {
+    "available": "bool",
+    "fee": "int",
+    "free_tokens": [
+     {
+      "time": "str",
+      "token": "int"
+     }
+    ],
+    "left": "int",
+    "next": {
+     "time": "str",
+     "token": "int"
+    },
+    "schedule": {
+     "end": "str",
+     "ended": "bool",
+     "exact_time": "bool",
+     "free_tokens": [
+      {
+       "time": "str",
+       "token": "int"
+      }
+     ],
+     "key": "str",
+     "label": "str",
+     "left": "int",
+     "max_patients": "int",
+     "minutes_per_patient": "float",
+     "next": {
+      "time": "str",
+      "token": "int"
+     },
+     "start": "str",
+     "used": "int"
+    },
+    "session": "str",
+    "sessions": [
+     {
+      "end": "str",
+      "ended": "bool",
+      "exact_time": "bool",
+      "free_tokens": [
+       {
+        "time": "str",
+        "token": "int"
+       }
+      ],
+      "key": "str",
+      "label": "str",
+      "left": "int",
+      "max_patients": "int",
+      "minutes_per_patient": "float",
+      "next": {
+       "time": "str",
+       "token": "int"
+      },
+      "start": "str",
+      "used": "int"
+     }
+    ],
+    "token_timing": "str",
+    "used": "int"
+   },
+   "status": 200
+  },
+  "booking": {
+   "body": {
+    "amount_paid": "NoneType",
+    "arrived_at": "NoneType",
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "NoneType",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "NoneType",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "NoneType",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "paid_at": "NoneType",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "NoneType",
+    "phone": "str",
+    "queue_order": "NoneType",
+    "receipt_no": "NoneType",
+    "refund_amount": "int",
+    "refund_reason": "NoneType",
+    "refundable": "int",
+    "refunded_at": "NoneType",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "NoneType",
+    "started_at": "NoneType",
+    "status": "str",
+    "tell_patient": "str",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "booking tomorrow": {
+   "body": {
+    "amount_paid": "NoneType",
+    "arrived_at": "NoneType",
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "NoneType",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "NoneType",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "NoneType",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "paid_at": "NoneType",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "NoneType",
+    "phone": "str",
+    "queue_order": "NoneType",
+    "receipt_no": "NoneType",
+    "refund_amount": "int",
+    "refund_reason": "NoneType",
+    "refundable": "int",
+    "refunded_at": "NoneType",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "NoneType",
+    "started_at": "NoneType",
+    "status": "str",
+    "tell_patient": "str",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "brief": {
+   "body": {
+    "basis": "str",
+    "charts": [
+     {
+      "series": [
+       {
+        "name": "str",
+        "points": [
+         {
+          "cite": "str",
+          "date": "str",
+          "out": "bool",
+          "text": "str",
+          "value": "float"
+         }
+        ],
+        "range": [
+         "float"
+        ],
+        "range_from": "str"
+       }
+      ],
+      "test": "str",
+      "unit": "str"
+     }
+    ],
+    "events": [],
+    "made_at": "str",
+    "sources": {
+     "<id>": {
+      "date": "str",
+      "doc_id": "int",
+      "filename": "str",
+      "findings": [
+       {
+        "name": "str",
+        "unit": "str",
+        "value": "str"
+       }
+      ],
+      "kind": "str",
+      "label": "str",
+      "summary": "str",
+      "text": "str",
+      "values": [
+       {
+        "name": "str",
+        "unit": "str",
+        "value": "str"
+       }
+      ]
+     }
+    },
+    "summary": [
+     {
+      "kind": "str",
+      "sentences": [
+       {
+        "cites": [
+         "str"
+        ],
+        "flags": [
+         "str"
+        ],
+        "text": "str"
+       }
+      ]
+     }
+    ]
+   },
+   "status": 200
+  },
+  "cancel": {
+   "body": {
+    "ok": "bool"
+   },
+   "status": 200
+  },
+  "change password": {
+   "body": {
+    "ok": "bool"
+   },
+   "status": 200
+  },
+  "clinic": {
+   "body": {
+    "address": "str",
+    "created_at": "str",
+    "days": [
+     "int"
+    ],
+    "derived": {
+     "exact_time": "bool",
+     "max_patients": "int",
+     "minutes_per_patient": "float"
+    },
+    "end": "str",
+    "fee": "int",
+    "id": "int",
+    "limit_by": "str",
+    "limit_value": "int",
+    "name": "str",
+    "next_receipt": "int",
+    "next_uhid": "int",
+    "onboarded": "bool",
+    "phone": "str",
+    "sessions": [
+     {
+      "end": "str",
+      "start": "str"
+     }
+    ],
+    "start": "str",
+    "token_timing": "str",
+    "uhid_prefix": "str"
+   },
+   "status": 200
+  },
+  "clinic edit": {
+   "body": {
+    "address": "str",
+    "created_at": "str",
+    "days": [
+     "int"
+    ],
+    "derived": {
+     "exact_time": "bool",
+     "max_patients": "int",
+     "minutes_per_patient": "float"
+    },
+    "end": "str",
+    "fee": "int",
+    "id": "int",
+    "limit_by": "str",
+    "limit_value": "int",
+    "name": "str",
+    "next_receipt": "int",
+    "next_uhid": "int",
+    "onboarded": "bool",
+    "phone": "str",
+    "sessions": [
+     {
+      "end": "str",
+      "start": "str"
+     }
+    ],
+    "start": "str",
+    "token_timing": "str",
+    "uhid_prefix": "str"
+   },
+   "status": 200
+  },
+  "clinic rules": {
+   "body": {
+    "address": "str",
+    "created_at": "str",
+    "days": [
+     "int"
+    ],
+    "derived": {
+     "exact_time": "bool",
+     "max_patients": "int",
+     "minutes_per_patient": "float"
+    },
+    "end": "str",
+    "fee": "int",
+    "id": "int",
+    "limit_by": "str",
+    "limit_value": "int",
+    "name": "str",
+    "next_receipt": "int",
+    "next_uhid": "int",
+    "onboarded": "bool",
+    "phone": "str",
+    "sessions": [
+     {
+      "end": "str",
+      "start": "str"
+     }
+    ],
+    "start": "str",
+    "token_timing": "str",
+    "uhid_prefix": "str"
+   },
+   "status": 200
+  },
+  "collections": {
+   "body": {
+    "by_doctor": [
+     {
+      "collected": "int",
+      "id": "int",
+      "name": "str",
+      "net": "int",
+      "no_shows": "int",
+      "refunded": "int",
+      "seen": "int",
+      "speciality": "NoneType",
+      "walk_ins": "int"
+     }
+    ],
+    "by_method": {
+     "card": "int",
+     "cash": "int",
+     "upi": "int"
+    },
+    "collected": "int",
+    "days": [
+     {
+      "by_method": {
+       "card": "int",
+       "cash": "int",
+       "upi": "int"
+      },
+      "collected": "int",
+      "date": "str",
+      "discounts": "int",
+      "net": "int",
+      "refunded": "int",
+      "visits": "int",
+      "waived": "int"
+     }
+    ],
+    "discounts": "int",
+    "end": "str",
+    "net": "int",
+    "payments": [
+     {
+      "amount": "int",
+      "amount_paid": "int",
+      "at": "str",
+      "date": "str",
+      "discount": "int",
+      "doctor_id": "int",
+      "doctor_name": "str",
+      "fee": "int",
+      "id": "int",
+      "paid_at": "str",
+      "patient_name": "str",
+      "pay_id": "int",
+      "payment_method": "str",
+      "receipt_no": "int",
+      "refund_amount": "int",
+      "refund_reason": "NoneType",
+      "refunded_at": "str",
+      "uhid": "str"
+     }
+    ],
+    "refunded": "int",
+    "refunds": [
+     {
+      "amount": "int",
+      "amount_paid": "int",
+      "at": "str",
+      "date": "str",
+      "discount": "int",
+      "doctor_id": "int",
+      "doctor_name": "str",
+      "fee": "int",
+      "id": "int",
+      "paid_at": "str",
+      "patient_name": "str",
+      "pay_id": "int",
+      "payment_method": "NoneType",
+      "receipt_no": "NoneType",
+      "refund_amount": "int",
+      "refund_reason": "str",
+      "refunded_at": "str",
+      "uhid": "str"
+     }
+    ],
+    "seen": "int",
+    "start": "str",
+    "visits": "int",
+    "waived": "int"
+   },
+   "status": 200
+  },
+  "consultation today": {
+   "body": {
+    "doctor_id": "int",
+    "visits": [
+     {
+      "amount_paid": "int",
+      "arrived_at": "str",
+      "cancel_reason": "NoneType",
+      "clinic_id": "int",
+      "completed_at": "NoneType",
+      "created_at": "str",
+      "date": "str",
+      "discount": "int",
+      "discount_reason": "NoneType",
+      "dob": "str",
+      "doc_count": "int",
+      "doctor_id": "int",
+      "doctor_name": "str",
+      "expected_time": "str",
+      "fee": "int",
+      "follow_up_of": "NoneType",
+      "id": "int",
+      "is_walk_in": "int",
+      "late": "bool",
+      "paid_at": "str",
+      "patient_id": "int",
+      "patient_name": "str",
+      "payment_method": "str",
+      "phone": "str",
+      "queue_order": "int",
+      "receipt_no": "int",
+      "refund_amount": "int",
+      "refund_reason": "str",
+      "refundable": "int",
+      "refunded_at": "str",
+      "session_end": "str",
+      "session_label": "NoneType",
+      "session_start": "str",
+      "sex": "str",
+      "started_at": "NoneType",
+      "status": "str",
+      "token": "int",
+      "token_label": "str",
+      "uhid": "str"
+     }
+    ]
+   },
+   "status": 200
+  },
+  "day close": {
+   "body": {
+    "closed": {
+     "clinic_id": "int",
+     "closed_at": "str",
+     "closed_by": "int",
+     "closed_by_name": "str",
+     "counted_cash": "int",
+     "date": "str",
+     "id": "int",
+     "note": "str",
+     "system_cash": "int"
+    },
+    "date": "str",
+    "past": [
+     {
+      "clinic_id": "int",
+      "closed_at": "str",
+      "closed_by": "int",
+      "closed_by_name": "str",
+      "counted_cash": "int",
+      "date": "str",
+      "id": "int",
+      "note": "str",
+      "system_cash": "int"
+     }
+    ],
+    "system_cash": "int"
+   },
+   "status": 200
+  },
+  "day close read": {
+   "body": {
+    "closed": "NoneType",
+    "date": "str",
+    "past": [],
+    "system_cash": "int"
+   },
+   "status": 200
+  },
+  "day view": {
+   "body": {
+    "date": "str",
+    "doctors": [
+     {
+      "counts": {
+       "booked": "int",
+       "done": "int",
+       "no_show": "int",
+       "waiting": "int",
+       "with_doctor": "int"
+      },
+      "id": "int",
+      "letter": "str",
+      "name": "str",
+      "schedule": {
+       "end": "str",
+       "exact_time": "bool",
+       "limit_by": "str",
+       "limit_value": "int",
+       "max_patients": "int",
+       "minutes_per_patient": "float",
+       "override": "bool",
+       "sessions": [
+        {
+         "end": "str",
+         "exact_time": "bool",
+         "key": "str",
+         "label": "str",
+         "max_patients": "int",
+         "minutes_per_patient": "float",
+         "start": "str"
+        }
+       ],
+       "start": "str"
+      },
+      "speciality": "NoneType",
+      "used": "int"
+     }
+    ],
+    "stats": {
+     "booked": "int",
+     "done": "int",
+     "waiting": "int",
+     "with_doctor": "int"
+    },
+    "visits": [
+     {
+      "amount_paid": "NoneType",
+      "arrived_at": "NoneType",
+      "cancel_reason": "NoneType",
+      "clinic_id": "int",
+      "completed_at": "NoneType",
+      "created_at": "str",
+      "date": "str",
+      "discount": "int",
+      "discount_reason": "NoneType",
+      "dob": "NoneType",
+      "doc_count": "int",
+      "doctor_id": "int",
+      "doctor_name": "str",
+      "expected_time": "str",
+      "fee": "int",
+      "follow_up_of": "NoneType",
+      "id": "int",
+      "is_walk_in": "int",
+      "late": "bool",
+      "paid_at": "NoneType",
+      "patient_id": "int",
+      "patient_name": "str",
+      "payment_method": "NoneType",
+      "phone": "str",
+      "queue_order": "NoneType",
+      "receipt_no": "NoneType",
+      "refund_amount": "int",
+      "refund_reason": "str",
+      "refundable": "int",
+      "refunded_at": "str",
+      "session_end": "str",
+      "session_label": "NoneType",
+      "session_start": "str",
+      "sex": "NoneType",
+      "started_at": "NoneType",
+      "status": "str",
+      "token": "int",
+      "token_label": "str",
+      "uhid": "str"
+     }
+    ]
+   },
+   "status": 200
+  },
+  "dictation provider": {
+   "body": {
+    "ai": "bool",
+    "provider": "str"
+   },
+   "status": 200
+  },
+  "doctors": {
+   "body": [
+    {
+     "fee_override": "NoneType",
+     "id": "int",
+     "letter": "str",
+     "name": "str",
+     "speciality": "NoneType",
+     "status": "str"
+    }
+   ],
+   "status": 200
+  },
+  "document": {
+   "body": {
+    "ai_status": "str",
+    "created_at": "str",
+    "filename": "str",
+    "id": "int"
+   },
+   "status": 200
+  },
+  "document file": {
+   "body": "text/plain",
+   "status": 200
+  },
+  "end session": {
+   "body": {
+    "no_shows": "int"
+   },
+   "status": 200
+  },
+  "follow-up": {
+   "body": {
+    "amount_paid": "NoneType",
+    "arrived_at": "NoneType",
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "NoneType",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "str",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "int",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "paid_at": "NoneType",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "NoneType",
+    "phone": "str",
+    "queue_order": "NoneType",
+    "receipt_no": "NoneType",
+    "refund_amount": "int",
+    "refund_reason": "NoneType",
+    "refundable": "int",
+    "refunded_at": "NoneType",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "str",
+    "started_at": "NoneType",
+    "status": "str",
+    "tell_patient": "str",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str",
+    "waitlisted": "bool"
+   },
+   "status": 200
+  },
+  "forgot": {
+   "body": {
+    "email_sent": "bool",
+    "ok": "bool"
+   },
+   "status": 200
+  },
+  "health": {
+   "body": {
+    "ok": "bool"
+   },
+   "status": 200
+  },
+  "invite accept": {
+   "body": {
+    "token": "str"
+   },
+   "status": 200
+  },
+  "invite read": {
+   "body": {
+    "clinic": "str",
+    "email": "str",
+    "name": "str"
+   },
+   "status": 200
+  },
+  "late": {
+   "body": {
+    "amount_paid": "NoneType",
+    "arrived_at": "NoneType",
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "NoneType",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "NoneType",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "NoneType",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "paid_at": "NoneType",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "NoneType",
+    "phone": "str",
+    "queue_order": "NoneType",
+    "receipt_no": "NoneType",
+    "refund_amount": "int",
+    "refund_reason": "NoneType",
+    "refundable": "int",
+    "refunded_at": "NoneType",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "NoneType",
+    "started_at": "NoneType",
+    "status": "str",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "leave approve": {
+   "body": {
+    "bookings_affected": "int",
+    "clinic_id": "int",
+    "created_at": "str",
+    "days": "int",
+    "decided_at": "str",
+    "decided_by": "int",
+    "end_date": "str",
+    "id": "int",
+    "kind": "str",
+    "member_id": "int",
+    "name": "str",
+    "reason": "str",
+    "start_date": "str",
+    "status": "str",
+    "type": "str"
+   },
+   "status": 200
+  },
+  "leave list": {
+   "body": [
+    {
+     "clinic_id": "int",
+     "created_at": "str",
+     "days": "int",
+     "decided_at": "NoneType",
+     "decided_by": "NoneType",
+     "end_date": "str",
+     "id": "int",
+     "kind": "str",
+     "member_id": "int",
+     "name": "str",
+     "reason": "str",
+     "start_date": "str",
+     "status": "str",
+     "type": "str"
+    }
+   ],
+   "status": 200
+  },
+  "leave request": {
+   "body": {
+    "bookings_affected": "int",
+    "clinic_id": "int",
+    "created_at": "str",
+    "days": "int",
+    "decided_at": "NoneType",
+    "decided_by": "NoneType",
+    "end_date": "str",
+    "id": "int",
+    "kind": "str",
+    "member_id": "int",
+    "name": "str",
+    "reason": "str",
+    "start_date": "str",
+    "status": "str",
+    "type": "str"
+   },
+   "status": 200
+  },
+  "login": {
+   "body": {
+    "token": "str"
+   },
+   "status": 200
+  },
+  "logout": {
+   "body": {
+    "ok": "bool"
+   },
+   "status": 200
+  },
+  "me": {
+   "body": {
+    "clinic": {
+     "address": "str",
+     "created_at": "str",
+     "days": [
+      "int"
+     ],
+     "derived": {
+      "exact_time": "bool",
+      "max_patients": "int",
+      "minutes_per_patient": "float"
+     },
+     "end": "str",
+     "fee": "int",
+     "id": "int",
+     "limit_by": "str",
+     "limit_value": "int",
+     "name": "str",
+     "next_receipt": "int",
+     "next_uhid": "int",
+     "onboarded": "bool",
+     "phone": "str",
+     "sessions": [
+      {
+       "end": "str",
+       "start": "str"
+      }
+     ],
+     "start": "str",
+     "token_timing": "str",
+     "uhid_prefix": "str"
+    },
+    "member": {
+     "address": "str",
+     "clinic_id": "int",
+     "created_at": "str",
+     "designation": "NoneType",
+     "email": "str",
+     "emergency_contact": "str",
+     "fee_override": "NoneType",
+     "id": "int",
+     "id_number": "str",
+     "invite_expired": "bool",
+     "invite_expires_at": "NoneType",
+     "is_admin": "bool",
+     "is_owner": "bool",
+     "joined_on": "NoneType",
+     "kind": "str",
+     "name": "str",
+     "phone": "str",
+     "screens": [
+      "str"
+     ],
+     "speciality": "str",
+     "status": "str",
+     "work_days": "NoneType",
+     "work_end": "NoneType",
+     "work_start": "NoneType"
+    }
+   },
+   "status": 200
+  },
+  "me edit": {
+   "body": {
+    "address": "str",
+    "clinic_id": "int",
+    "created_at": "str",
+    "designation": "NoneType",
+    "email": "str",
+    "emergency_contact": "str",
+    "fee_override": "NoneType",
+    "id": "int",
+    "id_number": "str",
+    "invite_expired": "bool",
+    "invite_expires_at": "NoneType",
+    "is_admin": "bool",
+    "is_owner": "bool",
+    "joined_on": "NoneType",
+    "kind": "str",
+    "name": "str",
+    "phone": "str",
+    "screens": [
+     "str"
+    ],
+    "speciality": "NoneType",
+    "status": "str",
+    "work_days": "NoneType",
+    "work_end": "NoneType",
+    "work_start": "NoneType"
+   },
+   "status": 200
+  },
+  "member add": {
+   "body": {
+    "address": "str",
+    "clinic_id": "int",
+    "created_at": "str",
+    "designation": "str",
+    "email": "str",
+    "emergency_contact": "str",
+    "fee_override": "NoneType",
+    "id": "int",
+    "id_number": "str",
+    "invite_code": "str",
+    "invite_expired": "bool",
+    "invite_expires_at": "str",
+    "is_admin": "bool",
+    "is_owner": "bool",
+    "joined_on": "NoneType",
+    "kind": "str",
+    "name": "str",
+    "phone": "str",
+    "screens": [
+     "str"
+    ],
+    "speciality": "NoneType",
+    "status": "str",
+    "work_days": "NoneType",
+    "work_end": "NoneType",
+    "work_start": "NoneType"
+   },
+   "status": 200
+  },
+  "member edit": {
+   "body": {
+    "address": "str",
+    "clinic_id": "int",
+    "created_at": "str",
+    "designation": "str",
+    "email": "str",
+    "emergency_contact": "str",
+    "fee_override": "NoneType",
+    "id": "int",
+    "id_number": "str",
+    "invite_expired": "bool",
+    "invite_expires_at": "str",
+    "is_admin": "bool",
+    "is_owner": "bool",
+    "joined_on": "NoneType",
+    "kind": "str",
+    "name": "str",
+    "phone": "str",
+    "screens": [
+     "str"
+    ],
+    "speciality": "NoneType",
+    "status": "str",
+    "work_days": "NoneType",
+    "work_end": "NoneType",
+    "work_start": "NoneType"
+   },
+   "status": 200
+  },
+  "member invite": {
+   "body": {
+    "email_enabled": "bool",
+    "invite_code": "str"
+   },
+   "status": 200
+  },
+  "member reset link": {
+   "body": {
+    "code": "str",
+    "email_enabled": "bool"
+   },
+   "status": 200
+  },
+  "members": {
+   "body": [
+    {
+     "address": "str",
+     "clinic_id": "int",
+     "created_at": "str",
+     "designation": "NoneType",
+     "email": "str",
+     "emergency_contact": "str",
+     "fee_override": "NoneType",
+     "id": "int",
+     "id_number": "str",
+     "invite_expired": "bool",
+     "invite_expires_at": "NoneType",
+     "is_admin": "bool",
+     "is_owner": "bool",
+     "joined_on": "NoneType",
+     "kind": "str",
+     "name": "str",
+     "phone": "str",
+     "screens": [
+      "str"
+     ],
+     "speciality": "NoneType",
+     "status": "str",
+     "work_days": "NoneType",
+     "work_end": "NoneType",
+     "work_start": "NoneType"
+    }
+   ],
+   "status": 200
+  },
+  "merge": {
+   "body": {
+    "address": "str",
+    "clinic_id": "int",
+    "consent_at": "str",
+    "created_at": "str",
+    "dob": "str",
+    "id": "int",
+    "name": "str",
+    "phone": "str",
+    "sex": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "note draft": {
+   "body": {
+    "citations": {
+     "A": [
+      "str"
+     ],
+     "O": [
+      "str"
+     ],
+     "P": [
+      "str"
+     ],
+     "S": [
+      "str"
+     ]
+    },
+    "clinic_id": "int",
+    "content": {
+     "rx": [
+      {
+       "dose": "str",
+       "duration": "str",
+       "instructions": "str",
+       "medicine": "str"
+      }
+     ],
+     "soap": {
+      "A": "str",
+      "O": "str",
+      "P": "str",
+      "S": "str"
+     }
+    },
+    "created_at": "str",
+    "doctor_id": "int",
+    "edited": "int",
+    "id": "int",
+    "patient_id": "int",
+    "signed_at": "NoneType",
+    "signed_by": "NoneType",
+    "signed_by_name": "NoneType",
+    "sources": {
+     "<id>": "str"
+    },
+    "status": "str",
+    "updated_at": "str",
+    "vals": "NoneType",
+    "visit_id": "int"
+   },
+   "status": 200
+  },
+  "note edit": {
+   "body": {
+    "citations": {
+     "A": [
+      "str"
+     ],
+     "O": [
+      "str"
+     ],
+     "P": [
+      "str"
+     ],
+     "S": [
+      "str"
+     ]
+    },
+    "clinic_id": "int",
+    "content": {
+     "rx": [
+      {
+       "dose": "str",
+       "duration": "str",
+       "instructions": "str",
+       "medicine": "str"
+      }
+     ],
+     "soap": {
+      "A": "str",
+      "O": "str",
+      "P": "str",
+      "S": "str"
+     }
+    },
+    "created_at": "str",
+    "doctor_id": "int",
+    "edited": "int",
+    "id": "int",
+    "patient_id": "int",
+    "signed_at": "NoneType",
+    "signed_by": "NoneType",
+    "signed_by_name": "NoneType",
+    "sources": {
+     "<id>": "str"
+    },
+    "status": "str",
+    "updated_at": "str",
+    "vals": "NoneType",
+    "visit_id": "int"
+   },
+   "status": 200
+  },
+  "note print": {
+   "body": "text/html",
+   "status": 200
+  },
+  "note sign": {
+   "body": {
+    "citations": {
+     "A": [
+      "str"
+     ],
+     "O": [
+      "str"
+     ],
+     "P": [
+      "str"
+     ],
+     "S": [
+      "str"
+     ]
+    },
+    "clinic_id": "int",
+    "content": {
+     "rx": [
+      {
+       "dose": "str",
+       "duration": "str",
+       "instructions": "str",
+       "medicine": "str"
+      }
+     ],
+     "soap": {
+      "A": "str",
+      "O": "str",
+      "P": "str",
+      "S": "str"
+     }
+    },
+    "created_at": "str",
+    "doctor_id": "int",
+    "edited": "int",
+    "id": "int",
+    "patient_id": "int",
+    "signed_at": "str",
+    "signed_by": "int",
+    "signed_by_name": "str",
+    "sources": {
+     "<id>": "str"
+    },
+    "status": "str",
+    "updated_at": "str",
+    "vals": "NoneType",
+    "visit_id": "int"
+   },
+   "status": 200
+  },
+  "onboarding finish": {
+   "body": {
+    "address": "str",
+    "created_at": "str",
+    "days": [
+     "int"
+    ],
+    "derived": {
+     "exact_time": "bool",
+     "max_patients": "int",
+     "minutes_per_patient": "float"
+    },
+    "end": "str",
+    "fee": "int",
+    "id": "int",
+    "limit_by": "str",
+    "limit_value": "int",
+    "name": "str",
+    "next_receipt": "int",
+    "next_uhid": "int",
+    "onboarded": "bool",
+    "phone": "str",
+    "sessions": [
+     {
+      "end": "str",
+      "start": "str"
+     }
+    ],
+    "start": "str",
+    "token_timing": "str",
+    "uhid_prefix": "str"
+   },
+   "status": 200
+  },
+  "onboarding owner": {
+   "body": {
+    "token": "str"
+   },
+   "status": 200
+  },
+  "onboarding owner edit": {
+   "body": {
+    "address": "str",
+    "clinic_id": "int",
+    "created_at": "str",
+    "designation": "NoneType",
+    "email": "str",
+    "emergency_contact": "str",
+    "fee_override": "NoneType",
+    "id": "int",
+    "id_number": "str",
+    "invite_expired": "bool",
+    "invite_expires_at": "NoneType",
+    "is_admin": "bool",
+    "is_owner": "bool",
+    "joined_on": "NoneType",
+    "kind": "str",
+    "name": "str",
+    "phone": "str",
+    "screens": [
+     "str"
+    ],
+    "speciality": "str",
+    "status": "str",
+    "work_days": "NoneType",
+    "work_end": "NoneType",
+    "work_start": "NoneType"
+   },
+   "status": 200
+  },
+  "patient": {
+   "body": {
+    "address": "str",
+    "clinic_id": "int",
+    "consent_at": "str",
+    "created_at": "str",
+    "dob": "str",
+    "documents": [],
+    "id": "int",
+    "name": "str",
+    "phone": "str",
+    "sex": "str",
+    "uhid": "str",
+    "visits": []
+   },
+   "status": 200
+  },
+  "patient add": {
+   "body": {
+    "address": "str",
+    "clinic_id": "int",
+    "consent_at": "str",
+    "created_at": "str",
+    "dob": "str",
+    "id": "int",
+    "name": "str",
+    "phone": "str",
+    "sex": "str",
+    "similar": [],
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "patient add 2": {
+   "body": {
+    "address": "str",
+    "clinic_id": "int",
+    "consent_at": "str",
+    "created_at": "str",
+    "dob": "NoneType",
+    "id": "int",
+    "name": "str",
+    "phone": "str",
+    "sex": "NoneType",
+    "similar": [],
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "patient edit": {
+   "body": {
+    "address": "str",
+    "clinic_id": "int",
+    "consent_at": "str",
+    "created_at": "str",
+    "dob": "str",
+    "id": "int",
+    "name": "str",
+    "phone": "str",
+    "sex": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "patients check": {
+   "body": [
+    {
+     "dob": "str",
+     "id": "int",
+     "name": "str",
+     "phone": "str",
+     "sex": "str",
+     "uhid": "str"
+    }
+   ],
+   "status": 200
+  },
+  "patients search": {
+   "body": [
+    {
+     "address": "str",
+     "clinic_id": "int",
+     "consent_at": "str",
+     "created_at": "str",
+     "dob": "str",
+     "id": "int",
+     "name": "str",
+     "phone": "str",
+     "sex": "str",
+     "uhid": "str"
+    }
+   ],
+   "status": 200
+  },
+  "queue": {
+   "body": {
+    "columns": {
+     "booked": [
+      {
+       "amount_paid": "NoneType",
+       "arrived_at": "NoneType",
+       "cancel_reason": "NoneType",
+       "clinic_id": "int",
+       "completed_at": "NoneType",
+       "created_at": "str",
+       "date": "str",
+       "discount": "int",
+       "discount_reason": "NoneType",
+       "dob": "NoneType",
+       "doc_count": "int",
+       "doctor_id": "int",
+       "doctor_name": "str",
+       "expected_time": "str",
+       "fee": "int",
+       "follow_up_of": "NoneType",
+       "id": "int",
+       "is_walk_in": "int",
+       "late": "bool",
+       "paid_at": "NoneType",
+       "patient_id": "int",
+       "patient_name": "str",
+       "payment_method": "NoneType",
+       "phone": "str",
+       "queue_order": "NoneType",
+       "receipt_no": "NoneType",
+       "refund_amount": "int",
+       "refund_reason": "str",
+       "refundable": "int",
+       "refunded_at": "str",
+       "session_end": "str",
+       "session_label": "NoneType",
+       "session_start": "str",
+       "sex": "NoneType",
+       "started_at": "NoneType",
+       "status": "str",
+       "token": "int",
+       "token_label": "str",
+       "uhid": "str"
+      }
+     ],
+     "done": [],
+     "waiting": [
+      {
+       "amount_paid": "int",
+       "arrived_at": "str",
+       "cancel_reason": "NoneType",
+       "clinic_id": "int",
+       "completed_at": "NoneType",
+       "created_at": "str",
+       "date": "str",
+       "discount": "int",
+       "discount_reason": "NoneType",
+       "dob": "str",
+       "doc_count": "int",
+       "doctor_id": "int",
+       "doctor_name": "str",
+       "expected_time": "str",
+       "fee": "int",
+       "follow_up_of": "NoneType",
+       "id": "int",
+       "is_walk_in": "int",
+       "late": "bool",
+       "paid_at": "str",
+       "patient_id": "int",
+       "patient_name": "str",
+       "payment_method": "str",
+       "phone": "str",
+       "queue_order": "int",
+       "receipt_no": "int",
+       "refund_amount": "int",
+       "refund_reason": "str",
+       "refundable": "int",
+       "refunded_at": "str",
+       "session_end": "str",
+       "session_label": "NoneType",
+       "session_start": "str",
+       "sex": "str",
+       "started_at": "NoneType",
+       "status": "str",
+       "token": "int",
+       "token_label": "str",
+       "uhid": "str"
+      }
+     ],
+     "with_doctor": []
+    },
+    "doctor": {
+     "id": "int",
+     "name": "str",
+     "speciality": "NoneType"
+    },
+    "not_seen": [],
+    "schedule": {
+     "end": "str",
+     "exact_time": "bool",
+     "limit_by": "str",
+     "limit_value": "int",
+     "max_patients": "int",
+     "minutes_per_patient": "float",
+     "override": "bool",
+     "sessions": [
+      {
+       "end": "str",
+       "exact_time": "bool",
+       "key": "str",
+       "label": "str",
+       "max_patients": "int",
+       "minutes_per_patient": "float",
+       "start": "str"
+      }
+     ],
+     "start": "str"
+    },
+    "token_timing": "str"
+   },
+   "status": 200
+  },
+  "queue move": {
+   "body": {
+    "ok": "bool"
+   },
+   "status": 200
+  },
+  "receipt": {
+   "body": "text/html",
+   "status": 200
+  },
+  "refund": {
+   "body": {
+    "amount_paid": "int",
+    "arrived_at": "str",
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "NoneType",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "str",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "NoneType",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "paid_at": "str",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "str",
+    "phone": "str",
+    "queue_order": "int",
+    "receipt_no": "int",
+    "refund_amount": "int",
+    "refund_reason": "str",
+    "refundable": "int",
+    "refunded_at": "str",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "str",
+    "started_at": "NoneType",
+    "status": "str",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "reschedule": {
+   "body": {
+    "amount_paid": "NoneType",
+    "arrived_at": "NoneType",
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "NoneType",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "NoneType",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "NoneType",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "paid_at": "NoneType",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "NoneType",
+    "phone": "str",
+    "queue_order": "NoneType",
+    "receipt_no": "NoneType",
+    "refund_amount": "int",
+    "refund_reason": "NoneType",
+    "refundable": "int",
+    "refunded_at": "NoneType",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "NoneType",
+    "started_at": "NoneType",
+    "status": "str",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "reset bad code": {
+   "body": {
+    "detail": "str"
+   },
+   "status": 410
+  },
+  "schedule": {
+   "body": [
+    {
+     "date": "str",
+     "off": "bool",
+     "override": "bool",
+     "schedule": {
+      "end": "str",
+      "exact_time": "bool",
+      "limit_by": "str",
+      "limit_value": "int",
+      "max_patients": "int",
+      "minutes_per_patient": "float",
+      "override": "bool",
+      "sessions": [
+       {
+        "end": "str",
+        "exact_time": "bool",
+        "key": "str",
+        "label": "str",
+        "max_patients": "int",
+        "minutes_per_patient": "float",
+        "start": "str"
+       }
+      ],
+      "start": "str"
+     }
+    }
+   ],
+   "status": 200
+  },
+  "schedule day": {
+   "body": {
+    "bookings_affected": "int",
+    "date": "str",
+    "schedule": {
+     "end": "str",
+     "exact_time": "bool",
+     "limit_by": "str",
+     "limit_value": "int",
+     "max_patients": "int",
+     "minutes_per_patient": "float",
+     "override": "bool",
+     "sessions": [
+      {
+       "end": "str",
+       "exact_time": "bool",
+       "key": "str",
+       "label": "str",
+       "max_patients": "int",
+       "minutes_per_patient": "float",
+       "start": "str"
+      }
+     ],
+     "start": "str"
+    }
+   },
+   "status": 200
+  },
+  "schedule day reset": {
+   "body": {
+    "date": "str",
+    "schedule": {
+     "end": "str",
+     "exact_time": "bool",
+     "limit_by": "str",
+     "limit_value": "int",
+     "max_patients": "int",
+     "minutes_per_patient": "float",
+     "override": "bool",
+     "sessions": [
+      {
+       "end": "str",
+       "exact_time": "bool",
+       "key": "str",
+       "label": "str",
+       "max_patients": "int",
+       "minutes_per_patient": "float",
+       "start": "str"
+      }
+     ],
+     "start": "str"
+    }
+   },
+   "status": 200
+  },
+  "start": {
+   "body": {
+    "age": "int",
+    "ai_enabled": "bool",
+    "amount_paid": "int",
+    "arrived_at": "str",
+    "brief": {
+     "basis": "str",
+     "charts": [],
+     "events": [],
+     "made_at": "str",
+     "sources": {},
+     "summary": [
+      {
+       "kind": "str",
+       "sentences": []
+      }
+     ]
+    },
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "NoneType",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "str",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "documents": [],
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "NoneType",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "note": "NoneType",
+    "paid_at": "str",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "str",
+    "phone": "str",
+    "queue_order": "int",
+    "receipt_no": "int",
+    "refund_amount": "int",
+    "refund_reason": "str",
+    "refundable": "int",
+    "refunded_at": "str",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "str",
+    "started_at": "str",
+    "status": "str",
+    "text": "str",
+    "text_rev": "int",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "team register": {
+   "body": {
+    "month": "str",
+    "people": [
+     {
+      "absent": "int",
+      "half": "int",
+      "id": "int",
+      "kind": "str",
+      "late": "int",
+      "leave": "int",
+      "name": "str",
+      "present": "int",
+      "role": "NoneType",
+      "working": "int"
+     }
+    ]
+   },
+   "status": 200
+  },
+  "team today": {
+   "body": {
+    "date": "str",
+    "people": [
+     {
+      "check_in": "str",
+      "check_out": "NoneType",
+      "created_at": "str",
+      "designation": "NoneType",
+      "id": "int",
+      "is_owner": "int",
+      "joined_on": "NoneType",
+      "kind": "str",
+      "name": "str",
+      "note": "str",
+      "speciality": "NoneType",
+      "start": "str",
+      "status": "str",
+      "work_days": "NoneType",
+      "work_end": "NoneType",
+      "work_start": "NoneType",
+      "working": "bool"
+     }
+    ]
+   },
+   "status": 200
+  },
+  "text": {
+   "body": {
+    "length": "int",
+    "ok": "bool",
+    "rev": "int"
+   },
+   "status": 200
+  },
+  "undo arrival": {
+   "body": {
+    "amount_paid": "NoneType",
+    "arrived_at": "NoneType",
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "NoneType",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "NoneType",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "NoneType",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "paid_at": "NoneType",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "NoneType",
+    "phone": "str",
+    "queue_order": "NoneType",
+    "receipt_no": "NoneType",
+    "refund_amount": "int",
+    "refund_reason": "str",
+    "refundable": "int",
+    "refunded_at": "str",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "NoneType",
+    "started_at": "NoneType",
+    "status": "str",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "visit": {
+   "body": {
+    "age": "int",
+    "ai_enabled": "bool",
+    "amount_paid": "int",
+    "arrived_at": "str",
+    "brief": {
+     "basis": "str",
+     "charts": [],
+     "events": [],
+     "made_at": "str",
+     "sources": {},
+     "summary": [
+      {
+       "kind": "str",
+       "sentences": []
+      }
+     ]
+    },
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "NoneType",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "str",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "documents": [],
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "NoneType",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "note": "NoneType",
+    "paid_at": "str",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "str",
+    "phone": "str",
+    "queue_order": "int",
+    "receipt_no": "int",
+    "refund_amount": "int",
+    "refund_reason": "str",
+    "refundable": "int",
+    "refunded_at": "str",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "str",
+    "started_at": "str",
+    "status": "str",
+    "text": "str",
+    "text_rev": "int",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "visit after": {
+   "body": {
+    "age": "int",
+    "ai_enabled": "bool",
+    "amount_paid": "int",
+    "arrived_at": "str",
+    "brief": {
+     "basis": "str",
+     "charts": [
+      {
+       "series": [
+        {
+         "name": "str",
+         "points": [
+          {
+           "cite": "str",
+           "date": "str",
+           "out": "bool",
+           "text": "str",
+           "value": "float"
+          }
+         ],
+         "range": [
+          "float"
+         ],
+         "range_from": "str"
+        }
+       ],
+       "test": "str",
+       "unit": "str"
+      }
+     ],
+     "events": [],
+     "made_at": "str",
+     "sources": {
+      "<id>": {
+       "date": "str",
+       "doc_id": "int",
+       "filename": "str",
+       "findings": [
+        {
+         "name": "str",
+         "unit": "str",
+         "value": "str"
+        }
+       ],
+       "kind": "str",
+       "label": "str",
+       "summary": "str",
+       "text": "str",
+       "values": [
+        {
+         "name": "str",
+         "unit": "str",
+         "value": "str"
+        }
+       ]
+      }
+     },
+     "summary": [
+      {
+       "kind": "str",
+       "sentences": [
+        {
+         "cites": [
+          "str"
+         ],
+         "flags": [
+          "str"
+         ],
+         "text": "str"
+        }
+       ]
+      }
+     ]
+    },
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "str",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "str",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "documents": [
+     {
+      "ai_status": "str",
+      "clinic_id": "int",
+      "created_at": "str",
+      "extracted": {
+       "findings": [
+        {
+         "name": "str",
+         "unit": "str",
+         "value": "str"
+        }
+       ],
+       "summary": "str",
+       "title": "str"
+      },
+      "filename": "str",
+      "id": "int",
+      "mime": "str",
+      "path": "str",
+      "patient_id": "int",
+      "visit_id": "int"
+     }
+    ],
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "NoneType",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "note": {
+     "citations": {
+      "A": [
+       "str"
+      ],
+      "O": [
+       "str"
+      ],
+      "P": [
+       "str"
+      ],
+      "S": [
+       "str"
+      ]
+     },
+     "clinic_id": "int",
+     "content": {
+      "rx": [
+       {
+        "dose": "str",
+        "duration": "str",
+        "instructions": "str",
+        "medicine": "str"
+       }
+      ],
+      "soap": {
+       "A": "str",
+       "O": "str",
+       "P": "str",
+       "S": "str"
+      }
+     },
+     "created_at": "str",
+     "doctor_id": "int",
+     "edited": "int",
+     "id": "int",
+     "patient_id": "int",
+     "signed_at": "str",
+     "signed_by": "int",
+     "signed_by_name": "str",
+     "sources": {
+      "<id>": "str"
+     },
+     "status": "str",
+     "updated_at": "str",
+     "vals": "NoneType",
+     "visit_id": "int"
+    },
+    "paid_at": "str",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "str",
+    "phone": "str",
+    "queue_order": "int",
+    "receipt_no": "int",
+    "refund_amount": "int",
+    "refund_reason": "str",
+    "refundable": "int",
+    "refunded_at": "str",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "str",
+    "started_at": "str",
+    "status": "str",
+    "text": "str",
+    "text_rev": "int",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  },
+  "waitlist": {
+   "body": {
+    "items": [
+     {
+      "added_by": "int",
+      "clinic_id": "int",
+      "created_at": "str",
+      "date": "str",
+      "doctor_id": "int",
+      "id": "int",
+      "patient_id": "int",
+      "patient_name": "str",
+      "phone": "str",
+      "session_start": "NoneType",
+      "status": "str",
+      "uhid": "str",
+      "visit_id": "NoneType"
+     }
+    ],
+    "open": "bool"
+   },
+   "status": 200
+  },
+  "waitlist add": {
+   "body": {
+    "date": "str",
+    "id": "int",
+    "waitlisted": "bool"
+   },
+   "status": 200
+  },
+  "walk-in": {
+   "body": {
+    "amount_paid": "int",
+    "arrived_at": "str",
+    "cancel_reason": "NoneType",
+    "clinic_id": "int",
+    "completed_at": "NoneType",
+    "created_at": "str",
+    "date": "str",
+    "discount": "int",
+    "discount_reason": "NoneType",
+    "dob": "str",
+    "doc_count": "int",
+    "doctor_id": "int",
+    "doctor_name": "str",
+    "expected_time": "str",
+    "fee": "int",
+    "follow_up_of": "NoneType",
+    "id": "int",
+    "is_walk_in": "int",
+    "late": "bool",
+    "paid_at": "str",
+    "patient_id": "int",
+    "patient_name": "str",
+    "payment_method": "str",
+    "phone": "str",
+    "queue_order": "int",
+    "receipt_no": "int",
+    "refund_amount": "int",
+    "refund_reason": "NoneType",
+    "refundable": "int",
+    "refunded_at": "NoneType",
+    "session_end": "str",
+    "session_label": "NoneType",
+    "session_start": "str",
+    "sex": "str",
+    "started_at": "NoneType",
+    "status": "str",
+    "token": "int",
+    "token_label": "str",
+    "uhid": "str"
+   },
+   "status": 200
+  }
+ },
+ "routes": [
+  "DELETE /api/members/{member_id}",
+  "DELETE /api/schedules/{doctor_id}/{date}",
+  "DELETE /api/waitlist/{wait_id}",
+  "GET /api/attendance/me",
+  "GET /api/availability",
+  "GET /api/clinic",
+  "GET /api/collections",
+  "GET /api/consultation/today",
+  "GET /api/day-close",
+  "GET /api/dictation",
+  "GET /api/doctors",
+  "GET /api/documents/{doc_id}/file",
+  "GET /api/invites/{code}",
+  "GET /api/leave",
+  "GET /api/me",
+  "GET /api/members",
+  "GET /api/notes/{note_id}/print",
+  "GET /api/operations/day",
+  "GET /api/operations/queue",
+  "GET /api/patients",
+  "GET /api/patients/check",
+  "GET /api/patients/{patient_id}",
+  "GET /api/schedules/{doctor_id}",
+  "GET /api/team/register",
+  "GET /api/team/today",
+  "GET /api/visits/{visit_id}",
+  "GET /api/visits/{visit_id}/receipt",
+  "GET /api/waitlist",
+  "GET /health",
+  "PATCH /api/members/{member_id}",
+  "PATCH /api/patients/{patient_id}",
+  "POST /api/attendance/check-in",
+  "POST /api/attendance/check-out",
+  "POST /api/auth/change-password",
+  "POST /api/auth/forgot",
+  "POST /api/auth/login",
+  "POST /api/auth/logout",
+  "POST /api/auth/reset",
+  "POST /api/consultation/next",
+  "POST /api/day-close",
+  "POST /api/invites/accept",
+  "POST /api/leave",
+  "POST /api/leave/{leave_id}/{action}",
+  "POST /api/members",
+  "POST /api/members/{member_id}/invite",
+  "POST /api/members/{member_id}/invite/email",
+  "POST /api/members/{member_id}/reset-link",
+  "POST /api/members/{member_id}/reset-link/email",
+  "POST /api/notes/{note_id}/sign",
+  "POST /api/onboarding/finish",
+  "POST /api/onboarding/owner",
+  "POST /api/operations/end-session",
+  "POST /api/patients",
+  "POST /api/patients/{patient_id}/merge",
+  "POST /api/schedules/leave",
+  "POST /api/visits",
+  "POST /api/visits/walk-in",
+  "POST /api/visits/{visit_id}/arrive",
+  "POST /api/visits/{visit_id}/brief",
+  "POST /api/visits/{visit_id}/cancel",
+  "POST /api/visits/{visit_id}/documents",
+  "POST /api/visits/{visit_id}/follow-up",
+  "POST /api/visits/{visit_id}/late",
+  "POST /api/visits/{visit_id}/note",
+  "POST /api/visits/{visit_id}/note/draft",
+  "POST /api/visits/{visit_id}/queue",
+  "POST /api/visits/{visit_id}/refund",
+  "POST /api/visits/{visit_id}/reschedule",
+  "POST /api/visits/{visit_id}/start",
+  "POST /api/visits/{visit_id}/transcript",
+  "POST /api/visits/{visit_id}/undo-arrival",
+  "POST /api/waitlist",
+  "POST /api/waitlist/{wait_id}/book",
+  "PUT /api/attendance/{member_id}/{date}",
+  "PUT /api/clinic",
+  "PUT /api/clinic/rules",
+  "PUT /api/me",
+  "PUT /api/notes/{note_id}",
+  "PUT /api/onboarding/owner",
+  "PUT /api/schedules/{doctor_id}/{date}",
+  "PUT /api/visits/{visit_id}/text"
+ ]
+}

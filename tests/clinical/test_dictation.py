@@ -5,7 +5,7 @@ from starlette.websockets import WebSocketDisconnect
 
 from app.shared.ai.speech.providers import deepgram as transcribe
 from app.main import app
-from tests.test_review_gaps import clinic, started_visit
+from tests.helpers import clinic, started_visit
 
 
 class FakeStream:

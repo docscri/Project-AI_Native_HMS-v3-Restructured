@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 from app.shared.db import connect
 from app.main import app
-from tests.test_review_gaps import clinic, started_visit
+from tests.helpers import clinic, started_visit
 
 TODAY = date.today().isoformat()
 spec = importlib.util.spec_from_file_location("m012", "migrations/012_rebuild_legacy_ledger.py")

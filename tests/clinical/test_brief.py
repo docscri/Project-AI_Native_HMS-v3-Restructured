@@ -7,7 +7,7 @@ from app.modules.clinical.brief import service as brief
 from app.shared.ai import llm
 from app.shared.db import connect
 from app.main import app
-from tests.test_review_gaps import clinic
+from tests.helpers import clinic
 
 
 def signed_visit(c, h, doc, pid, soap):

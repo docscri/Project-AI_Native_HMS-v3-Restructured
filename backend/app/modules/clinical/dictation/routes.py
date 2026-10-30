@@ -1,16 +1,16 @@
 import asyncio
 from contextlib import suppress
 
-from app.shared.errors import DomainError
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from starlette.websockets import WebSocketState
 
-from app import ai
+from app.core.visit import get_visit
+from app.modules.clinical.consultation.service import editable
+from app.shared.ai import llm
 from app.shared.ai.speech.providers import deepgram as transcribe
 from app.shared.auth import current_member, member_for_token, public_member
 from app.shared.db import connect
-from .consultation import editable
-from app.core.visit import get_visit
+from app.shared.errors import DomainError
 
 router = APIRouter(prefix="/api")
 _active: set[int] = set()   # one live stream per visit (single server process)
@@ -18,7 +18,7 @@ _active: set[int] = set()   # one live stream per visit (single server process)
 
 @router.get("/dictation")
 def provider(me=Depends(current_member)):
-    return {"provider": "deepgram" if transcribe.enabled() else "browser", "ai": ai.enabled()}
+    return {"provider": "deepgram" if transcribe.enabled() else "browser", "ai": llm.enabled()}
 
 
 def _check(token: str, visit_id: int) -> str | None:

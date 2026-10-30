@@ -1,7 +1,7 @@
 """Front desk: queues, booking, arrival, reschedule, cancel."""
 from fastapi import APIRouter, BackgroundTasks, Depends
 
-from app import brief
+from app.modules.clinical.brief import service as brief
 from app.shared.auth import current_member, require_screen
 from app.shared.db import get_db
 from app.core.visit import visit_out

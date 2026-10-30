@@ -4,6 +4,7 @@ import json
 import mimetypes
 from datetime import date as Date, datetime
 
+from app.shared.errors import Conflict
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, Field
@@ -13,19 +14,14 @@ from app.shared import files as storage, printing as printpage
 from app.shared.auth import current_member, member_for_token, public_member, require_any, require_screen
 from app.shared.audit import log_event
 from app.shared.db import connect, get_db, now, row, rows
-from app.rules import clinic_doctor, valid_day
-from .clinic import clinic_of
-from .operations import get_visit, move, visit_rows
+from app.core.clinic import clinic_of
+from app.core.member import clinic_doctor
+from app.core.patient import age
+from app.core.visit import get_visit, move, text_of, visit_rows
+from app.shared.validate import valid_day
 
 router = APIRouter(prefix="/api")
 doctor_screen = require_screen("consultation")
-
-
-def age(dob: str | None) -> int | None:
-    if not dob:
-        return None
-    b, t = Date.fromisoformat(dob), Date.today()
-    return t.year - b.year - ((t.month, t.day) < (b.month, b.day))
 
 
 def load_docs(db, patient_id: int) -> list[dict]:
@@ -59,7 +55,6 @@ def evidence_for(db, v: dict) -> tuple[dict, list[dict]]:
     patient = {"name": p["name"], "age": age(p["dob"]), "sex": p["sex"]}
     docs = [d for d in load_docs(db, v["patient_id"]) if d["ai_status"] == "ready"]
     return patient, ai.evidence(text_of(v), docs, past_notes(db, v["patient_id"], v["id"]))
-
 
 
 @router.get("/consultation/today")
@@ -114,21 +109,12 @@ def workspace(visit_id: int, me=Depends(require_any("consultation", "patients"))
     return out
 
 
-
 @router.post("/visits/{visit_id}/brief")
 def make_brief(visit_id: int, me=Depends(doctor_screen), db=Depends(get_db)):
     v = get_visit(db, me, visit_id)
     b = brief.build(db, v) | {"made_at": now()}
     db.execute("update visits set brief = ? where id = ?", (json.dumps(b), visit_id))
     return b
-
-
-
-def text_of(v: dict) -> str:
-    """Legacy visits fall back to their joined dictation lines."""
-    if v.get("dictation"):
-        return v["dictation"]
-    return "\n".join(s["text"] for s in json.loads(v["transcript"] or "[]"))
 
 
 class FreeText(BaseModel):
@@ -168,7 +154,6 @@ def add_segment(visit_id: int, body: Segment, me=Depends(doctor_screen), db=Depe
     text = (text_of(v).rstrip() + "\n" + body.text.strip()).strip()
     db.execute("update visits set dictation = ?, dictation_rev = dictation_rev + 1 where id = ?", (text, visit_id))
     return {"text": text}
-
 
 
 def run_extraction(doc_id: int) -> None:
@@ -222,7 +207,6 @@ def document_file(doc_id: int, me=Depends(require_any("consultation", "patients"
     except Exception:
         raise HTTPException(404, "File not found.")
     return Response(data, media_type=d["mime"], headers={"Content-Disposition": f'inline; filename="{d["filename"]}"'})
-
 
 
 class NoteEdit(BaseModel):
@@ -288,8 +272,8 @@ def follow_up(visit_id: int, body: FollowUp, me=Depends(doctor_screen), db=Depen
     try:
         out = create_booking(db, me, v["patient_id"], v["doctor_id"], body.date, follow_up_of=visit_id)
         return out | {"waitlisted": False}
-    except HTTPException as e:
-        if e.status_code != 409 or e.detail not in ("Session full.", "Session ended."):
+    except Conflict as e:   # a full or ended day goes to the waitlist instead
+        if e.message not in ("Session full.", "Session ended."):
             raise
         return add_to_waitlist(db, me, v["patient_id"], v["doctor_id"], body.date)
 

@@ -1,9 +1,9 @@
 """Sessions, capacity and tokens; each session numbers its own tokens."""
-import re
 import json
+import re
 from datetime import date as Date, datetime
 
-from fastapi import HTTPException
+from app.shared.errors import Conflict, Invalid
 
 from app.shared.db import row
 
@@ -41,37 +41,19 @@ def parse_sessions(raw, start=None, end=None) -> list[dict]:
     return [{"start": start, "end": end}] if start and end else []
 
 
-def valid_day(day: str | None, required: bool = True) -> str | None:
-    if not day and not required:
-        return None
-    try:
-        return Date.fromisoformat(str(day)).isoformat() if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(day)) else Date.fromisoformat("x")
-    except ValueError:
-        raise HTTPException(422, "Check the dates.")
-
-
-def clinic_doctor(db, me: dict, doctor_id: int) -> dict:
-    """Other clinics' or inactive doctors look like 404s."""
-    d = db.execute("select * from members where id = ? and clinic_id = ? and kind = 'doctor' and status != 'inactive'",
-                   (doctor_id, me["clinic_id"])).fetchone()
-    if not d:
-        raise HTTPException(404, "Doctor not found.")
-    return dict(d)
-
-
 def validate_sessions(sessions: list[dict]) -> list[dict]:
     if not sessions:
-        raise HTTPException(422, "Add at least one session.")
+        raise Invalid("Add at least one session.")
     if len(sessions) > MAX_SESSIONS:
-        raise HTTPException(422, f"At most {MAX_SESSIONS} sessions a day.")
+        raise Invalid(f"At most {MAX_SESSIONS} sessions a day.")
     if any(not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", str(s.get(k) or "")) for s in sessions for k in ("start", "end")):
-        raise HTTPException(422, "Use times like 09:30.")
+        raise Invalid("Use times like 09:30.")
     out = sorted(({"start": s["start"], "end": s["end"]} for s in sessions), key=lambda s: s["start"])
     for i, s in enumerate(out):
         if not (s["start"] and s["end"]) or s["start"] >= s["end"]:
-            raise HTTPException(422, "Session end is before start.")
+            raise Invalid("Session end is before start.")
         if i and s["start"] < out[i - 1]["end"]:
-            raise HTTPException(422, "Sessions overlap.")
+            raise Invalid("Sessions overlap.")
     return out
 
 
@@ -182,5 +164,5 @@ def availability(db, clinic: dict, doctor_id: int, day: str, exclude_visit: int 
 def require_bookable(db, clinic: dict, doctor_id: int, day: str, exclude_visit: int | None = None, session: str | None = None) -> dict:
     a = availability(db, clinic, doctor_id, day, exclude_visit, session)
     if not a["available"]:
-        raise HTTPException(409, a["reason"])
+        raise Conflict(a["reason"])
     return a

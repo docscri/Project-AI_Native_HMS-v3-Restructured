@@ -1,6 +1,7 @@
 import asyncio
 from contextlib import suppress
 
+from app.shared.errors import DomainError
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from starlette.websockets import WebSocketState
 
@@ -9,7 +10,7 @@ from app.shared.ai.speech.providers import deepgram as transcribe
 from app.shared.auth import current_member, member_for_token, public_member
 from app.shared.db import connect
 from .consultation import editable
-from .operations import get_visit
+from app.core.visit import get_visit
 
 router = APIRouter(prefix="/api")
 _active: set[int] = set()   # one live stream per visit (single server process)
@@ -32,8 +33,8 @@ def _check(token: str, visit_id: int) -> str | None:
             return "No access to Consultation."
         try:
             editable(db, get_visit(db, me, visit_id))
-        except HTTPException as e:
-            return e.detail
+        except (HTTPException, DomainError) as e:
+            return getattr(e, "detail", None) or e.message
         db.commit()
         return None
     finally:

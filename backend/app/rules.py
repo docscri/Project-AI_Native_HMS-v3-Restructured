@@ -5,7 +5,7 @@ from datetime import date as Date, datetime
 
 from fastapi import HTTPException
 
-from .db import row
+from app.shared.db import row
 
 ACTIVE = "status not in ('cancelled', 'no_show')"
 MAX_SESSIONS = 3

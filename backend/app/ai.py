@@ -4,30 +4,12 @@ import json
 import os
 import re
 
-import httpx
+from app.shared.ai import llm
 
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
-PROMPTS = os.path.join(os.path.dirname(__file__), "prompts")
-
-
-def enabled() -> bool:
-    return bool(os.environ.get("GEMINI_API_KEY"))
-
-
-def _prompt(name: str) -> str:
-    with open(os.path.join(PROMPTS, name)) as f:
-        return f.read()
-
-
-def _gemini(parts: list[dict]) -> dict:
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
-    r = httpx.post(url, params={"key": os.environ["GEMINI_API_KEY"]}, timeout=90, json={
-        "contents": [{"role": "user", "parts": parts}],
-        "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},
-    })
-    r.raise_for_status()
-    return json.loads(r.json()["candidates"][0]["content"]["parts"][0]["text"])
-
+# Tests swap these module names out, so the clinical steps below call them through this module.
+enabled = llm.enabled
+_gemini = llm.generate
+_prompt = llm.prompt
 
 
 def extract_document(data: bytes, mime: str, filename: str) -> dict:

@@ -8,10 +8,12 @@ from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Up
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, Field
 
-from .. import ai, brief, printpage, storage
-from ..auth import current_member, member_for_token, public_member, require_any, require_screen
-from ..db import connect, get_db, log_event, now, row, rows
-from ..rules import clinic_doctor, valid_day
+from app import ai, brief
+from app.shared import files as storage, printing as printpage
+from app.shared.auth import current_member, member_for_token, public_member, require_any, require_screen
+from app.shared.audit import log_event
+from app.shared.db import connect, get_db, now, row, rows
+from app.rules import clinic_doctor, valid_day
 from .clinic import clinic_of
 from .operations import get_visit, move, visit_rows
 

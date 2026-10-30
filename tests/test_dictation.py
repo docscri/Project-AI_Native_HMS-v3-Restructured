@@ -3,7 +3,7 @@ import pytest
 from fastapi.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
-from app import transcribe
+from app.shared.ai.speech.providers import deepgram as transcribe
 from app.main import app
 from tests.test_review_gaps import clinic, started_visit
 
@@ -156,8 +156,8 @@ def test_untouched_ai_draft_saved_back_is_not_an_edit(monkeypatch):
 
 def test_old_paragraph_citations_get_their_paragraphs():
     import importlib.util
-    from app.db import connect
-    spec = importlib.util.spec_from_file_location("m015", "app/migrations/015_note_sources_backfill.py")
+    from app.shared.db import connect
+    spec = importlib.util.spec_from_file_location("m015", "migrations/015_note_sources_backfill.py")
     m015 = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(m015)
     with TestClient(app) as c:

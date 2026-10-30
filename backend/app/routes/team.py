@@ -7,9 +7,10 @@ from datetime import date as Date, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from ..auth import current_member, require_admin
-from ..db import get_db, log_event, now, row, rows
-from ..rules import day_schedule, valid_day
+from app.shared.auth import current_member, require_admin
+from app.shared.audit import log_event
+from app.shared.db import get_db, now, row, rows
+from app.rules import day_schedule, valid_day
 from .clinic import clinic_of
 from .schedules import Override, save_day
 

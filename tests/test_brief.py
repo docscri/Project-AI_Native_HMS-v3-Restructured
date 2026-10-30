@@ -4,7 +4,7 @@ import json
 from fastapi.testclient import TestClient
 
 from app import ai, brief
-from app.db import connect
+from app.shared.db import connect
 from app.main import app
 from tests.test_review_gaps import clinic
 

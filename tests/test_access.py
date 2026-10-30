@@ -3,7 +3,7 @@ import json
 
 from fastapi.testclient import TestClient
 
-from app.db import connect
+from app.shared.db import connect
 from app.main import app
 
 

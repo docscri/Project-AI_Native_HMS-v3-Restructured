@@ -6,10 +6,12 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
-from .. import brief, printpage
-from ..auth import current_member, member_for_token, public_member, require_screen
-from ..db import get_db, log_event, now, row, rows
-from ..rules import (ACTIVE, availability, clinic_doctor, valid_day, day_schedule, doctor_fee, find_session, next_arrival_token, now_hhmm, require_bookable,
+from app import brief
+from app.shared import printing as printpage
+from app.shared.auth import current_member, member_for_token, public_member, require_screen
+from app.shared.audit import log_event
+from app.shared.db import get_db, now, row, rows
+from app.rules import (ACTIVE, availability, clinic_doctor, valid_day, day_schedule, doctor_fee, find_session, next_arrival_token, now_hhmm, require_bookable,
                      token_time)
 from .clinic import clinic_of
 

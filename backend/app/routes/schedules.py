@@ -6,9 +6,10 @@ from datetime import date as Date, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from ..auth import current_member
-from ..db import get_db, log_event, now, row
-from ..rules import availability, clinic_doctor, day_schedule, valid_day, validate_sessions
+from app.shared.auth import current_member
+from app.shared.audit import log_event
+from app.shared.db import get_db, now, row
+from app.rules import availability, clinic_doctor, day_schedule, valid_day, validate_sessions
 from .clinic import clinic_of
 
 router = APIRouter(prefix="/api")

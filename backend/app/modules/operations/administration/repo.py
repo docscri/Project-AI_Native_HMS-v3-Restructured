@@ -1,0 +1,85 @@
+"""Administration SQL."""
+from app.shared.db import row, rows
+
+
+def update_details(db, clinic_id: int, name, phone, address, prefix) -> None:
+    db.execute("update clinics set name = ?, phone = ?, address = ?, uhid_prefix = ? where id = ?",
+               (name, phone, address, prefix, clinic_id))
+
+
+def update_rules(db, clinic_id: int, fee, days: str, start, end, sessions: str, limit_by, limit_value, token_timing) -> None:
+    db.execute(
+        """update clinics set fee = ?, days = ?, start = ?, "end" = ?, sessions = ?, limit_by = ?, limit_value = ?, token_timing = ?
+           where id = ?""",
+        (fee, days, start, end, sessions, limit_by, limit_value, token_timing, clinic_id),
+    )
+
+
+def members(db, clinic_id: int) -> list[dict]:
+    return rows(db.execute("select * from members where clinic_id = ? order by is_owner desc, kind, name", (clinic_id,)))
+
+
+def member(db, member_id: int) -> dict | None:
+    return row(db.execute("select * from members where id = ?", (member_id,)).fetchone())
+
+
+def clinic_member(db, clinic_id: int, member_id: int) -> dict | None:
+    return row(db.execute("select * from members where id = ? and clinic_id = ?", (member_id, clinic_id)).fetchone())
+
+
+def active_clinic_member(db, clinic_id: int, member_id: int) -> dict | None:
+    return row(db.execute("select * from members where id = ? and clinic_id = ? and status = 'active'", (member_id, clinic_id)).fetchone())
+
+
+def insert_member(db, clinic_id: int, kind, is_admin: int, name, email, phone, code, expires_at, speciality, designation,
+                  fee_override, screens: str) -> int:
+    return db.execute(
+        """insert into members (clinic_id, kind, is_admin, name, email, phone, invite_code, invite_expires_at, speciality,
+           designation, fee_override, screens) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (clinic_id, kind, is_admin, name, email, phone, code, expires_at, speciality, designation, fee_override, screens),
+    ).lastrowid
+
+
+def set_invite(db, member_id: int, code: str, expires_at) -> None:
+    db.execute("update members set invite_code = ?, invite_expires_at = ? where id = ?", (code, expires_at, member_id))
+
+
+def update_member(db, member_id: int, changes: dict) -> None:
+    db.execute(f"update members set {', '.join(f'{k} = ?' for k in changes)} where id = ?", (*changes.values(), member_id))
+
+
+def doctor_has_visits(db, member_id: int) -> bool:
+    return bool(db.execute("select 1 from visits where doctor_id = ?", (member_id,)).fetchone())
+
+
+def has_history(db, member_id: int) -> bool:
+    return bool(db.execute("""select 1 from visits where doctor_id = ? union select 1 from notes where doctor_id = ?
+                         union select 1 from notes where signed_by = ?""", (member_id, member_id, member_id)).fetchone())
+
+
+def deactivate(db, member_id: int) -> None:
+    db.execute("update members set status = 'inactive' where id = ?", (member_id,))
+
+
+def clear_own_trail(db, member_id: int) -> None:
+    db.execute("delete from schedule_overrides where doctor_id = ?", (member_id,))
+    db.execute("delete from events where actor_id = ? and entity = 'member' and entity_id = ?", (member_id, member_id))
+
+
+def delete_member(db, member_id: int) -> None:
+    db.execute("delete from members where id = ?", (member_id,))
+
+
+def invite_view(db, code: str) -> dict | None:
+    return row(db.execute(
+        """select m.name, m.email, m.invite_expires_at, c.name as clinic from members m join clinics c on c.id = m.clinic_id
+           where invite_code = ? and m.status = 'invited'""", (code,)).fetchone())
+
+
+def invited_member(db, code: str) -> dict | None:
+    return row(db.execute("select * from members where invite_code = ? and status = 'invited'", (code,)).fetchone())
+
+
+def accept_invite(db, member_id: int, password_hash: str) -> None:
+    db.execute("update members set password_hash = ?, status = 'active', invite_code = null, invite_expires_at = null where id = ?",
+               (password_hash, member_id))

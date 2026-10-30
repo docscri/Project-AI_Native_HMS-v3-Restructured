@@ -139,9 +139,9 @@ def test_citations_keep_their_sentences_after_the_transcript_changes():
 
 
 def test_untouched_ai_draft_saved_back_is_not_an_edit(monkeypatch):
-    from app import ai
+    from app.modules.clinical.notes import service as notes
     # Gemini-like output: a missing section, a null field, an extra key
-    monkeypatch.setattr(ai, "draft_note", lambda patient, items: {
+    monkeypatch.setattr(notes, "draft_note", lambda patient, items: {
         "soap": {"S": "Fever.", "A": "Viral fever."}, "rx": [{"medicine": "Paracetamol 650 mg", "dose": "1-1-1", "duration": None, "route": "oral"}],
         "citations": {"S": ["T1"], "A": ["T1"]}})
     with TestClient(app) as c:

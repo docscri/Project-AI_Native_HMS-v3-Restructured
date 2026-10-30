@@ -18,7 +18,11 @@ backend/app/
   demo/seed.py       demo clinic (SEED_DEMO=1)
 migrations/          NNN_name.sql or .py with run(db); applied once each at startup
 frontend/            the browser app
-tests/               mirrors modules; test_api_snapshot.py guards every route's status and response shape
+tests/               helpers.py (clinic, started_visit) shared by all tests
+  operations/ clinical/ financial/   API and direct service tests per area
+  regressions/       tests for bugs found in earlier reviews
+  test_flow.py       one end-to-end clinic day
+  test_api_snapshot.py  guards every route's status and response shape (never update it to make a refactor pass)
 ```
 
 ## A feature

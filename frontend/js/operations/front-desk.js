@@ -14,15 +14,15 @@ function openRefund(v) {
     <div class="foot"><button class="btn danger" data-a="refund-go">Refund</button></div>`);
 }
 // Add documents to a visit; what's already added is listed with a remove button, so a wrong file can be taken back.
-async function openUpload(visitId, removing = null) {
+async function openUpload(visitId) {
   M = { kind: "upload", visitId };
   const docs = await api(`/visits/${visitId}/documents`);
   if (M?.kind !== "upload" || M.visitId !== visitId) return;
   modal(`<h2>Add document</h2>
     ${docs.length ? `<div class="up-list">${docs.map(d => `<div class="up-row"><span>📄 ${esc(d.filename)}</span>
-      ${d.id === removing ? `<span class="actions" style="gap:6px"><button class="btn small" data-a="doc-keep">Keep</button><button class="btn small danger" data-a="doc-remove-go" data-v="${d.id}">Remove</button></span>`
-        : `<button class="icon-x" data-a="doc-remove" data-v="${d.id}" aria-label="Remove ${esc(d.filename)}" title="Remove">×</button>`}</div>`).join("")}</div>` : ""}
-    <label class="file-drop"><input type="file" id="up-file" accept="image/*,.pdf,.txt" data-a="up-file"><span class="file-btn">Choose file</span><span class="file-name" id="up-name">No file</span></label>
+      <button class="icon-x" data-a="doc-remove" data-v="${d.id}" aria-label="Remove ${esc(d.filename)}" title="Remove">×</button></div>`).join("")}</div>` : ""}
+    <div class="up-pick"><label class="file-drop"><input type="file" id="up-file" accept="image/*,.pdf,.txt" data-a="up-file"><span class="file-btn">Choose file</span><span class="file-name" id="up-name">No file</span></label>
+      <button class="icon-x up-clear" data-a="up-clear" aria-label="Clear chosen file" title="Clear" hidden>×</button></div>
     <div class="foot">${docs.length ? `<button class="btn" data-a="upload-done">Done</button>` : ""}<button class="btn primary" data-a="upload-go">Upload</button></div>`);
 }
 async function doUpload(visitId, file) {

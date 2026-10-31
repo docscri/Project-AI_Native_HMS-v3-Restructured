@@ -37,7 +37,7 @@ def main() -> None:
 
     port = free_port()
     url = f"http://localhost:{port}"
-    print(f"\n  Clinic app: {url}\n  Login: anjali@demo.in / demo123\n  Stop: Ctrl+C\n")
+    print(f"\n  Clinic app: {url}\n  First run: create your clinic on the sign-up screen\n  Stop: Ctrl+C\n")
     threading.Thread(target=lambda: (time.sleep(1.5), webbrowser.open(url)), daemon=True).start()
     uvicorn.run("app.main:app", host="127.0.0.1", port=port, app_dir=os.path.join(HERE, "backend"))
 

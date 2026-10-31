@@ -5,7 +5,6 @@ import tempfile
 os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", "")
 
 os.environ["CLINIC_DATA_DIR"] = tempfile.mkdtemp()
-os.environ["SEED_DEMO"] = "0"
 os.environ.pop("GEMINI_API_KEY", None)
 os.environ.pop("SMTP_HOST", None)
 

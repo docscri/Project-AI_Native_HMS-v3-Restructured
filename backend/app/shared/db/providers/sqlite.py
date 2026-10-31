@@ -1,4 +1,4 @@
-"""SQLite: local runs, tests and the free demo."""
+"""SQLite: local runs, tests and the free trial."""
 import sqlite3
 
 from ..config import DATA_DIR, DB_PATH

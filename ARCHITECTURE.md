@@ -15,7 +15,6 @@ backend/app/
     operations/      account, onboarding, administration, patients, scheduling, appointments, waitlist, team/{attendance,leave}
     clinical/        consultation, dictation, documents, notes, brief
     financial/       payments, collections, day_close
-  demo/seed.py       demo clinic (SEED_DEMO=1)
 migrations/          NNN_name.sql or .py with run(db); applied once each at startup
 frontend/            the browser app
 tests/               helpers.py (clinic, started_visit) shared by all tests

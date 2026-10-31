@@ -110,11 +110,13 @@ h3 { font-size: 16px; font-weight: 700; }
 .cols { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
 @media (max-width: 1050px) { .cols { grid-template-columns: 1fr; } }
 .rows { display: flex; flex-direction: column; }
-.r { display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+/* Fixed status column (fits the longest label, "In consultation"): every row's columns line up whatever its status. */
+.r { display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr) 168px; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .r:last-child { border-bottom: 0; }
 .r.q { grid-template-columns: 60px minmax(0, 1fr) auto; }
 .r b { font-weight: 600; }
 .r .who { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r > .pill { justify-self: end; }
 .empty { color: var(--muted); padding: 10px 0; font-size: 14px; }
 
 .pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 3px 11px; font-size: 12.5px; font-weight: 700; border: 1.3px solid transparent; white-space: nowrap; }
@@ -235,7 +237,7 @@ table.t tr.selected td { background: transparent; }
   .me { display: none; }
   .stage { padding: 0 8px 8px; }
   .surface { padding: 22px 16px 30px; border-radius: 22px; }
-  .r { grid-template-columns: 54px minmax(0, 1fr) auto; }
+  .r { grid-template-columns: 54px minmax(0, 1fr) 150px; }
   .r .doc-col { display: none; }
 }
 a.btn { color: inherit; text-decoration: none; }

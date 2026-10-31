@@ -933,3 +933,26 @@ sup.cs button:hover, .cite-sup:hover { background: #3f6b1f; }
 .cx-pill-btn.cx-gen:hover { border-color: var(--ink); }
 button.nb { border: 0; padding: 0; cursor: pointer; font-family: inherit; transition: background .15s, color .15s; }
 button.nb:hover, button.nb:focus-visible { background: var(--lime); color: var(--ink); outline: none; }
+
+/* Consultation: the middle card adapts to its own width, so opening the side panel never crowds it. */
+.cx-body { grid-template-columns: clamp(250px, 19vw, 290px) minmax(0, 1fr) clamp(270px, 22vw, 320px); }
+.cx-body.wide { grid-template-columns: clamp(250px, 19vw, 290px) minmax(0, 1fr); }
+.cx-center { container: cxcard / inline-size; }
+@container cxcard (max-width: 760px) {
+  .cx-card { padding: 26px 28px 120px; gap: 16px; }
+  .cx-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .cx-head .cx-top-right { flex-wrap: wrap; }
+  .cx-card h1 { font-size: 21px; }
+  .cx-pill-btn { padding: 7px 14px; font-size: 14px; }
+  .cx-status { height: 32px; padding: 6px 12px; }
+  .cx-tabrow { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .cx-tabs button { min-height: 34px; padding: 0 14px; font-size: 13.5px; }
+  .cx-float .dock { width: calc(100% - 40px); }
+  .cx-float .dock-go { padding: 0 18px; }
+}
+@container cxcard (max-width: 560px) {
+  .cx-card { padding: 22px 20px 116px; }
+  .cx-float .dock-msg { display: none; }
+}
+.cx-who { min-width: 0; }
+.cx-who b, .cx-who small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

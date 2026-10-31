@@ -21,6 +21,7 @@ def past(db, patient_id: int, before_visit: int) -> list[dict]:
         (patient_id, before_visit)))
     for n in ns:
         n["content"] = json.loads(n["content"])
+        n["addenda"] = addenda(db, n["id"])
     return ns
 
 

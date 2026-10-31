@@ -9,6 +9,7 @@ from app.core.clinic.schedule import day_schedule
 from app.modules.operations.scheduling.schema import Override
 from app.modules.operations.scheduling.service import save_day
 from app.shared.audit import log_event
+from app.shared.auth import has_admin
 from app.shared.db import now
 from app.shared.errors import Conflict, Forbidden, Invalid, NotFound
 from app.shared.validate import valid_day
@@ -116,7 +117,7 @@ def mark(db, me, member_id: int, date: str, body) -> dict:
 
 def register(db, me, month: str, member_id: int | None) -> dict:
     """Non-admins see only themselves."""
-    if not me["is_admin"]:
+    if not has_admin(me):
         member_id = me["id"]
     y, mo = map(int, month.split("-"))
     first, last = Date(y, mo, 1), Date(y, mo, calendar.monthrange(y, mo)[1])
@@ -187,12 +188,12 @@ def request_leave(db, me, body) -> dict:
         raise Invalid("End date is before start.")
     if (b - a).days > 92:
         raise Invalid("Pick at most three months.")
-    who = body.member_id if body.member_id and me["is_admin"] else me["id"]
+    who = body.member_id if body.member_id and has_admin(me) else me["id"]
     if not repo.member_in(db, who, me["clinic_id"]):
         raise NotFound("Member not found.")
     if repo.overlaps(db, who, body.start_date, body.end_date):
         raise Conflict("Leave already set for these days.")
-    approved = me["is_admin"]
+    approved = has_admin(me)
     lid = repo.add(db, me["clinic_id"], who, body.start_date, body.end_date, body.type, body.reason.strip(),
                    "approved" if approved else "pending", me["id"] if approved else None, now() if approved else None, now())
     if approved:
@@ -205,7 +206,7 @@ def request_leave(db, me, body) -> dict:
 def list_leave(db, me, month: str | None, mine: bool) -> list[dict]:
     """Non-admins see only their own."""
     where, args = "l.clinic_id = ?", [me["clinic_id"]]
-    if mine or not me["is_admin"]:
+    if mine or not has_admin(me):
         where += " and l.member_id = ?"
         args.append(me["id"])
     if month:
@@ -218,13 +219,13 @@ def list_leave(db, me, month: str | None, mine: bool) -> list[dict]:
 def decide(db, me, leave_id: int, action: str) -> dict:
     l = leave_one(db, me, leave_id)
     if action == "cancel":
-        if l["member_id"] != me["id"] and not me["is_admin"]:
+        if l["member_id"] != me["id"] and not has_admin(me):
             raise Forbidden("Not your leave.")
         if l["status"] == "approved":
             apply_doctor_leave(db, me, l["member_id"], l["start_date"], l["end_date"], False)
         repo.cancel(db, leave_id)
     elif action in ("approve", "reject"):
-        if not me["is_admin"]:
+        if not has_admin(me):
             raise Forbidden("Only an admin can decide.")
         if l["status"] != "pending":
             raise Conflict("Already decided.")

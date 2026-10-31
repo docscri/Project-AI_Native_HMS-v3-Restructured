@@ -75,13 +75,13 @@ function printCollections() {
   w.document.close();
 }
 function openLeave(memberId) {
-  const admin = S.me.is_admin && !memberId?.self;
+  const admin = hasAdmin() && !memberId?.self;
   M = { kind: "leave-new" };
   modal(`<h2>Leave</h2>
     ${admin ? `<label class="field">Person<select id="lv-who">${(S.members || []).filter(m => m.status === "active").map(m => `<option value="${m.id}" ${m.id === memberId ? "selected" : ""}>${esc(m.name)}</option>`).join("")}</select></label>` : ""}
     <div class="date-row"><input class="date-pill" aria-label="From" type="date" id="lvn-from" value="${TODAY}"><input class="date-pill" aria-label="To" type="date" id="lvn-to" value="${TODAY}"></div>
     <label class="field">Reason<input id="lvn-why"></label>
-    <div class="foot"><button class="btn primary" data-a="lvn-save">${S.me.is_admin ? "Save" : "Request"}</button></div>`);
+    <div class="foot"><button class="btn primary" data-a="lvn-save">${hasAdmin() ? "Save" : "Request"}</button></div>`);
 }
 function printRegister() {
   const r = S.reg, w = window.open("", "_blank");

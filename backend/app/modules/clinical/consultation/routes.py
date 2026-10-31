@@ -1,5 +1,6 @@
 """Doctor workspace and live dictation."""
 import asyncio
+import time
 from contextlib import suppress
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
@@ -60,6 +61,7 @@ def follow_up(visit_id: int, body: FollowUp, me=Depends(doctor_screen), db=Depen
     return service.follow_up(db, me, visit_id, body.date)
 
 
+RECHECK_SECONDS = 5
 _active: set[int] = set()   # one live stream per visit (single server process)
 
 
@@ -118,11 +120,19 @@ async def dictate(ws: WebSocket, visit_id: int):
         stream = transcribe.open_stream()
         await stream.connect(on_text)
         await ws.send_json({"type": "ready"})
+        checked = time.monotonic()
         while True:
             msg = await ws.receive()
             if msg["type"] == "websocket.disconnect" or msg.get("text") == "stop":
                 break
             if msg.get("bytes"):
+                # The login is checked again every few seconds: after logout, a password change or the note being
+                # signed, no more audio is sent on.
+                if time.monotonic() - checked > RECHECK_SECONDS:
+                    if problem := await asyncio.to_thread(_check, token, visit_id):
+                        await fail(problem)
+                        break
+                    checked = time.monotonic()
                 await stream.send(msg["bytes"])
     except WebSocketDisconnect:
         pass

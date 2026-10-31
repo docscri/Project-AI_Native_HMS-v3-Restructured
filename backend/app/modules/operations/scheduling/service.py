@@ -3,6 +3,7 @@ import calendar
 from datetime import date as Date, timedelta
 
 from app.shared.audit import log_event
+from app.shared.auth import has_admin
 from app.shared.errors import Forbidden, Invalid, NotFound
 from app.shared.validate import valid_day
 from app.core.clinic import clinic_of
@@ -13,7 +14,7 @@ from app.modules.operations.scheduling.schema import Leave, Override
 
 
 def can_edit(me: dict, doctor_id: int) -> None:
-    if me["id"] != doctor_id and "operations" not in me["screens"] and not me["is_admin"]:
+    if me["id"] != doctor_id and "operations" not in me["screens"] and not has_admin(me):
         raise Forbidden("You can't change this schedule.")
 
 
@@ -71,7 +72,7 @@ def leave(db, me, body: Leave) -> dict:
         can_edit(me, body.doctor_id)
         ids = [body.doctor_id]
     else:
-        if not me["is_admin"]:
+        if not has_admin(me):
             raise Forbidden("Only an admin can set holidays.")
         ids = repo.active_doctor_ids(db, me["clinic_id"])
     days = [(a + timedelta(days=i)).isoformat() for i in range((b - a).days + 1)]

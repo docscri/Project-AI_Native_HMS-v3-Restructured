@@ -1,15 +1,11 @@
 /* Documents open inside the app: PDFs drawn page by page with PDF.js (bundled in /static/vendor/pdfjs, works on
    phones too), photos as images, text as text. Download keeps the original file. */
 let pdfLib;
-function loadPdfJs() {
-  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
-  return pdfLib || (pdfLib = new Promise((ok, fail) => {
-    const s = document.createElement("script");
-    s.src = "/static/vendor/pdfjs/pdf.min.js";
-    s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = "/static/vendor/pdfjs/pdf.worker.min.js"; ok(window.pdfjsLib); };
-    s.onerror = () => { pdfLib = null; fail(new Error("PDF reader didn't load")); };
-    document.head.appendChild(s);
-  }));
+function loadPdfJs() {   // PDF.js 4 (ES module); 4.2.67+ never runs JavaScript found inside a PDF
+  return pdfLib || (pdfLib = import("/static/vendor/pdfjs/pdf.min.mjs").then(lib => {
+    lib.GlobalWorkerOptions.workerSrc = "/static/vendor/pdfjs/pdf.worker.min.mjs";
+    return lib;
+  }).catch(e => { pdfLib = null; throw e; }));
 }
 const fileNameOf = res => {
   const h = res.headers.get("content-disposition") || "", star = h.match(/filename\*=UTF-8''([^;]+)/i), plain = h.match(/filename="([^"]+)"/i);
@@ -31,7 +27,7 @@ async function openDocViewer(id) {
   else if (type.startsWith("text/")) body.innerHTML = `<pre class="dv-text">${esc(await blob.text())}</pre>`;
   else if (type === "application/pdf") {
     try {
-      const lib = await loadPdfJs(), pdf = await lib.getDocument({ data: await blob.arrayBuffer() }).promise;
+      const lib = await loadPdfJs(), pdf = await lib.getDocument({ data: await blob.arrayBuffer(), isEvalSupported: false }).promise;
       if (M?.url !== url) return;
       body.innerHTML = ""; $("#dv-pages").textContent = `${pdf.numPages} page${pdf.numPages > 1 ? "s" : ""}`;
       const width = body.clientWidth - 2, ratio = Math.min(window.devicePixelRatio || 1, 2);

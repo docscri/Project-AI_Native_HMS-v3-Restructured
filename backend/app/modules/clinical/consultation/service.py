@@ -70,17 +70,24 @@ def editable(db, v: dict) -> None:
         raise Conflict("Note is signed.")
 
 
-def save_text(db, me, visit_id: int, text: str, rev: int) -> dict:
+def locked_editable(db, me, visit_id: int) -> dict:
+    """The visit, checked under the lock signing takes: text can't land after the note is signed."""
+    v = get_visit(db, me, visit_id)
+    db.lock(f"patient:{v['patient_id']}")
     v = get_visit(db, me, visit_id)
     editable(db, v)
+    return v
+
+
+def save_text(db, me, visit_id: int, text: str, rev: int) -> dict:
+    locked_editable(db, me, visit_id)
     if not repo.save_text(db, visit_id, text, rev):
         raise Conflict("Newer text was saved. Reloaded.")
     return {"ok": True, "length": len(text), "rev": repo.text_rev(db, visit_id)}
 
 
 def add_segment(db, me, visit_id: int, segment: str) -> dict:
-    v = get_visit(db, me, visit_id)
-    editable(db, v)
+    v = locked_editable(db, me, visit_id)
     text = (text_of(v).rstrip() + "\n" + segment.strip()).strip()
     repo.set_text(db, visit_id, text)
     return {"text": text}

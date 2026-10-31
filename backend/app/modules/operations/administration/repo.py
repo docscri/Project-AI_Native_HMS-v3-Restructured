@@ -52,9 +52,15 @@ def doctor_has_visits(db, member_id: int) -> bool:
     return bool(db.execute("select 1 from visits where doctor_id = ?", (member_id,)).fetchone())
 
 
+# Every record that points at a member and must outlive them (sessions and reset links are deleted with the member).
+# A member with any of these is deactivated instead of deleted.
+HISTORY = [("visits", "doctor_id"), ("notes", "doctor_id"), ("notes", "signed_by"), ("note_addenda", "signed_by"),
+           ("waitlist", "doctor_id"), ("attendance", "member_id"), ("leave_requests", "member_id")]
+
+
 def has_history(db, member_id: int) -> bool:
-    return bool(db.execute("""select 1 from visits where doctor_id = ? union select 1 from notes where doctor_id = ?
-                         union select 1 from notes where signed_by = ?""", (member_id, member_id, member_id)).fetchone())
+    sql = " union ".join(f"select 1 from {t} where {c} = ?" for t, c in HISTORY)
+    return bool(db.execute(sql, (member_id,) * len(HISTORY)).fetchone())
 
 
 def deactivate(db, member_id: int) -> None:

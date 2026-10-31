@@ -32,8 +32,11 @@ def extract_document(data: bytes, mime: str, filename: str) -> dict:
     return {"summary": text[:300] or f"Uploaded document: {filename}", "findings": findings, "title": head if 0 < len(head) <= 60 and not re.search(r"\d", head) else ""}
 
 
+UNREAD = "Couldn't be read. Try again, or tell the clinic admin if it keeps failing."
+
+
 def reading_error(e: Exception) -> str:
-    """A short reason for the person who uploaded; never the request URL, which can hold a key."""
+    """The technical reason, for the server log only; never the request URL, which can hold a key."""
     status = getattr(getattr(e, "response", None), "status_code", None)
     if status == 404:
         return "The AI model wasn't found. Check LLM_MODEL in backend/app/config.py."
@@ -58,8 +61,8 @@ def run_extraction(doc_id: int) -> None:
             ex = extract_document(storage.read(d["path"]), d["mime"], d["filename"])
             repo.set_read(db, doc_id, "ready", ex)
         except Exception as e:  # keep the file, flag the failure
-            log.warning("Reading document %s failed: %s", doc_id, type(e).__name__)
-            repo.set_read(db, doc_id, "failed", {"summary": reading_error(e), "findings": []})
+            log.warning("Reading document %s failed: %s", doc_id, reading_error(e))   # for whoever runs the server
+            repo.set_read(db, doc_id, "failed", {"summary": UNREAD, "findings": []})   # what clinic staff see
         db.commit()
     finally:
         db.close()

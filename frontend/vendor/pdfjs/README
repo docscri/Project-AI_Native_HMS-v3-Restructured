@@ -1,0 +1,2 @@
+PDF.js 3.11.174 (pdfjs-dist, Apache-2.0) by Mozilla - https://mozilla.github.io/pdf.js/
+Only pdf.min.js and pdf.worker.min.js from build/ are used, unmodified.

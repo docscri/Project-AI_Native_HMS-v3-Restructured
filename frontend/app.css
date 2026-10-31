@@ -1052,3 +1052,22 @@ button.nb:hover, button.nb:focus-visible { background: var(--lime); color: var(-
   table.t td, table.t th, .doc-table td, .doc-table th { white-space: nowrap; }
 }
 @media (max-width: 1023px) and (min-width: 621px) { .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; } }
+
+/* in-app document viewer */
+.modal.wide:has(.dv) { width: min(980px, calc(100% - 24px)); padding: 0; overflow: hidden; }
+.dv { display: flex; flex-direction: column; height: min(88vh, 1100px); }
+.dv-top { display: flex; align-items: center; gap: 12px; padding: 18px 64px 14px 24px; border-bottom: 1px solid var(--line); }
+.dv-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; }
+.dv-pages { color: var(--muted); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.dv-body { flex: 1; overflow: auto; background: var(--tile); padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.dv-page { background: #fff; border-radius: 6px; box-shadow: 0 6px 20px -10px #0006; max-width: 100%; }
+.dv-img { max-width: 100%; height: auto; border-radius: 8px; background: #fff; }
+.dv-text { align-self: stretch; margin: 0; background: #fff; border-radius: 10px; padding: 18px; white-space: pre-wrap; font: 14px/1.6 var(--f-mono, monospace); }
+.dv-frame { flex: 1; width: 100%; min-height: 70vh; border: 0; border-radius: 8px; background: #fff; }
+.dv-wait { margin: auto; color: var(--muted); font-weight: 600; text-align: center; padding: 30px; }
+@media (max-width: 620px) {
+  .modal.wide:has(.dv) { width: calc(100% - 12px); }
+  .dv { height: calc(100vh - 24px); }
+  .dv-top { padding: 14px 54px 12px 16px; gap: 8px; } .dv-pages { display: none; }
+  .dv-body { padding: 8px; }
+}

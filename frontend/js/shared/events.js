@@ -112,9 +112,8 @@ document.addEventListener("click", e => {
         M.leave = null; await loadMonth(); break; }
       case "upload": openUpload(Number(v)); break;
       case "upload-go": { const f = $("#up-file").files[0]; if (!f) return toast("Choose a file first", true); await doUpload(M.visitId, f); openUpload(M.visitId); break; }
-      case "doc-remove": openUpload(M.visitId, Number(v)); break;
-      case "doc-keep": openUpload(M.visitId); break;
-      case "doc-remove-go": await api(`/documents/${v}`, { method: "DELETE" }); toast("Removed."); openUpload(M.visitId); break;
+      case "doc-remove": await api(`/documents/${v}`, { method: "DELETE" }); toast("Removed."); openUpload(M.visitId); break;
+      case "up-clear": $("#up-file").value = ""; $("#up-name").textContent = "No file"; $(".file-drop").classList.remove("has"); t.hidden = true; break;
       case "upload-done": closeModal(); location.hash.startsWith("#/consult") ? refreshConsult() : refresh(); break;
       case "schedules": await openSchedules(D?.doctor?.id); break;
       case "sc-month": { const [y, m] = M.month.split("-").map(Number); const d = new Date(y, m - 1 + Number(v), 1); M.month = iso(d).slice(0, 7); M.sel = null; await loadMonth(); break; }
@@ -215,7 +214,7 @@ document.addEventListener("input", e => {
   if (a === "bk-q") searchPatients(e.target.value);
   if (a === "pay-disc") payShow();
   if (a === "free-text") { if (S.dict) S.dict = typedOver(S.dict, e.target); edit(Number(e.target.dataset.v), e.target.value); }
-  if (a === "up-file") { const f = e.target.files[0]; $("#up-name").textContent = f ? f.name : "No file"; $(".file-drop").classList.toggle("has", !!f); }
+  if (a === "up-file") { const f = e.target.files[0]; $("#up-name").textContent = f ? f.name : "No file"; $(".file-drop").classList.toggle("has", !!f); $(".up-clear").hidden = !f; }
   if (a === "mg-q") { M.q = e.target.value; clearTimeout(searchT); searchT = setTimeout(() => run(async () => { if (M?.kind !== "merge") return; M.results = M.q.trim() ? await api(`/patients?q=${encodeURIComponent(M.q)}`) : []; renderMerge(); }), 180); }
   if (a === "vf-q") { S.vf.q = e.target.value; const r = $("#ops-rows"); if (r && S.data?.visits) r.innerHTML = opsRows(S.data.visits); }
   if (a === "cs-q") { S.cq = e.target.value; clearTimeout(S.cqt); S.cqt = setTimeout(async () => { await run(S.reloadConsult); const q = $("#cs-q"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }, 220); }

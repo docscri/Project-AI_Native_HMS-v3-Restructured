@@ -9,6 +9,8 @@ os.environ["DATABASE"] = "postgres" if os.environ["DATABASE_URL"] else "sqlite"
 os.environ["STORAGE"] = "local"
 for name in ("LLM", "LLM_MODEL", "SPEECH", "SPEECH_MODEL", "SPEECH_LANGUAGE"):
     os.environ.pop(name, None)
+for name in [n for n in os.environ if n.startswith("LLM_MODEL_")]:   # per-job model overrides
+    os.environ.pop(name)
 
 os.environ["CLINIC_DATA_DIR"] = tempfile.mkdtemp()
 os.environ.pop("GEMINI_API_KEY", None)

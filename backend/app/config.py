@@ -17,6 +17,16 @@ DATABASE = "sqlite"
 STORAGE = "local"
 LLM = "gemini"
 LLM_MODEL = "gemini-3.8-flash"     # newest stable Flash on our key (Oct 2026); "gemini-flash-latest" follows Google's current Flash
+# The model for each AI job (a folder in shared/ai/tasks/); "" uses LLM_MODEL. The stronger model reads reports and
+# writes the note, where a mistake costs most; summaries of already-checked text use the cheaper Flash-Lite.
+# Override one job without editing this file: LLM_MODEL_<JOB>=<model>, e.g. LLM_MODEL_BRIEF_SUMMARY=gemini-3.8-flash
+LLM_MODELS = {
+    "read_report": "",                       # lab reports and scans (images, PDFs)
+    "draft_note": "",                        # the note and prescription
+    "brief_summary": "gemini-2.5-flash-lite",
+    "visit_lines": "gemini-2.5-flash-lite",
+    "note_values": "gemini-2.5-flash-lite",
+}
 SPEECH = "deepgram"
 SPEECH_MODEL = "nova-3"
 SPEECH_LANGUAGE = "en"
@@ -27,6 +37,11 @@ NO_PROVIDER = {"LLM": "none", "SPEECH": "browser"}   # built-in "off" choices wi
 
 def value(name: str) -> str:
     return (os.environ.get(name) or globals()[name]).strip()
+
+
+def model_for(job: str) -> str:
+    """The model an AI job uses: LLM_MODEL_<JOB> env var, then LLM_MODELS above, then LLM_MODEL."""
+    return (os.environ.get(f"LLM_MODEL_{job.upper()}") or LLM_MODELS.get(job) or value("LLM_MODEL")).strip()
 
 
 def provider(kind: str):

@@ -32,7 +32,7 @@ def run_extraction(doc_id: int) -> None:
             ex = extract_document(storage.read(d["path"]), d["mime"], d["filename"])
             repo.set_read(db, doc_id, "ready", ex)
         except Exception as e:  # keep the file, flag the failure
-            log.warning("Reading document %s failed: %s", doc_id, tasks.reason(e))   # for whoever runs the server
+            log.warning("Reading document %s failed: %s", doc_id, tasks.reason(e, read_report))   # for whoever runs the server
             repo.set_read(db, doc_id, "failed", {"summary": UNREAD, "findings": []})   # what clinic staff see
         db.commit()
     finally:

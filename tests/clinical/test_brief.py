@@ -76,7 +76,7 @@ def test_ai_sentences_without_valid_citations_are_dropped(monkeypatch):
         h, doc, pid, n1, n2 = setup(c, "b2@x.in")
         monkeypatch.setenv("GEMINI_API_KEY", "test")
         a, b_ = f"N{n2['id']}.A", f"N{n1['id']}.O"
-        monkeypatch.setattr(llm, "generate", lambda parts: {
+        monkeypatch.setattr(llm, "generate", lambda parts, model=None: {
             "new": [],
             "history": [{"text": "Hypertension is improving.", "cites": [a]},
                         {"text": "BP was 150/90 in March.", "cites": [b_]},

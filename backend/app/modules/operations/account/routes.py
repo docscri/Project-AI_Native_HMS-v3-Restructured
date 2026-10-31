@@ -1,10 +1,12 @@
-"""Login, logout, passwords, /api/me."""
+"""Login, logout, passwords, /api/me and owner onboarding."""
 from fastapi import APIRouter, Depends, Header
 
-from app.shared.auth import current_member
+from app.shared.auth import current_member, require_admin
 from app.shared.db import get_db
+
 from . import service
-from .schema import ChangePassword, Forgot, Login, MyProfile, Reset
+from .schema import ChangePassword, Forgot, Login, MyProfile, Owner, OwnerEdit, Reset
+
 
 router = APIRouter(prefix="/api")
 
@@ -46,3 +48,18 @@ def me_(me=Depends(current_member), db=Depends(get_db)):
 @router.put("/me")
 def edit_me(body: MyProfile, me=Depends(current_member), db=Depends(get_db)):
     return service.edit_me(db, me, body)
+
+
+@router.post("/onboarding/owner")
+def create_owner(body: Owner, db=Depends(get_db)):
+    return service.create_owner(db, body)
+
+
+@router.put("/onboarding/owner")
+def edit_owner(body: OwnerEdit, me=Depends(current_member), db=Depends(get_db)):
+    return service.edit_owner(db, me, body)
+
+
+@router.post("/onboarding/finish")
+def finish(me=Depends(require_admin), db=Depends(get_db)):
+    return service.finish(db, me)

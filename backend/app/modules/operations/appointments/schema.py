@@ -1,4 +1,4 @@
-"""Booking, walk-in, reschedule and cancel bodies."""
+"""Booking, walk-in, reschedule, cancel and waitlist bodies."""
 from pydantic import BaseModel
 
 from app.modules.financial.payments.schema import Payment
@@ -28,3 +28,10 @@ class Reschedule(BaseModel):
 
 class Cancel(BaseModel):
     reason: str = ""
+
+
+class WaitIn(BaseModel):
+    patient_id: int
+    doctor_id: int
+    date: str
+    session: str | None = None

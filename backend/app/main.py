@@ -9,21 +9,16 @@ from fastapi.staticfiles import StaticFiles
 from app.shared import db, errors
 from app.modules.clinical.brief import routes as brief
 from app.modules.clinical.consultation import routes as consultation
-from app.modules.clinical.dictation import routes as dictation
 from app.modules.clinical.documents import routes as documents
 from app.modules.clinical.notes import routes as notes
-from app.modules.financial.collections import routes as collections
-from app.modules.financial.day_close import day_close
+from app.modules.financial.reports import routes as reports
 from app.modules.financial.payments import routes as payments
 from app.modules.operations.account import routes as account
 from app.modules.operations.administration import routes as administration
 from app.modules.operations.appointments import routes as appointments
-from app.modules.operations.onboarding import routes as onboarding
 from app.modules.operations.patients import routes as patients
 from app.modules.operations.scheduling import routes as scheduling
-from app.modules.operations.team.attendance import routes as attendance
-from app.modules.operations.team.leave import routes as leave
-from app.modules.operations.waitlist import routes as waitlist
+from app.modules.operations.team import routes as team
 
 FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
 
@@ -31,8 +26,8 @@ app = FastAPI(title="Clinic V1")
 
 
 errors.install(app)
-ROUTERS = (account, onboarding, administration, scheduling, patients, appointments, payments, waitlist,
-           consultation, brief, documents, notes, dictation, attendance, leave, collections, day_close)
+ROUTERS = (account, administration, scheduling, patients, appointments, payments,
+           consultation, brief, documents, notes, team, reports)
 for r in ROUTERS:
     app.include_router(r.router)
 

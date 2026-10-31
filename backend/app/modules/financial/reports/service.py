@@ -1,7 +1,12 @@
-"""Collections totals by day and doctor."""
+"""Reports: collections totals by day and doctor, and day close (system cash against counted cash)."""
 from datetime import date as Date, timedelta
 
+from app.shared.audit import log_event
+from app.shared.db import now
+from app.shared.validate import valid_day
+
 from . import repo
+from .schema import Close
 
 
 def money_rows(db, me, kind: str, start: str, end: str, doctor_id: int | None) -> list[dict]:
@@ -43,3 +48,17 @@ def collections(db, me, start: str, end: str | None = None, doctor_id: int | Non
             by_doctor.append(row_)
     return {"start": start, "end": end, **totals(paid, refunds), "days": days, "payments": paid, "refunds": refunds,
             "by_doctor": by_doctor, "seen": sum(r["seen"] for r in by_doctor)}
+
+
+def day_summary(db, me, day: str) -> dict:
+    t = collections(db, me, day, day, None)
+    cash = t["by_method"]["cash"] - t["refunded"]   # refunds are handed back in cash
+    return {"date": day, "system_cash": cash, "closed": repo.close_on(db, me["clinic_id"], day), "past": repo.recent_closes(db, me["clinic_id"])}
+
+
+def close_day(db, me, body: Close) -> dict:
+    body.date = valid_day(body.date)
+    sys_cash = day_summary(db, me, body.date)["system_cash"]
+    repo.save_close(db, me["clinic_id"], body.date, sys_cash, body.counted_cash, body.note.strip(), me["id"], now())
+    log_event(db, me["clinic_id"], me["id"], "clinic", me["clinic_id"], "day_closed", {"date": body.date, "difference": body.counted_cash - sys_cash})
+    return day_summary(db, me, body.date)

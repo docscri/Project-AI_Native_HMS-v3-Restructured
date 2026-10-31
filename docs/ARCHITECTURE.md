@@ -13,9 +13,9 @@ backend/app/
     mail/  printing/ validate.py  errors.py
   core/              entities several features change: clinic (+ schedule rules), member, patient, visit (+ ledger)
   modules/
-    operations/      account, onboarding, administration, patients, scheduling, appointments, waitlist, team/{attendance,leave}
-    clinical/        consultation, dictation, documents, notes, brief
-    financial/       payments, collections, day_close
+    operations/      account (+ owner onboarding), administration, patients, scheduling, appointments (+ waitlist), team (attendance + leave)
+    clinical/        consultation (+ live dictation), notes, brief, documents
+    financial/       payments, reports (collections + day close)
 migrations/          NNN_name.sql or .py with run(db); applied once each at startup
 frontend/            the browser app
 docs/                README.md, ARCHITECTURE.md

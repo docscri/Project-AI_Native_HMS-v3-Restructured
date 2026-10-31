@@ -1,3 +1,4 @@
+"""Consultation and dictation request bodies."""
 from pydantic import BaseModel, Field
 
 

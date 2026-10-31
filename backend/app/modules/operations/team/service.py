@@ -1,4 +1,4 @@
-"""Attendance rules: who works when, late, the day's status and the register."""
+"""Team rules: who works when, late, the day's status, the register and leave."""
 import calendar
 import json
 import re
@@ -6,12 +6,15 @@ from datetime import date as Date, timedelta
 
 from app.core.clinic import clinic_of
 from app.core.clinic.schedule import day_schedule
-from app.modules.operations.team.leave import service as leave_service
+from app.modules.operations.scheduling.schema import Override
+from app.modules.operations.scheduling.service import save_day
 from app.shared.audit import log_event
 from app.shared.db import now
-from app.shared.errors import Conflict, Invalid, NotFound
+from app.shared.errors import Conflict, Forbidden, Invalid, NotFound
 from app.shared.validate import valid_day
+
 from . import repo
+
 
 LATE_AFTER = 10  # minutes after the usual start
 
@@ -67,7 +70,7 @@ def since(m: dict) -> str:
 def team_today(db, me, date: str | None) -> dict:
     day = date or Date.today().isoformat()
     clinic = clinic_of(db, me)
-    att, leave = attendance_on(db, me["clinic_id"], day, day), leave_service.leave_days(db, me["clinic_id"], day, day)
+    att, leave = attendance_on(db, me["clinic_id"], day, day), leave_days(db, me["clinic_id"], day, day)
     return {"date": day, "people": [m | day_status(db, clinic, m, day, att, leave) for m in members_of(db, me["clinic_id"])]}
 
 
@@ -120,7 +123,7 @@ def register(db, me, month: str, member_id: int | None) -> dict:
     until = min(last, Date.today())
     clinic = clinic_of(db, me)
     att = attendance_on(db, me["clinic_id"], first.isoformat(), last.isoformat())
-    leave = leave_service.leave_days(db, me["clinic_id"], first.isoformat(), last.isoformat())
+    leave = leave_days(db, me["clinic_id"], first.isoformat(), last.isoformat())
     out = []
     for m in members_of(db, me["clinic_id"]):
         if member_id and m["id"] != member_id:
@@ -137,3 +140,99 @@ def register(db, me, month: str, member_id: int | None) -> dict:
         c["leave"] = sum(1 for (mid, day) in leave if mid == m["id"] and since(m) <= day <= until.isoformat())
         out.append({"id": m["id"], "name": m["name"], "kind": m["kind"], "role": m["speciality"] if m["kind"] == "doctor" else m["designation"], **c})
     return {"month": month, "people": out}
+
+
+def leave_days(db, clinic_id: int, start: str, end: str) -> dict[tuple[int, str], dict]:
+    out = {}
+    for l in repo.approved_between(db, clinic_id, start, end):
+        d = max(Date.fromisoformat(l["start_date"]), Date.fromisoformat(start))
+        while d <= min(Date.fromisoformat(l["end_date"]), Date.fromisoformat(end)):
+            out[(l["member_id"], d.isoformat())] = l
+            d += timedelta(days=1)
+    return out
+
+
+def apply_doctor_leave(db, me, member_id: int, start: str, end: str, off: bool) -> None:
+    m = repo.member_kind(db, member_id)
+    if not m or m["kind"] != "doctor":
+        return
+    d = Date.fromisoformat(start)
+    while d <= Date.fromisoformat(end):
+        if off:
+            save_day(db, me, member_id, d.isoformat(), Override(is_off=True))
+        else:
+            repo.drop_off_day(db, member_id, d.isoformat())
+        d += timedelta(days=1)
+
+
+def bookings_between(db, member_id: int, start: str, end: str) -> int:
+    return repo.bookings_between(db, member_id, start, end)
+
+
+def leave_one(db, me, lid: int) -> dict:
+    l = repo.leave_one(db, me["clinic_id"], lid)
+    if not l:
+        raise NotFound("Leave not found.")
+    l["days"] = (Date.fromisoformat(l["end_date"]) - Date.fromisoformat(l["start_date"])).days + 1
+    return l
+
+
+def request_leave(db, me, body) -> dict:
+    try:
+        body.start_date, body.end_date = valid_day(body.start_date), valid_day(body.end_date)
+        a, b = Date.fromisoformat(body.start_date), Date.fromisoformat(body.end_date)
+    except ValueError:
+        raise Invalid("Pick valid dates.")
+    if b < a:
+        raise Invalid("End date is before start.")
+    if (b - a).days > 92:
+        raise Invalid("Pick at most three months.")
+    who = body.member_id if body.member_id and me["is_admin"] else me["id"]
+    if not repo.member_in(db, who, me["clinic_id"]):
+        raise NotFound("Member not found.")
+    if repo.overlaps(db, who, body.start_date, body.end_date):
+        raise Conflict("Leave already set for these days.")
+    approved = me["is_admin"]
+    lid = repo.add(db, me["clinic_id"], who, body.start_date, body.end_date, body.type, body.reason.strip(),
+                   "approved" if approved else "pending", me["id"] if approved else None, now() if approved else None, now())
+    if approved:
+        apply_doctor_leave(db, me, who, body.start_date, body.end_date, True)
+    log_event(db, me["clinic_id"], me["id"], "member", who, "leave_" + ("approved" if approved else "requested"),
+              {"from": body.start_date, "to": body.end_date})
+    return leave_one(db, me, lid) | {"bookings_affected": bookings_between(db, who, body.start_date, body.end_date) if approved else 0}
+
+
+def list_leave(db, me, month: str | None, mine: bool) -> list[dict]:
+    """Non-admins see only their own."""
+    where, args = "l.clinic_id = ?", [me["clinic_id"]]
+    if mine or not me["is_admin"]:
+        where += " and l.member_id = ?"
+        args.append(me["id"])
+    if month:
+        y, mo = map(int, month.split("-"))
+        where += " and (l.status = 'pending' or (l.start_date <= ? and l.end_date >= ?))"
+        args += [f"{month}-{calendar.monthrange(y, mo)[1]:02d}", f"{month}-01"]
+    return [leave_one(db, me, i) for i in repo.ids(db, where, args)]
+
+
+def decide(db, me, leave_id: int, action: str) -> dict:
+    l = leave_one(db, me, leave_id)
+    if action == "cancel":
+        if l["member_id"] != me["id"] and not me["is_admin"]:
+            raise Forbidden("Not your leave.")
+        if l["status"] == "approved":
+            apply_doctor_leave(db, me, l["member_id"], l["start_date"], l["end_date"], False)
+        repo.cancel(db, leave_id)
+    elif action in ("approve", "reject"):
+        if not me["is_admin"]:
+            raise Forbidden("Only an admin can decide.")
+        if l["status"] != "pending":
+            raise Conflict("Already decided.")
+        st = "approved" if action == "approve" else "rejected"
+        repo.decide(db, leave_id, st, me["id"], now())
+        if st == "approved":
+            apply_doctor_leave(db, me, l["member_id"], l["start_date"], l["end_date"], True)
+    else:
+        raise NotFound("Unknown action.")
+    log_event(db, me["clinic_id"], me["id"], "member", l["member_id"], "leave_" + action, {"from": l["start_date"], "to": l["end_date"]})
+    return leave_one(db, me, leave_id) | {"bookings_affected": bookings_between(db, l["member_id"], l["start_date"], l["end_date"]) if action == "approve" else 0}

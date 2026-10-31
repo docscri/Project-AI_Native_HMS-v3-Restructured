@@ -91,3 +91,23 @@ def test_clinic_time_zone():
     from datetime import datetime, timezone
     import app  # noqa: F401  (sets the zone)
     assert time.strftime("%Z") in ("IST", "+0530") or datetime.now().astimezone().utcoffset().total_seconds() == 19800
+
+
+def test_visit_history_shows_the_briefs_line_for_each_signed_visit():
+    from tests.helpers import clinic, started_visit
+    with TestClient(app) as c:
+        h, doc = clinic(c, "history-line@x.in")
+        v = started_visit(c, h, doc, "Line Pat")
+        c.put(f"/api/visits/{v['id']}/text", headers=h, json={"text": "Fever for two days. Likely viral fever.", "rev": 0})
+        n = c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()
+        pid = c.get(f"/api/visits/{v['id']}", headers=h).json()["patient_id"]
+        assert c.get(f"/api/patients/{pid}", headers=h).json()["visits"][0]["line"] == ""            # a draft: no line yet
+        c.post(f"/api/notes/{n['id']}/sign", headers=h)
+        assert c.get(f"/api/patients/{pid}", headers=h).json()["visits"][0]["line"] == "Fever for two days. Likely viral fever."
+        from app.shared.db import connect
+        import json as j
+        db = connect()   # a later visit's saved brief, with the line the AI wrote for this visit
+        brief = {"events": [{"visit_id": v["id"], "text": "Came with fever; viral fever."}]}
+        db.execute("update visits set brief = ? where id = ?", (j.dumps(brief), v["id"])); db.commit(); db.close()
+        old = [x for x in c.get(f"/api/patients/{pid}", headers=h).json()["visits"] if x["id"] == v["id"]][0]
+        assert old["line"] == "Came with fever; viral fever."

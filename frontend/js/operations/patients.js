@@ -24,7 +24,7 @@ function profile(p) {
     ${visits.length ? `<div class="timeline">${visits.map(v => `<div class="tl"><div class="tl-head"><b>${longDate(v.date)}</b><span>${esc(v.doctor)}</span>${pill(v.status)}</div>
       <div class="items">${v.note ? `<button class="btn small" data-a="note-view" data-v="${v.id}">${v.note.status === "signed" ? "Note & prescription" + (v.note.addenda ? ` · ${v.note.addenda} addend${v.note.addenda > 1 ? "a" : "um"}` : "") : "Draft note"}</button>` : ""}
       ${v.documents.map(d => `<button class="btn small" data-a="open-doc" data-v="${d.id}">📄 ${esc(docTitle(d))}</button>${d.ai_status === "failed" ? `<button class="btn small dark" data-a="doc-retry" data-v="${d.id}" title="Couldn't be read. Try again, or tell the clinic admin if it keeps failing.">Couldn't read · Try again</button>` : ""}`).join("")}</div>
-      ${v.note?.soap?.A ? `<div class="muted" style="font-size:13.5px;margin-top:6px">${esc(v.note.soap.A)}</div>` : ""}</div>`).join("")}</div>` : `<div class="empty">—</div>`}
+      ${v.line ? `<div class="muted" style="font-size:13.5px;margin-top:6px">${esc(v.line)}</div>` : ""}</div>`).join("")}</div>` : `<div class="empty">—</div>`}
   </section>`;
 }
 const stampOf = ts => { const d = new Date(ts); return `${d.getDate()} ${d.toLocaleDateString("en-IN", { month: "short" })}, ${d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }).toLowerCase()}`; };

@@ -10,6 +10,7 @@ def for_visit(db, visit_id: int) -> dict | None:
         n["content"] = json.loads(n["content"])
         n["citations"] = json.loads(n["citations"])
         n["sources"] = json.loads(n.get("sources") or "{}")
+        n["addenda"] = addenda(db, n["id"])
     return n
 
 
@@ -75,3 +76,12 @@ def document_ids(db, patient_id: int) -> set[int]:
 
 def set_citations(db, note_id: int, citations: str) -> None:
     db.execute("update notes set citations = ? where id = ? and status = 'draft'", (citations, note_id))
+
+
+def addenda(db, note_id: int) -> list[dict]:
+    return rows(db.execute("select id, text, signed_by_name, signed_at from note_addenda where note_id = ? order by id", (note_id,)))
+
+
+def add_addendum(db, clinic_id: int, note_id: int, text: str, member_id: int, name: str, at: str) -> None:
+    db.execute("insert into note_addenda (clinic_id, note_id, text, signed_by, signed_by_name, signed_at) values (?, ?, ?, ?, ?, ?)",
+               (clinic_id, note_id, text, member_id, name, at))

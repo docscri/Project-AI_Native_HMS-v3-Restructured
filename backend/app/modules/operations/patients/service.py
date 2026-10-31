@@ -74,7 +74,7 @@ def profile(db, me: dict, patient_id: int) -> dict:
         d["extracted"] = json.loads(d["extracted"]) if d["extracted"] else None
     for v in visits:
         n = notes.get(v["id"])
-        v["note"] = n and {"id": n["id"], "status": n["status"], **json.loads(n["content"])}
+        v["note"] = n and {"id": n["id"], "status": n["status"], "addenda": n["addenda"], **json.loads(n["content"])}
         v["documents"] = [d for d in docs if d["visit_id"] == v["id"]]
     return p | {"visits": visits, "documents": docs}
 

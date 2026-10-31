@@ -36,7 +36,8 @@ def visits(db, patient_id: int) -> list[dict]:
 
 
 def notes(db, patient_id: int) -> list[dict]:
-    return rows(db.execute("select id, visit_id, status, content from notes where patient_id = ?", (patient_id,)))
+    return rows(db.execute("""select id, visit_id, status, content, (select count(*) from note_addenda a where a.note_id = notes.id) as addenda
+                              from notes where patient_id = ?""", (patient_id,)))
 
 
 def documents(db, patient_id: int) -> list[dict]:

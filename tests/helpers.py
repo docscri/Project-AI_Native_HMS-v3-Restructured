@@ -13,3 +13,11 @@ def started_visit(c, h, doc, name="Pat"):
     v = c.post("/api/visits/walk-in", headers=h, json={"patient_id": p["id"], "doctor_id": doc, "payment_method": "cash"}).json()
     c.post(f"/api/visits/{v['id']}/start", headers=h)
     return v
+
+
+def member(c, h, name, email, kind, screens, admin=False):
+    return c.post("/api/members", headers=h, json={"name": name, "email": email, "kind": kind, "screens": screens, "is_admin": admin}).json()
+
+
+def join(c, code, pw="member123"):
+    return {"Authorization": "Bearer " + c.post("/api/invites/accept", json={"code": code, "password": pw}).json()["token"]}

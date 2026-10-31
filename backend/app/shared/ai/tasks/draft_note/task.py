@@ -65,9 +65,9 @@ def names_of(medicine: str) -> list[str]:
 
 
 def instruction(medicine: str, said: list[str], others: set[str]) -> str | None:
-    """The words that prescribe this medicine: from its name (said without "no", "stop", "allergic"... before it in the
-    same phrase) to where the next medicine starts in that sentence, plus the next sentence when it names no other
-    medicine ("...Continue for five days."). None if it was never prescribed."""
+    """The words that prescribe this medicine: its phrase up to the name ("give one tablet of ..."), said without "no",
+    "stop", "allergic"..., then on to where the next medicine starts in that sentence, plus the next sentence when it
+    names no other medicine ("...Continue for five days."). None if it was never prescribed."""
     def next_drug(s: str, after: int) -> int:
         starts = [m.start() for w in others for m in re.finditer(rf"\b{re.escape(w)}", s) if m.start() >= after]
         starts += [m.start() for m in MED.finditer(s) if m.start() >= after]
@@ -75,10 +75,11 @@ def instruction(medicine: str, said: list[str], others: set[str]) -> str | None:
     for k, s in enumerate(said):
         for w in names_of(medicine):
             for m in re.finditer(rf"\b{re.escape(w)}", s):
-                if NEGATION.search(CLAUSE.split(s[:m.start()])[-1]):
+                lead = CLAUSE.split(s[:m.start()])[-1]
+                if NEGATION.search(lead):
                     continue
                 end = next_drug(s, m.end())
-                text = s[m.start():end]
+                text = lead + s[m.start():end]
                 if end == len(s) and k + 1 < len(said) and next_drug(said[k + 1], 0) == len(said[k + 1]):
                     text += " " + said[k + 1]
                 return text
@@ -121,6 +122,23 @@ def supported(value: str, said: str) -> bool:
             and all(re.search(rf"\b{re.escape(w.rstrip('s'))}", said) for w in words))
 
 
+STRENGTH = re.compile(r"(\d+(?:\.\d+)?)\s*(mg|mcg|g|ml|iu|units?|%)(?![a-z])")
+NOT_STRENGTH = r"\s*(?:days?|weeks?|months?|years?|times?|hours?|hrs?|x|tabs?|tablets?|doses?)\b"
+
+
+def strength_said(medicine: str, said: str) -> bool:
+    """Each strength in the medicine was said as a strength of it: "500 mg" as "500 mg" (not the 7 of "for 7 days");
+    a number without a unit only where it isn't a count of days, times or tablets."""
+    said, med = digits(said), medicine.lower()
+    for n, unit in STRENGTH.findall(med):
+        if not re.search(rf"(?<![\d.]){re.escape(n)}\s*{re.escape(unit)}(?![a-z])", said):
+            return False
+    for n in NUMBER.findall(STRENGTH.sub(" ", med)):
+        if not re.search(rf"(?<![\d.]){re.escape(n)}(?![\d.])(?!{NOT_STRENGTH})", said):
+            return False
+    return True
+
+
 def keep_said(rx: list[dict], items: list[dict]) -> list[dict]:
     """Only medicines the doctor prescribed, at the strength said for that medicine; a dose, duration or instruction
     not said for it is left blank for the doctor to fill rather than guessed."""
@@ -130,7 +148,7 @@ def keep_said(rx: list[dict], items: list[dict]) -> list[dict]:
         text = instruction(r["medicine"], said, others)
         if text is None:
             continue
-        if not all(n in NUMBER.findall(text) for n in NUMBER.findall(r["medicine"])):
+        if not strength_said(r["medicine"], text):
             continue   # a strength that wasn't said for this medicine
         out.append({"medicine": r["medicine"]} | {f: r.get(f, "") if supported(r.get(f, ""), text) else ""
                                                   for f in ("dose", "duration", "instructions")})

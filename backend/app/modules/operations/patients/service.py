@@ -7,6 +7,7 @@ from app.shared.db import now
 from app.shared.errors import Conflict, Invalid
 from app.shared.validate import clean_phone
 from app.core.patient import get_patient
+from app.shared.text import sentences
 from . import repo
 
 
@@ -65,6 +66,25 @@ def search(db, me: dict, q: str) -> list[dict]:
     return repo.search(db, me["clinic_id"], f"%{q.strip().lower()}%")
 
 
+def visit_lines(db, patient_id: int, notes: dict) -> dict:
+    """One line per signed visit: the line the newest pre-visit brief wrote for it (no new AI call), else the note's
+    own words, as the brief does without AI (why they came, what was found)."""
+    lines = {}
+    for raw in repo.briefs(db, patient_id):
+        try:
+            events = json.loads(raw).get("events") or []
+        except (ValueError, AttributeError):
+            continue
+        for e in events:
+            if e.get("text"):
+                lines.setdefault(e.get("visit_id"), e["text"])
+    for visit_id, n in notes.items():
+        if n["status"] == "signed" and visit_id not in lines:
+            soap = json.loads(n["content"]).get("soap") or {}
+            lines[visit_id] = " ".join(s for s in ((sentences(soap.get(k) or "") or [""])[0] for k in ("S", "A")) if s)
+    return {k: t for k, t in lines.items() if t and k in notes and notes[k]["status"] == "signed"}
+
+
 def profile(db, me: dict, patient_id: int) -> dict:
     p = get_patient(db, me, patient_id)
     visits = repo.visits(db, patient_id)
@@ -72,8 +92,10 @@ def profile(db, me: dict, patient_id: int) -> dict:
     docs = repo.documents(db, patient_id)
     for d in docs:
         d["extracted"] = json.loads(d["extracted"]) if d["extracted"] else None
+    lines = visit_lines(db, patient_id, notes)
     for v in visits:
         n = notes.get(v["id"])
+        v["line"] = lines.get(v["id"], "")
         v["note"] = n and {"id": n["id"], "status": n["status"], "addenda": n["addenda"], **json.loads(n["content"])}
         v["documents"] = [d for d in docs if d["visit_id"] == v["id"]]
     return p | {"visits": visits, "documents": docs}

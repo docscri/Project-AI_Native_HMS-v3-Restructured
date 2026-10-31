@@ -35,6 +35,12 @@ def visits(db, patient_id: int) -> list[dict]:
            where v.patient_id = ? order by v.date desc, v.id desc""", (patient_id,)))
 
 
+def briefs(db, patient_id: int) -> list[str]:
+    """Saved pre-visit briefs, newest visit first."""
+    return [r[0] for r in db.execute("select brief from visits where patient_id = ? and brief is not null order by date desc, id desc",
+                                     (patient_id,)).fetchall()]
+
+
 def notes(db, patient_id: int) -> list[dict]:
     return rows(db.execute("""select id, visit_id, status, content, (select count(*) from note_addenda a where a.note_id = notes.id) as addenda
                               from notes where patient_id = ?""", (patient_id,)))

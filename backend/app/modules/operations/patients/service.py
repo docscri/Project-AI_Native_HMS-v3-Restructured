@@ -8,6 +8,7 @@ from app.shared.db import now
 from app.shared.errors import Conflict, Invalid
 from app.shared.validate import clean_phone
 from app.core.patient import get_patient
+from app.modules.clinical.brief import service as brief
 from app.shared.text import sentences
 from . import repo
 
@@ -78,7 +79,11 @@ def visit_lines(db, patient_id: int, notes: dict) -> dict:
             events, basis = b.get("events") or [], str(b.get("basis") or "")
         except (ValueError, AttributeError):
             continue
-        made_with = {int(m.group(1)): len(m.group(2)) for m in re.finditer(r"(\d+)(\+*)", basis.split(";")[0])}
+        parts = basis.split(";")
+        if f"v{brief.FORMAT}" not in parts:   # made by older code: its lines may lack corrections
+            continue
+        noted = next((x for x in parts if x.startswith("n")), "")
+        made_with = {int(m.group(1)): len(m.group(2)) for m in re.finditer(r"(\d+)(\+*)", noted)}
         for e in events:
             n = notes.get(e.get("visit_id"))
             if e.get("text") and n and made_with.get(n["id"]) == n["addenda"]:

@@ -120,9 +120,28 @@ def test_visit_history_line_carries_the_correction():
         c.post(f"/api/notes/{n['id']}/sign", headers=h)
         pid = c.get(f"/api/visits/{v['id']}", headers=h).json()["patient_id"]
         db = connect()   # a brief written before the correction
-        db.execute("update visits set brief = ? where id = ?", (json.dumps({"events": [{"visit_id": v["id"], "text": "Diabetes."}], "basis": f"n{n['id']};d"}), v["id"]))
+        db.execute("update visits set brief = ? where id = ?", (json.dumps({"events": [{"visit_id": v["id"], "text": "Diabetes."}], "basis": f"v2;n{n['id']};d"}), v["id"]))
         db.commit(); db.close()
         assert c.get(f"/api/patients/{pid}", headers=h).json()["visits"][0]["line"] == "Diabetes."
         c.post(f"/api/notes/{n['id']}/addenda", headers=h, json={"text": "Not diabetic; wrong report."})
         line = c.get(f"/api/patients/{pid}", headers=h).json()["visits"][0]["line"]
         assert line != "Diabetes." and line.endswith("Corrected later: Not diabetic; wrong report.")
+
+
+def test_briefs_saved_by_older_code_are_made_again_and_not_reused_in_history():
+    from app.modules.clinical.brief import service as brief
+    from tests.helpers import started_visit
+    with TestClient(app) as c:
+        h, doc = clinic(c, "old-brief@x.in")
+        v = started_visit(c, h, doc, "Old Brief")
+        c.put(f"/api/visits/{v['id']}/text", headers=h, json={"text": "Thirst for a month. Likely diabetes.", "rev": 0})
+        n = c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()
+        c.post(f"/api/notes/{n['id']}/sign", headers=h)
+        c.post(f"/api/notes/{n['id']}/addenda", headers=h, json={"text": "Not diabetic; wrong report."})
+        pid = c.get(f"/api/visits/{v['id']}", headers=h).json()["patient_id"]
+        old = {"events": [{"visit_id": v["id"], "text": "Diabetes."}], "basis": f"n{n['id']}+;d"}   # the old format, after the addendum
+        db = connect()
+        db.execute("update visits set brief = ? where id = ?", (json.dumps(old), v["id"])); db.commit(); db.close()
+        line = c.get(f"/api/patients/{pid}", headers=h).json()["visits"][0]["line"]
+        assert line != "Diabetes." and line.endswith("Corrected later: Not diabetic; wrong report.")
+        assert brief.basis([{"id": n["id"], "addenda": [1]}], []).startswith(f"v{brief.FORMAT};") and old["basis"] != brief.basis([{"id": n["id"], "addenda": [1]}], [])

@@ -21,6 +21,14 @@ async def upload(visit_id: int, tasks: BackgroundTasks, file: UploadFile = File(
     return out
 
 
+@router.post("/documents/{doc_id}/retry")
+def retry(doc_id: int, tasks: BackgroundTasks, me=Depends(require_any("operations", "consultation", "patients")), db=Depends(get_db)):
+    out = service.retry(db, me, doc_id)
+    db.commit()   # the background read must see "processing"
+    tasks.add_task(service.run_extraction, doc_id)
+    return out
+
+
 @router.get("/documents/{doc_id}/file")
 def document_file(doc_id: int, me=Depends(require_any("consultation", "patients")), db=Depends(get_db)):
     data, d = service.file_of(db, me, doc_id)

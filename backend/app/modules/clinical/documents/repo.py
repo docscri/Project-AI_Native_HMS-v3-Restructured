@@ -29,5 +29,9 @@ def listed(db, doc_id: int) -> dict | None:
     return row(db.execute("select id, filename, ai_status, created_at from documents where id = ?", (doc_id,)).fetchone())
 
 
+def set_processing(db, doc_id: int) -> None:
+    db.execute("update documents set ai_status = 'processing', extracted = null where id = ?", (doc_id,))
+
+
 def set_read(db, doc_id: int, status: str, extracted: dict) -> None:
     db.execute("update documents set ai_status = ?, extracted = ? where id = ?", (status, json.dumps(extracted), doc_id))

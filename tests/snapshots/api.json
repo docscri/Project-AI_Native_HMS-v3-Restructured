@@ -2301,6 +2301,7 @@
   "POST /api/auth/reset",
   "POST /api/consultation/next",
   "POST /api/day-close",
+  "POST /api/documents/{doc_id}/retry",
   "POST /api/invites/accept",
   "POST /api/leave",
   "POST /api/leave/{leave_id}/{action}",

@@ -134,13 +134,14 @@ def nice(d: str) -> str:
 
 
 def inputs(db, v: dict) -> tuple[list[dict], list[dict]]:
-    """The patient's other signed notes (newest first) and readable documents."""
-    return repo.signed_notes(db, v["patient_id"], v["id"]), repo.ready_documents(db, v["patient_id"])
+    """The patient's other signed notes (newest first) and documents that finished reading, read or not."""
+    return repo.signed_notes(db, v["patient_id"], v["id"]), repo.finished_documents(db, v["patient_id"])
 
 
 def basis(notes: list[dict], docs: list[dict]) -> str:
     """Changes when a note is signed or a report is read, so the saved brief is reused until then."""
-    return "n" + ",".join(str(n["id"]) for n in notes) + ";d" + ",".join(str(d["id"]) for d in docs) + (";ai" if llm.enabled() else "")
+    return ("n" + ",".join(str(n["id"]) for n in notes) + ";d" + ",".join(str(d["id"]) + ("x" if d["ai_status"] == "failed" else "") for d in docs)
+            + (";ai" if llm.enabled() else ""))
 
 
 def current_basis(db, v: dict) -> str:
@@ -221,7 +222,8 @@ def charts(notes: list[dict], docs: list[dict], db) -> list[dict]:
 
 
 def build(db, v: dict) -> dict:
-    notes, docs = inputs(db, v)
+    notes, finished = inputs(db, v)
+    docs, unread = [d for d in finished if d["ai_status"] == "ready"], [d for d in finished if d["ai_status"] == "failed"]
     p = repo.patient(db, v["patient_id"])
     sources = {}
     for n in notes:
@@ -241,15 +243,26 @@ def build(db, v: dict) -> dict:
                                   "text": f"{made} {nice(made)} {title_of(d)} {ex.get('summary') or ''} {vals}"}
         if d["created_at"].replace(" ", "T") >= last_signed:   # older rows were stamped "YYYY-MM-DD HH:MM:SS"
             new_ids.append(f"D{d['id']}")
+    for d in unread:   # named in the Sources panel with a Try again button; never sent to the AI
+        made = d["created_at"][:10]
+        sources[f"D{d['id']}"] = {"kind": "document", "doc_id": d["id"], "filename": d["filename"], "date": made, "label": title_of(d),
+                                  "summary": "Couldn't be read.", "findings": [], "values": [], "failed": True,
+                                  "text": f"{made} {nice(made)} {title_of(d)} {d['filename']}"}
     visits = [{"note": f"N{n['id']}", "date_text": nice(n["date"])} for n in notes]
     patient = {"age": None if not p or not p["dob"] else date.today().year - int(p["dob"][:4]), "sex": p["sex"] if p else None}
+    readable = {k: s for k, s in sources.items() if not s.get("failed")}
     text = {}
-    if sources:
+    if readable:
         try:
-            text = brief_text(patient, sources, new_ids, visits)
+            text = brief_text(patient, readable, new_ids, visits)
         except Exception:   # AI unavailable: the plain version still reaches the doctor
-            text = brief_text(patient, sources, new_ids, visits, use_ai=False)
-    new = [s for s in checked(text.get("new"), sources) if all(c in new_ids for c in s["cites"])]
+            text = brief_text(patient, readable, new_ids, visits, use_ai=False)
+    new = [s for s in checked(text.get("new"), readable) if all(c in new_ids for c in s["cites"])]
+    missing = [d for d in new_ids if not any(d in s["cites"] for s in new)]
+    if missing:   # a report the AI line didn't survive the check for still gets its plain line
+        new += checked(brief_text(patient, readable, missing, [], use_ai=False)["new"], readable)
+    new += [{"text": f"{d['filename']}: couldn't be read.", "cites": [f"D{d['id']}"], "flags": []}
+            for d in unread if d["created_at"].replace(" ", "T") >= last_signed]
     lines = {e.get("note"): e for e in text.get("events") or [] if isinstance(e, dict)}
     events = []
     for n in notes:
@@ -262,7 +275,7 @@ def build(db, v: dict) -> dict:
         events.append({"visit_id": n["vid"], "date": n["date"], "doctor": n["doctor"], "text": got[0]["text"],
                        "cites": got[0]["cites"] + [f"D{d['id']}" for d in own_docs], "documents": own_docs})
     return {"summary": [{"kind": "new", "sentences": new}] * bool(new) + [{"kind": "history", "sentences": checked(text.get("history"), sources)}],
-            "events": events, "charts": charts(notes, docs, db), "sources": sources, "basis": basis(notes, docs)}
+            "events": events, "charts": charts(notes, docs, db), "sources": sources, "basis": basis(notes, finished)}
 
 
 def make(db, me, visit_id: int) -> dict:

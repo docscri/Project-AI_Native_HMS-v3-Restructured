@@ -41,6 +41,10 @@ def briefs(db, patient_id: int) -> list[str]:
                                      (patient_id,)).fetchall()]
 
 
+def addenda(db, note_id: int) -> list[dict]:
+    return rows(db.execute("select text, signed_at from note_addenda where note_id = ? order by id", (note_id,)))
+
+
 def notes(db, patient_id: int) -> list[dict]:
     return rows(db.execute("""select id, visit_id, status, content, (select count(*) from note_addenda a where a.note_id = notes.id) as addenda
                               from notes where patient_id = ?""", (patient_id,)))

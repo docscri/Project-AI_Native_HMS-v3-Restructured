@@ -107,7 +107,7 @@ def test_visit_history_shows_the_briefs_line_for_each_signed_visit():
         from app.shared.db import connect
         import json as j
         db = connect()   # a later visit's saved brief, with the line the AI wrote for this visit
-        brief = {"events": [{"visit_id": v["id"], "text": "Came with fever; viral fever."}]}
+        brief = {"events": [{"visit_id": v["id"], "text": "Came with fever; viral fever."}], "basis": f"n{n['id']};d"}
         db.execute("update visits set brief = ? where id = ?", (j.dumps(brief), v["id"])); db.commit(); db.close()
         old = [x for x in c.get(f"/api/patients/{pid}", headers=h).json()["visits"] if x["id"] == v["id"]][0]
         assert old["line"] == "Came with fever; viral fever."

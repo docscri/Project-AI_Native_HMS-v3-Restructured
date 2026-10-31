@@ -94,3 +94,35 @@ def test_clearing_a_date_of_birth_clears_it():
         assert c.patch(f"/api/patients/{p['id']}", headers=h, json={"name": "Dob Pat", "dob": None}).json()["dob"] is None
         assert c.patch(f"/api/patients/{p['id']}", headers=h, json={"name": "Dob Pat", "dob": "1990-05-01"}).json()["dob"] == "1990-05-01"
         assert c.patch(f"/api/patients/{p['id']}", headers=h, json={"name": "Dob Pat", "dob": ""}).json()["dob"] is None
+
+
+def test_without_ai_a_corrected_assessment_never_stands_alone():
+    from app.shared.ai.tasks.brief_summary import task as brief_summary
+    from app.shared.ai.tasks.visit_lines import task as visit_lines
+    src = lambda body, section="Assessment": {"kind": "note", "body": body, "text": f"2026-10-01 1 Oct 2026 {body}", "section": section}
+    sources = {"N7.S": src("Thirst for a month.", "Subjective"), "N7.A": src("Type 2 diabetes."),
+               "N7.X": src("2 Oct 2026: Not diabetic; the HbA1c was another patient's.", "Addendum"), "N9.A": src("Type 2 diabetes.")}
+    history = brief_summary.fallback({}, sources, [], [{"note": "N7"}, {"note": "N9"}])["history"]
+    assert {"text": "Type 2 diabetes. Corrected later: 2 Oct 2026: Not diabetic; the HbA1c was another patient's.",
+            "cites": ["N7.A", "N7.X"]} in history
+    assert {"text": "Type 2 diabetes.", "cites": ["N9.A"]} in history                     # an uncorrected visit is unchanged
+    line = visit_lines.fallback({}, sources, ["N7"])["N7"]
+    assert line["text"].endswith("Corrected later: 2 Oct 2026: Not diabetic; the HbA1c was another patient's.") and "N7.X" in line["cites"]
+
+
+def test_visit_history_line_carries_the_correction():
+    from tests.helpers import started_visit
+    with TestClient(app) as c:
+        h, doc = clinic(c, "hist-fix@x.in")
+        v = started_visit(c, h, doc, "Fix Pat")
+        c.put(f"/api/visits/{v['id']}/text", headers=h, json={"text": "Thirst for a month. Likely diabetes.", "rev": 0})
+        n = c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()
+        c.post(f"/api/notes/{n['id']}/sign", headers=h)
+        pid = c.get(f"/api/visits/{v['id']}", headers=h).json()["patient_id"]
+        db = connect()   # a brief written before the correction
+        db.execute("update visits set brief = ? where id = ?", (json.dumps({"events": [{"visit_id": v["id"], "text": "Diabetes."}], "basis": f"n{n['id']};d"}), v["id"]))
+        db.commit(); db.close()
+        assert c.get(f"/api/patients/{pid}", headers=h).json()["visits"][0]["line"] == "Diabetes."
+        c.post(f"/api/notes/{n['id']}/addenda", headers=h, json={"text": "Not diabetic; wrong report."})
+        line = c.get(f"/api/patients/{pid}", headers=h).json()["visits"][0]["line"]
+        assert line != "Diabetes." and line.endswith("Corrected later: Not diabetic; wrong report.")

@@ -27,8 +27,11 @@ def parts(patient: dict, sources: dict, notes: list[str]) -> list[dict]:
 
 
 def plain(sources: dict, nid: str) -> dict:
-    """The note's own words: the first sentence of why they came (S) and of what was found (A)."""
+    """The note's own words: the first sentence of why they came (S) and of what was found (A), and any signed
+    correction (X) after them, so a withdrawn assessment never stands alone."""
     got = [(f"{nid}.{k}", (sentences(sources[f"{nid}.{k}"]["body"]) or [""])[0]) for k in ("S", "A") if f"{nid}.{k}" in sources]
+    if f"{nid}.X" in sources:
+        got.append((f"{nid}.X", "Corrected later: " + sources[f"{nid}.X"]["body"]))
     return {"text": " ".join(t for _, t in got if t), "cites": [c for c, t in got if t]}
 
 

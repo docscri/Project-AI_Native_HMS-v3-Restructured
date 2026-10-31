@@ -213,6 +213,7 @@ def reschedule(db, me, visit_id: int, body: Reschedule) -> dict:
 
 
 def cancel(db, me, visit_id: int, body: Cancel) -> dict:
+    db.lock(f"visit:{visit_id}")   # same lock as arrival and refund: a visit being paid for can't be cancelled at the same time
     v = get_visit(db, me, visit_id)
     move(db, me, v, "cancelled", cancel_reason=body.reason.strip() or None)
     return {"ok": True}

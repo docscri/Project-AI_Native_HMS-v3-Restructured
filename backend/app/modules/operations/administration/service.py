@@ -3,7 +3,7 @@ import json
 
 from app.shared import mail as mailer
 from app.shared.audit import log_event
-from app.shared.auth import (INVITE_DAYS, RESET_HOURS, SCREENS, create_session, end_sessions, hash_password, later, new_code,
+from app.shared.auth import (has_admin, INVITE_DAYS, RESET_HOURS, SCREENS, create_session, end_sessions, hash_password, later, new_code,
                              public_member, validate_password)
 from app.shared.db import now
 from app.shared.errors import BadGateway, Conflict, Gone, Invalid, NotFound
@@ -47,7 +47,7 @@ def update_rules(db, me: dict, body) -> dict:
 
 def list_members(db, me: dict) -> list[dict]:
     ms = [public_member(m) for m in repo.members(db, me["clinic_id"])]
-    if me["is_admin"]:
+    if has_admin(me):
         return ms
     basic = ("id", "name", "kind", "speciality", "designation", "status", "is_owner", "is_admin")
     return [{k: m.get(k) for k in basic} for m in ms]

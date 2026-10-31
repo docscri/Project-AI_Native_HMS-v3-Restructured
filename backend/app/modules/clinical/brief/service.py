@@ -190,6 +190,10 @@ def build(db, v: dict) -> dict:
                 sources[f"N{n['id']}.{k}"] = {"kind": "note", "visit_id": n["vid"], "date": n["date"], "doctor": n["doctor"], "section": label,
                                               "body": body, "text": f"{n['date']} {nice(n['date'])} {body}",
                                               "values": [f for f in values_of(db, n) if f["section"] == k]}
+        if n.get("addenda"):   # signed corrections: the AI must see them, or the old wording would live on in the brief
+            body = " ".join(f'{nice(a["signed_at"][:10])}: {a["text"].strip()}' for a in n["addenda"])
+            sources[f"N{n['id']}.X"] = {"kind": "note", "visit_id": n["vid"], "date": n["date"], "doctor": n["doctor"], "section": "Addendum",
+                                        "body": body, "text": f"{n['date']} {nice(n['date'])} Addendum: {body}", "values": []}
     last_signed = max((n["signed_at"] or "" for n in notes), default="")
     new_ids = []
     for d in docs:

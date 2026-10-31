@@ -33,8 +33,9 @@ def evidence(text: str, documents: list[dict], past_notes: list[dict]) -> list[d
                       "text": f'{d["filename"]} ({d["created_at"][:10]}): {ex.get("summary", "")} {vals}'.strip()})
     for n in past_notes:
         soap = n["content"]["soap"]
-        items.append({"id": f'N{n["id"]}', "kind": "note",
-                      "text": f'Visit {n["date"]}: A: {soap.get("A", "")} P: {soap.get("P", "")}'})
+        fixes = " ".join(f'{a["signed_at"][:10]}: {a["text"].strip()}' for a in n.get("addenda") or [])
+        items.append({"id": f'N{n["id"]}', "kind": "note",   # signed corrections go with the note, or the old wording lives on
+                      "text": f'Visit {n["date"]}: A: {soap.get("A", "")} P: {soap.get("P", "")}' + (f" Addenda (corrections): {fixes}" if fixes else "")})
     return items
 
 

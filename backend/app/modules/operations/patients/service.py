@@ -12,8 +12,8 @@ from . import repo
 
 
 def clean(body) -> dict:
-    """Returns only the fields that were sent."""
-    out = body.model_dump(exclude_none=True)
+    """Returns only the fields that were sent. Date of birth may be sent empty (or null) to clear it."""
+    out = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None or k == "dob"}
     if "name" in out:
         out["name"] = " ".join(out["name"].split())
         if not 1 <= len(out["name"]) <= 80:

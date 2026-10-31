@@ -116,8 +116,13 @@ def require_any(*screens: str):
     return check
 
 
+def has_admin(me: dict) -> bool:
+    """Admin powers need both the admin flag and the Administration screen; an admin whose screen was taken away has none."""
+    return bool(me.get("is_admin")) and "administration" in (me.get("screens") or [])
+
+
 def require_admin(me: dict = Depends(current_member)) -> dict:
     """Needs admin access and the Administration screen."""
-    if not (me["is_admin"] and "administration" in me["screens"]):
+    if not has_admin(me):
         raise HTTPException(403, "Only an admin can change this.")
     return me

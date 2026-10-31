@@ -1,4 +1,5 @@
 import hashlib
+import mimetypes
 import re
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -46,6 +47,7 @@ def health():
     return {"ok": True}
 
 
+mimetypes.add_type("text/javascript", ".mjs")   # the PDF reader is an ES module; browsers refuse it under any other type
 app.mount("/static", StaticFiles(directory=FRONTEND), name="static")
 
 

@@ -16,6 +16,12 @@ from . import repo
 
 def login(db, email: str, password: str) -> dict:
     m = repo.member_by_email(db, email.strip())
+    if m:
+        # One login at a time per account, shared with password change and reset: parallel wrong guesses can't each
+        # read the same count and slip past the lockout, and a login checked against the old password can't
+        # create its session after the password changed (the change ends sessions only once this one commits).
+        db.lock(f"password:{m['id']}")
+        m = repo.member(db, m["id"])
     if m and m["locked_until"] and m["locked_until"] > now():
         raise Locked(f"Locked. Try in {LOCK_MINUTES} minutes.")
     if not m or m["status"] != "active" or not check_password(password, m["password_hash"]):

@@ -1,7 +1,8 @@
 /* Hash routes, one state object, event delegation on data-a. */
 "use strict";
 
-const S = { token: null, me: null, clinic: null, doctors: [], date: null, data: null, timer: null, rec: null };
+const fresh = () => ({ token: null, me: null, clinic: null, doctors: [], date: null, data: null, timer: null, rec: null });
+const S = fresh();
 try { S.token = localStorage.getItem("clinic.token"); } catch {}
 
 /* helpers */
@@ -71,8 +72,10 @@ async function api(path, opts = {}) {
   const headers = { ...(S.token ? { Authorization: "Bearer " + S.token } : {}) };
   let body = opts.body;
   if (body && !(body instanceof FormData)) { headers["Content-Type"] = "application/json"; body = JSON.stringify(body); }
+  const sent = S.token;
   const res = await fetch("/api" + path, { method: opts.method || (body ? "POST" : "GET"), headers, body });
   const data = await res.json().catch(() => ({}));
+  if (sent !== S.token) throw new Error("Session ended.");   // an answer for an account that has since logged out is dropped
   if (res.status === 401 && !opts.quiet && S.token) { endLocal(); throw new Error(data.detail || "Session ended. Log in again."); }
   if (!res.ok) {
     const d = data.detail;
@@ -94,7 +97,17 @@ function modal(html, wide) {
 const closeModal = () => { if (M?.url) URL.revokeObjectURL(M.url); modal(""); M = null; };
 const go = h => { if (location.hash === h) route(); else location.hash = h; };
 function setToken(t) { S.token = t; try { t ? localStorage.setItem("clinic.token", t) : localStorage.removeItem("clinic.token"); } catch {} }
-function endLocal() { setToken(null); S.me = null; stopTimers(); closeModal(); go("#/login"); }
+// Admin powers need the admin flag and the Administration screen (as the server checks).
+const hasAdmin = () => !!(S.me?.is_admin && (S.me.screens || []).includes("administration"));
+// Logging out forgets everything the last account loaded (patients, queue, drafts, settings), so nothing of one clinic
+// can show up after the next person logs in, possibly to another clinic.
+function endLocal() {
+  setToken(null); stopTimers(); closeModal();
+  for (const k of Object.keys(S)) delete S[k];
+  Object.assign(S, fresh());
+  M = null; OB = {};
+  go("#/login");
+}
 async function logout() { if (S.token) await fetch("/api/auth/logout", { method: "POST", headers: { Authorization: "Bearer " + S.token } }).catch(() => {}); endLocal(); }
 function stopTimers() { clearInterval(S.timer); S.timer = null; clearTimeout(S.docT); if (S.rec) { const r = S.rec; S.rec = null; try { r.stop(); } catch {} } S.recState = null; clearInterval(S.recT); }
 

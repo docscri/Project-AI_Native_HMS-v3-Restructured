@@ -29,8 +29,8 @@ def test_gemini_key_goes_in_a_header_not_the_url(monkeypatch):
                               json={"candidates": [{"content": {"parts": [{"text": "{}"}]}}]})
     monkeypatch.setenv("GEMINI_API_KEY", KEY)
     monkeypatch.setattr(httpx, "post", fake_post)
-    gemini.generate([{"text": "hi"}])
-    assert KEY not in sent["url"] and "params" not in sent
+    gemini.generate([{"text": "hi"}], "gemini-2.5-flash-lite")
+    assert KEY not in sent["url"] and "params" not in sent and "/models/gemini-2.5-flash-lite:" in sent["url"]
     assert sent["headers"]["x-goog-api-key"] == KEY
 
 
@@ -64,7 +64,7 @@ def test_new_report_keeps_a_line_when_the_ai_line_is_dropped(monkeypatch):
         v = started_visit(c, h, doc)
         d = upload(c, h, v)
         monkeypatch.setenv("GEMINI_API_KEY", "test")
-        monkeypatch.setattr(llm, "generate", lambda parts: {     # AI writes a number the report doesn't have
+        monkeypatch.setattr(llm, "generate", lambda parts, model=None: {     # AI writes a number the report doesn't have
             "new": [{"text": "HbA1c is 9.4 %.", "cites": [f"D{d['id']}"]}], "history": [], "events": []})
         lines, _ = summary(c, h, v)
         assert [s["text"] for s in lines] == ["Sunrise Diagnostics HbA1c 8.1 %."]

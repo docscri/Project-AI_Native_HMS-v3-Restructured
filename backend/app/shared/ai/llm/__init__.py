@@ -6,5 +6,5 @@ def enabled() -> bool:
     return config.value("LLM") != "none" and config.provider("LLM").enabled()
 
 
-def generate(parts: list[dict]) -> dict:
-    return config.provider("LLM").generate(parts)
+def generate(parts: list[dict], model: str | None = None) -> dict:
+    return config.provider("LLM").generate(parts, model or config.value("LLM_MODEL"))

@@ -1,6 +1,7 @@
 """AI tasks: every prompt fills, bad replies fall back, the checks hold, versions refresh saved results,
 and one brief job failing doesn't take the other down."""
 import logging
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -32,7 +33,7 @@ INPUTS = {read_report: {"data": b"%PDF", "mime": "application/pdf", "filename": 
 def ai(monkeypatch):
     """Turns the AI on with a scripted reply: ai(reply) or ai(lambda parts: reply)."""
     monkeypatch.setenv("GEMINI_API_KEY", "test")
-    return lambda reply: monkeypatch.setattr(llm, "generate", reply if callable(reply) else lambda parts: reply)
+    return lambda reply: monkeypatch.setattr(llm, "generate", (lambda parts, model=None: reply(parts)) if callable(reply) else lambda parts, model=None: reply)
 
 
 @pytest.mark.parametrize("task", INPUTS, ids=lambda t: t.NAME)
@@ -139,3 +140,17 @@ def test_a_new_prompt_version_refreshes_saved_note_values_and_briefs(monkeypatch
     assert len(calls) == 2                                                            # new version: read again
     monkeypatch.setenv("GEMINI_API_KEY", "test")
     assert "brief_summary@99" in brief.basis([], [])                                  # so saved briefs are rebuilt too
+
+
+def test_each_job_uses_its_own_model(ai, monkeypatch):
+    from app import config
+    tasks_dir = Path(tasks.__file__).parent
+    assert set(config.LLM_MODELS) == {p.name for p in tasks_dir.iterdir() if (p / "task.py").exists()}   # every job listed, no stray names
+    used = {}
+    monkeypatch.setattr(llm, "generate", lambda parts, model=None: used.setdefault("model", model) and {"values": []})
+    tasks.run(note_values, **INPUTS[note_values])
+    assert used["model"] == config.LLM_MODELS["note_values"] == "gemini-2.5-flash-lite"
+    assert config.model_for("read_report") == config.model_for("draft_note") == config.LLM_MODEL       # "" means the main model
+    monkeypatch.setenv("LLM_MODEL_NOTE_VALUES", "gemini-3.8-flash")                                     # one job changed without code
+    used.clear(); tasks.run(note_values, **INPUTS[note_values])
+    assert used["model"] == "gemini-3.8-flash" and config.model_for("brief_summary") == "gemini-2.5-flash-lite"

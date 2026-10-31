@@ -49,11 +49,14 @@ def fill(task_file: str, **slots) -> str:
     return text
 
 
-def reason(e: Exception) -> str:
+def reason(e: Exception, task=None) -> str:
     """Why a call failed, for the server log; never the request URL or any patient text."""
     status = getattr(getattr(e, "response", None), "status_code", None)
     if status == 404:
-        return f"model {config.value('LLM_MODEL')!r} not found; check LLM_MODEL in backend/app/config.py"
+        if task is None:
+            return "model not found; check LLM_MODEL and LLM_MODELS in backend/app/config.py"
+        return (f"model {config.model_for(task.NAME)!r} not found; check LLM_MODELS[{task.NAME!r}] (or LLM_MODEL) "
+                f"in backend/app/config.py, or the LLM_MODEL_{task.NAME.upper()} env var")
     if status in (400, 401, 403):
         return f"request refused ({status}); check the API key"
     if status == 429:
@@ -75,10 +78,10 @@ def run(task, *, on_failure: str = "fallback", **inputs):
     wants_ai = getattr(task, "wants_ai", lambda **_: True)
     if llm.enabled() and wants_ai(**inputs):
         try:
-            reply = task.Reply.model_validate(llm.generate(task.parts(**inputs)))
+            reply = task.Reply.model_validate(llm.generate(task.parts(**inputs), config.model_for(task.NAME)))
             return task.check(reply.model_dump(), **inputs)
         except Exception as e:
-            log.warning("AI task %s failed: %s", version(task), reason(e))
+            log.warning("AI task %s (%s) failed: %s", version(task), config.model_for(task.NAME), reason(e, task))
             if on_failure == "raise":
                 raise
     return task.fallback(**inputs)

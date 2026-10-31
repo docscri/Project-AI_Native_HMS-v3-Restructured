@@ -34,7 +34,7 @@ def test_gemini_key_goes_in_a_header_not_the_url(monkeypatch):
     assert sent["headers"]["x-goog-api-key"] == KEY
 
 
-def test_failed_read_keeps_the_key_out_shows_in_brief_and_can_be_retried(monkeypatch):
+def test_failed_read_keeps_the_key_out_shows_in_brief_and_can_be_retried(monkeypatch, caplog):
     def refuse(data, mime, filename):
         url = f"https://generativelanguage.googleapis.com/v1beta/models/x:generateContent?key={KEY}"
         req = httpx.Request("POST", url)
@@ -47,7 +47,8 @@ def test_failed_read_keeps_the_key_out_shows_in_brief_and_can_be_retried(monkeyp
         monkeypatch.undo()
         got = c.get(f"/api/visits/{v['id']}", headers=h).json()["documents"][0]
         assert got["ai_status"] == "failed" and KEY not in str(got["extracted"])
-        assert "LLM_MODEL" in got["extracted"]["summary"]
+        assert got["extracted"]["summary"] == documents.UNREAD                 # staff get plain words
+        assert "LLM_MODEL" in caplog.text and KEY not in caplog.text            # the technical reason goes to the server log
         lines, sources = summary(c, h, v)
         assert {"text": "InvoiceNo1733.pdf: couldn't be read.", "cites": [f"D{d['id']}"], "flags": []} in lines
         assert sources[f"D{d['id']}"]["failed"] is True

@@ -12,6 +12,7 @@ from app.shared.ai import llm
 from app.shared.db import now
 from app.shared.errors import Conflict, Invalid, NotFound
 from app.shared.validate import valid_day
+
 from . import repo
 
 
@@ -86,7 +87,7 @@ def add_segment(db, me, visit_id: int, segment: str) -> dict:
 def follow_up(db, me, visit_id: int, day: str) -> dict:
     """Waitlists when the day is full."""
     from app.modules.operations.appointments.service import create_booking   # lazy: appointments imports clinical brief
-    from app.modules.operations.waitlist.service import add_to_waitlist
+    from app.modules.operations.appointments.service import add_to_waitlist
     v = get_visit(db, me, visit_id)
     day = valid_day(day)
     if day <= Date.today().isoformat() or day <= v["date"]:

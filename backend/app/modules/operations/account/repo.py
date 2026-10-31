@@ -60,3 +60,24 @@ def live_reset_exists(db, token_hash: str, member_id: int, at) -> bool:
 
 def use_reset(db, token_hash: str, at) -> None:
     db.execute("update password_resets set used_at = ? where token_hash = ?", (at, token_hash))
+
+
+def create_clinic(db) -> int:
+    return db.execute("insert into clinics default values").lastrowid
+
+
+def create_owner(db, clinic_id: int, kind: str, name, email, phone, password_hash, speciality, screens: str) -> int:
+    return db.execute(
+        """insert into members (clinic_id, kind, is_owner, is_admin, name, email, phone, password_hash,
+           speciality, screens, status) values (?, ?, 1, 1, ?, ?, ?, ?, ?, ?, 'active')""",
+        (clinic_id, kind, name, email, phone, password_hash, speciality, screens),
+    ).lastrowid
+
+
+def update_owner(db, member_id: int, name, email, phone, kind, speciality) -> None:
+    db.execute("update members set name = ?, email = ?, phone = ?, kind = ?, speciality = ? where id = ?",
+               (name, email, phone, kind, speciality, member_id))
+
+
+def finish(db, clinic_id: int) -> None:
+    db.execute("update clinics set onboarded = 1 where id = ?", (clinic_id,))

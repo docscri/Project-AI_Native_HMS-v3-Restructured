@@ -1,15 +1,18 @@
-"""Front desk: queues, booking, arrival, reschedule, cancel."""
+"""Front desk: queues, booking, arrival, reschedule, cancel, waitlist."""
 from fastapi import APIRouter, BackgroundTasks, Depends
 
-from app.modules.clinical.brief import service as brief
-from app.shared.auth import current_member, require_screen
-from app.shared.db import get_db
 from app.core.visit import visit_out
+from app.modules.clinical.brief import service as brief
 from app.modules.financial.payments.schema import Payment
 from app.modules.operations.appointments import service
-from app.modules.operations.appointments.schema import Booking, Cancel, Reschedule, WalkIn
+from app.modules.operations.appointments.schema import Booking, Cancel, Reschedule, WaitIn, WalkIn
+from app.shared.auth import current_member, require_screen
+from app.shared.db import get_db
+
 
 router = APIRouter(prefix="/api")
+
+
 front_desk = require_screen("operations")
 
 
@@ -77,3 +80,23 @@ def end_session(doctor_id: int, date: str, session: str | None = None, me=Depend
 @router.get("/doctors")
 def list_doctors(me=Depends(current_member), db=Depends(get_db)):
     return service.list_doctors(db, me)
+
+
+@router.post("/waitlist")
+def join_waitlist(body: WaitIn, me=Depends(front_desk), db=Depends(get_db)):
+    return service.join(db, me, body)
+
+
+@router.get("/waitlist")
+def waitlist(doctor_id: int, date: str, me=Depends(front_desk), db=Depends(get_db)):
+    return service.waitlist(db, me, doctor_id, date)
+
+
+@router.post("/waitlist/{wait_id}/book")
+def book_from_waitlist(wait_id: int, me=Depends(front_desk), db=Depends(get_db)):
+    return service.book_waiting(db, me, wait_id)
+
+
+@router.delete("/waitlist/{wait_id}")
+def leave_waitlist(wait_id: int, me=Depends(front_desk), db=Depends(get_db)):
+    return service.leave(db, me, wait_id)

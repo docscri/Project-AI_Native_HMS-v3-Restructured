@@ -66,8 +66,8 @@ def print_note(note_id: int, auto: int = 0, me=Depends(require_any("consultation
 <div class="r"><b>{e(p['name'])}</b><small>{e(who)}</small><small><span class="lime">{printpage.day(v['date'])}</span> · {e(d['name'])}{' · ' + e(d['speciality']) if d['speciality'] else ''}</small></div></header>
 <div class="secs">{soap or '<p>—</p>'}</div>{rx_html}{addenda_html}
 <footer><div class="s">{signed}</div><div class="sign">Doctor's signature</div></footer>"""
-    note_css = ("<style>.secs{display:flex;flex-direction:column;gap:20px;margin:30px 0 8px}.sec{display:grid;grid-template-columns:38px 1fr;gap:16px;align-items:start}"
-                ".tile{width:38px;height:38px;border-radius:11px;background:#0B1411;color:#E8F1EC;display:grid;place-items:center;font-size:16px;font-weight:800}"
+    note_css = ("<style>.secs{display:flex;flex-direction:column;gap:20px;margin:30px 0 8px}.sec{display:grid;grid-template-columns:32px 1fr;gap:14px;align-items:start}"
+                ".tile{width:32px;height:32px;border-radius:9px;background:#0B1411;color:#E8F1EC;display:grid;place-items:center;font-size:13.5px;font-weight:800}"
                 ".sec small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#6B7C75;margin-top:2px}"
                 ".sec p{margin:4px 0 0;font-size:15.5px;line-height:1.65;font-weight:500}"
                 ".add{border-left:3px solid #B6F36B;padding:4px 0 4px 14px;margin:10px 0}.add small{font-size:11px;font-weight:700;color:#6B7C75}"

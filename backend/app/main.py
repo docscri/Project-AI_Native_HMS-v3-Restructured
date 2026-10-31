@@ -51,7 +51,7 @@ app.mount("/static", StaticFiles(directory=FRONTEND), name="static")
 
 def page() -> str:
     """Cache-bust assets by content hash."""
-    html = (FRONTEND / "index.html").read_text()
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     tag = lambda m: f'/static/{m[1]}?v={hashlib.sha1((FRONTEND / m[1]).read_bytes()).hexdigest()[:10]}"'
     return re.sub(r'/static/([\w./-]+\.(?:js|css))"', tag, html)
 

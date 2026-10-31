@@ -21,11 +21,20 @@ function soapRead(v, n, still) {
     const text = (n.content.soap[k] || "").trim();
     const sents = sentences(text).map(x => x.text);
     const srcs = (n.citations?.[k] || []).map(id => ({ id, text: sourceOf(v, id)?.text || "" }));
-    return sec(k, label, sents.map(t => `<span class="nb">${++num}</span>${marked(t, srcs, still)}`).join(" ") || `<span class="muted">—</span>`);
+    return sec(k, label, sents.map(t => `${citeNum(++num, bestSource(t, srcs), still)}${marked(t, srcs, still)}`).join(" ") || `<span class="muted">—</span>`);
   }).join("");
   const rx = n.content.rx.filter(r => r.medicine);
-  return `<div class="soap-read">${out}${rx.length ? sec("Rx", "Prescription", rx.map(r => `<div class="rx-line"><span class="nb">${++num}</span><b>${esc(r.medicine)}</b>${[r.dose, r.duration, r.instructions].filter(Boolean).map(x => ` · ${esc(x)}`).join("")}</div>`).join("")) : ""}</div>`;
+  const planSrcs = (n.citations?.P || []).map(id => ({ id, text: sourceOf(v, id)?.text || "" }));   // a medicine links to the plan that prescribes it
+  return `<div class="soap-read">${out}${rx.length ? sec("Rx", "Prescription", rx.map(r => `<div class="rx-line">${citeNum(++num, bestSource(r.medicine, planSrcs), still)}<b>${esc(r.medicine)}</b>${[r.dose, r.duration, r.instructions].filter(Boolean).map(x => ` · ${esc(x)}`).join("")}</div>`).join("")) : ""}</div>`;
 }
+// Every sentence number links to where it came from: the section source that shares most words with it.
+function bestSource(sentence, srcs) {
+  const words = s => new Set(s.toLowerCase().match(/[a-z0-9]{3,}/g) || []), mine = words(sentence);
+  let best = srcs[0], score = -1;
+  for (const s of srcs) { const n = [...words(s.text)].filter(w => mine.has(w)).length; if (n > score) { best = s; score = n; } }
+  return best?.id;
+}
+const citeNum = (n, id, still) => id && !still ? `<button class="nb" data-a="cite" data-v="${id}" title="${esc(id.startsWith("T") ? "From Consult" : citeLabel(id))}">${n}</button>` : `<span class="nb">${n}</span>`;
 const STOP = new Set("a an the and or of to in on at for with by is are was were be been has have had this that it its as from no not patient patients reports reported says said complains denies looks like seems tab tablet order rule out once twice daily mg ml for since".split(" "));
 function marked(sentence, srcs, still) {
   const words = sentence.split(/(\s+)/), norm = w => w.toLowerCase().replace(/[^a-z0-9/]/g, "");

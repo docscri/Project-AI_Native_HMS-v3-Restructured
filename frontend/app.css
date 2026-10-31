@@ -931,3 +931,5 @@ sup.cs button:hover, .cite-sup:hover { background: #3f6b1f; }
 .note-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 .cx-pill-btn.cx-gen { background: var(--lime); border-color: var(--lime); color: var(--ink); font-weight: 700; }
 .cx-pill-btn.cx-gen:hover { border-color: var(--ink); }
+button.nb { border: 0; padding: 0; cursor: pointer; font-family: inherit; transition: background .15s, color .15s; }
+button.nb:hover, button.nb:focus-visible { background: var(--lime); color: var(--ink); outline: none; }

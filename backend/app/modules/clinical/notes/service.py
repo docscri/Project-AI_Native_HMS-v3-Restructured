@@ -103,7 +103,7 @@ def sign(db, me, note_id: int) -> dict:
     n = repo.in_clinic(db, me["clinic_id"], note_id)
     if not n:
         raise NotFound("Note not found.")
-    db.lock(f"visit:{n['visit_id']}")   # shared with document removal: a file can't vanish while its note is signed
+    db.lock(f"patient:{n['patient_id']}")   # shared with document removal: a file can't vanish while a note citing it is signed
     n = repo.in_clinic(db, me["clinic_id"], note_id)
     if n["status"] == "signed":
         raise Conflict("Already signed.")

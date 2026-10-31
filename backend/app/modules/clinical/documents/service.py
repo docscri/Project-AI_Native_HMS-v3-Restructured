@@ -77,17 +77,18 @@ def for_visit(db, me, visit_id: int) -> list[dict]:
 
 
 def remove(db, me, doc_id: int) -> dict:
-    """Removes a wrongly added document, until the visit's note is signed (a signed note may cite it)."""
+    """Removes a wrongly added document, unless a signed note relies on it: its own visit's note, or any signed note
+    of the patient that cites it (reports belong to the patient, so a later visit's note can cite them)."""
     d = repo.in_clinic(db, me["clinic_id"], doc_id)
     if not d:
         raise NotFound("Document not found.")
-    if d["visit_id"]:
-        db.lock(f"visit:{d['visit_id']}")   # shared with signing, so the check below can't go stale
+    db.lock(f"patient:{d['patient_id']}")   # shared with signing, so the checks below can't go stale
     if d["visit_id"] and repo.note_signed(db, d["visit_id"]):
         raise Conflict("The note for this visit is signed, so its documents stay.")
+    if repo.cited_by_signed_note(db, d["patient_id"], f"D{doc_id}"):
+        raise Conflict("A signed note cites this document, so it stays.")
     repo.delete(db, doc_id)
-    if d["visit_id"]:
-        repo.uncite_in_draft(db, d["visit_id"], f"D{doc_id}")
+    repo.uncite_in_drafts(db, d["patient_id"], f"D{doc_id}")
     log_event(db, me["clinic_id"], me["id"], "document", doc_id, "removed", {"visit": d["visit_id"], "filename": d["filename"]})
     db.commit()
     try:

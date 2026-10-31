@@ -22,6 +22,7 @@ function enhance(root) {
   root.querySelectorAll("select:not([data-dd])").forEach(makeDropdown);
   root.querySelectorAll('input[type="date"]:not([data-dd])').forEach(makeDatePicker);
   root.querySelectorAll('input[type="time"]:not([data-dd])').forEach(makeTimePicker);
+  root.querySelectorAll('input[type="number"]:not([data-step])').forEach(makeStepper);
 }
 function closeMenus(except) { document.querySelectorAll(".dd.open").forEach(d => d !== except && !d.contains(except) && d.classList.remove("open")); }
 function makeDropdown(sel) {
@@ -108,3 +109,19 @@ new MutationObserver(() => { if (enhanceQueued) return; enhanceQueued = true; re
   .observe(document.body, { childList: true, subtree: true });
 
 boot();
+
+// Number boxes: the browser's tiny arrows are hidden; round − and + buttons sit inside the field instead.
+function makeStepper(inp) {
+  inp.dataset.step = "1"; inp.inputMode = "numeric";
+  const box = document.createElement("span"); box.className = "stepper";
+  box.innerHTML = `<button type="button" tabindex="-1" aria-label="Less">−</button><button type="button" tabindex="-1" aria-label="More">+</button>`;
+  const [less, more] = box.children;
+  const bump = up => {
+    if (inp.disabled || inp.readOnly) return;
+    if (inp.value === "") inp.value = inp.min || 0; else up ? inp.stepUp() : inp.stepDown();
+    inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true }));
+  };
+  less.addEventListener("click", e => { e.preventDefault(); bump(false); });
+  more.addEventListener("click", e => { e.preventDefault(); bump(true); });
+  inp.after(box); inp.closest(".field")?.classList.add("has-stepper");
+}

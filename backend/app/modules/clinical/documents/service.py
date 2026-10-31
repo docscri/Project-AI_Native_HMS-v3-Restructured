@@ -1,20 +1,18 @@
 """Upload, read in the background, serve back."""
-import base64
 import logging
-import re
-
-import httpx
 
 from app.core.visit import get_visit
 from app.modules.clinical.brief import service as brief
 from app.shared import files as storage
-from app.shared.ai import llm
+from app.shared.ai import tasks
+from app.shared.ai.tasks.read_report import task as read_report
 from app.shared.audit import log_event
 from app.shared.db import connect
 from app.shared.errors import Conflict, Invalid, NotFound, TooLarge, Unsupported
 from . import repo
 
 log = logging.getLogger(__name__)
+UNREAD = "Couldn't be read. Try again, or tell the clinic admin if it keeps failing."
 
 
 def load_docs(db, patient_id: int) -> list[dict]:
@@ -22,35 +20,8 @@ def load_docs(db, patient_id: int) -> list[dict]:
 
 
 def extract_document(data: bytes, mime: str, filename: str) -> dict:
-    """Returns {"summary": str, "findings": [{"name", "value", "unit"}]}."""
-    if llm.enabled() and (mime or "").split("/")[0] in ("image", "application"):
-        return llm.generate([{"text": llm.prompt("extract.txt")}, {"inline_data": {"mime_type": mime, "data": base64.b64encode(data).decode()}}])
-    text = data.decode(errors="ignore")[:4000] if (mime or "").startswith("text") else ""
-    head = next((x.strip() for x in text.splitlines() if x.strip()), "")
-    findings = [{"name": n.strip(), "value": v, "unit": u.strip()}
-                for n, v, u in re.findall(r"([A-Za-z][A-Za-z0-9 ]{1,20})[:\s]+(\d+(?:\.\d+)?)\s*([a-zA-Z/%]*)", text)][:10]
-    return {"summary": text[:300] or f"Uploaded document: {filename}", "findings": findings, "title": head if 0 < len(head) <= 60 and not re.search(r"\d", head) else ""}
-
-
-UNREAD = "Couldn't be read. Try again, or tell the clinic admin if it keeps failing."
-
-
-def reading_error(e: Exception) -> str:
-    """The technical reason, for the server log only; never the request URL, which can hold a key."""
-    status = getattr(getattr(e, "response", None), "status_code", None)
-    if status == 404:
-        return "The AI model wasn't found. Check LLM_MODEL in backend/app/config.py."
-    if status in (400, 401, 403):
-        return f"The AI service refused the request ({status}). Check the API key."
-    if status == 429:
-        return "The AI service is busy or over its limit. Try again in a minute."
-    if status:
-        return f"The AI service answered {status}. Try again."
-    if isinstance(e, httpx.TimeoutException):
-        return "The AI service took too long. Try again."
-    if isinstance(e, httpx.HTTPError):
-        return "Couldn't reach the AI service. Check the internet connection."
-    return "The file couldn't be read."
+    """Returns {"title", "summary", "findings": [{"name", "value", "unit", "range", "flag"}]}; raises if the AI can't read it."""
+    return tasks.run(read_report, on_failure="raise", data=data, mime=mime, filename=filename)
 
 
 def run_extraction(doc_id: int) -> None:
@@ -61,7 +32,7 @@ def run_extraction(doc_id: int) -> None:
             ex = extract_document(storage.read(d["path"]), d["mime"], d["filename"])
             repo.set_read(db, doc_id, "ready", ex)
         except Exception as e:  # keep the file, flag the failure
-            log.warning("Reading document %s failed: %s", doc_id, reading_error(e))   # for whoever runs the server
+            log.warning("Reading document %s failed: %s", doc_id, tasks.reason(e))   # for whoever runs the server
             repo.set_read(db, doc_id, "failed", {"summary": UNREAD, "findings": []})   # what clinic staff see
         db.commit()
     finally:

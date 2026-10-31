@@ -1,9 +1,5 @@
-"""Language model access. LLM in app/config.py picks providers/<name>.py; prompts live in shared/ai/prompts."""
-from pathlib import Path
-
+"""Language model access. LLM in app/config.py picks providers/<name>.py; the jobs it does live in shared/ai/tasks."""
 from app import config
-
-PROMPTS = Path(__file__).resolve().parent.parent / "prompts"
 
 
 def enabled() -> bool:
@@ -12,7 +8,3 @@ def enabled() -> bool:
 
 def generate(parts: list[dict]) -> dict:
     return config.provider("LLM").generate(parts)
-
-
-def prompt(name: str) -> str:
-    return (PROMPTS / name).read_text()

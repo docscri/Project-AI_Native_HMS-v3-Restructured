@@ -5,15 +5,17 @@ import re
 from datetime import date
 
 from app.core.visit import get_visit
-from app.shared.ai import llm
+from app.shared.ai import llm, tasks
+from app.shared.ai.tasks.brief_summary import task as brief_summary
+from app.shared.ai.tasks.checks import grounded
+from app.shared.ai.tasks.note_values import task as note_values_task
+from app.shared.ai.tasks.visit_lines import task as visit_lines
 from app.shared.db import connect, now
-from app.shared.text import sentences
 from . import repo
 
 log = logging.getLogger(__name__)
 
 SECTIONS = {"S": "Subjective", "O": "Objective", "A": "Assessment", "P": "Plan"}
-NUM = re.compile(r"\d+(?:\.\d+)?")
 ALIASES = {"hba1c": "HbA1c", "glycatedhb": "HbA1c", "glycatedhaemoglobin": "HbA1c", "glycatedhemoglobin": "HbA1c",
            "fbs": "Fasting sugar", "fastingsugar": "Fasting sugar", "fastingbloodsugar": "Fasting sugar", "fastingglucose": "Fasting sugar",
            "rbs": "Random sugar", "randomsugar": "Random sugar", "randombloodsugar": "Random sugar", "randomglucose": "Random sugar",
@@ -28,45 +30,9 @@ RANGES = {"HbA1c": (4.0, 5.6, "%"), "Fasting sugar": (70, 99, "mg/dl"), "Random 
           "Pulse": (60, 100, "/min"), "SpO2": (95, 100, "%"), "Temperature": (97, 99.5, "°f")}
 
 
-VITALS = [("BP", "mmHg", r"\b(?:BP|blood pressure)\D{0,6}(\d{2,3}\s*/\s*\d{2,3})"),
-          ("Temperature", "°F", r"\btemp(?:erature)?\D{0,6}(\d{2,3}(?:\.\d)?)"),
-          ("Pulse", "/min", r"\b(?:pulse|PR|HR|heart rate)\D{0,6}(\d{2,3})"),
-          ("SpO2", "%", r"\bSpO2\D{0,6}(\d{2,3})"),
-          ("Weight", "kg", r"\b(?:weight|wt)\D{0,6}(\d{2,3}(?:\.\d)?)"),
-          ("HbA1c", "%", r"\bHbA1c\D{0,6}(\d{1,2}(?:\.\d)?)"),
-          ("Fasting sugar", "mg/dL", r"\b(?:FBS|fasting (?:blood )?(?:sugar|glucose))\D{0,6}(\d{2,3})"),
-          ("Random sugar", "mg/dL", r"\b(?:RBS|random (?:blood )?(?:sugar|glucose))\D{0,6}(\d{2,3})")]
-
-
 def note_values(soap: dict) -> list[dict]:
     """[{"test", "value", "unit", "section"}] read from a signed note; each value must appear in its section."""
-    if llm.enabled():
-        found = llm.generate([{"text": llm.prompt("values.txt") + "\n\nNOTE: " + json.dumps(soap)}]).get("values") or []
-    else:
-        found = [{"test": t, "value": m.group(1).replace(" ", ""), "unit": u, "section": k}
-                 for k in ("O", "S", "A", "P") for t, u, rx in VITALS for m in re.finditer(rx, soap.get(k) or "", re.I)]
-    return [f for f in found if isinstance(f, dict) and f.get("section") in soap
-            and str(f.get("value", "")).replace(" ", "") in (soap.get(f["section"]) or "").replace(" ", "")]
-
-
-def brief_text(patient: dict, sources: dict, new_ids: list[str], visits: list[dict], use_ai: bool = True) -> dict:
-    """{"new": [...], "history": [...], "events": [...]}; sentences are checked by the caller."""
-    if use_ai and llm.enabled():
-        listing = [{"id": k, "text": s["text"]} for k, s in sources.items()]
-        return llm.generate([{"text": llm.prompt("brief_text.txt") + "\n\nPATIENT: " + json.dumps(patient)
-                         + "\n\nNEW DOCUMENTS: " + json.dumps(new_ids) + "\n\nVISITS: " + json.dumps([v["note"] for v in visits])
-                         + "\n\nSOURCES:\n" + json.dumps(listing)}])
-    first = lambda t: (sentences(t) or [""])[0]
-    vals = lambda d: ", ".join(f'{f.get("name")} {f.get("value")} {f.get("unit") or ""}'.strip() for f in sources[d]["findings"][:6])
-    lead = lambda d: first(sources[d]["summary"]) if first(sources[d]["summary"]).lower().startswith(sources[d]["label"].lower()) else f"{sources[d]['label']}: {first(sources[d]['summary'])}"
-    new = [{"text": lead(d) + (f" {vals(d)}." if vals(d) else ""), "cites": [d]} for d in new_ids]
-    seen = {}   # one line per assessment, citing every visit it came from
-    for v in visits:
-        a = v["note"] + ".A"
-        if a in sources:
-            seen.setdefault(first(sources[a]["body"]), []).append((v["date_text"], a))
-    history = [{"text": t, "cites": [c for _, c in hits]} for t, hits in list(seen.items())[:4]]   # dates show on the citation chips
-    return {"new": new, "history": history, "events": []}
+    return tasks.run(note_values_task, soap=soap)
 
 
 def name_of(test) -> str:
@@ -139,9 +105,9 @@ def inputs(db, v: dict) -> tuple[list[dict], list[dict]]:
 
 
 def basis(notes: list[dict], docs: list[dict]) -> str:
-    """Changes when a note is signed or a report is read, so the saved brief is reused until then."""
+    """Changes when a note is signed, a report is read or a brief prompt changes version; the saved brief is reused until then."""
     return ("n" + ",".join(str(n["id"]) for n in notes) + ";d" + ",".join(str(d["id"]) + ("x" if d["ai_status"] == "failed" else "") for d in docs)
-            + (";ai" if llm.enabled() else ""))
+            + (";ai:" + ",".join(tasks.version(t) for t in (brief_summary, visit_lines)) if llm.enabled() else ""))
 
 
 def current_basis(db, v: dict) -> str:
@@ -149,35 +115,26 @@ def current_basis(db, v: dict) -> str:
 
 
 def values_of(db, n: dict) -> list[dict]:
-    """Numbers in a signed note, read once and saved."""
-    if n.get("vals") is None:
-        n["vals"] = json.dumps(note_values(n["content"]["soap"]))
+    """Numbers in a signed note, read once and saved; read again when the note_values prompt changes version."""
+    saved, current = json.loads(n["vals"]) if n.get("vals") else None, tasks.version(note_values_task)
+    if not isinstance(saved, dict) or saved.get("version") != current:
+        saved = {"version": current, "values": note_values(n["content"]["soap"])}
+        n["vals"] = json.dumps(saved)
         repo.save_values(db, n["id"], n["vals"])
-    return json.loads(n["vals"])
+    return saved["values"]
+
+
+def with_flags(lines: list[dict], sources: dict) -> list[dict]:
+    """Marks values outside the usual range inside each sentence ("flags")."""
+    for s in lines:
+        s["flags"] = list(dict.fromkeys(x for c in s["cites"] for f in sources[c].get("values", []) for x in abnormal_values(f)
+                                        if x in s["text"].replace(" ", "")))
+    return lines
 
 
 def checked(items, sources: dict) -> list[dict]:
-    """Keeps a sentence only if it cites known sources and every number in it appears in them.
-    Repeated sentences become one, citing every source; values outside the usual range are listed in "flags"."""
-    out, seen = [], {}
-    for it in items if isinstance(items, list) else []:
-        if not isinstance(it, dict):
-            continue
-        text = str(it.get("text") or "").strip()
-        cites = [c for c in it.get("cites") or [] if c in sources]
-        if not text or not cites:
-            continue
-        have = set(NUM.findall(" ".join(sources[c]["text"] for c in cites)))
-        if not all(x in have for x in NUM.findall(text)):
-            continue
-        key = re.sub(r"[^a-z0-9]", "", text.lower())
-        if key in seen:
-            seen[key]["cites"] += [c for c in cites if c not in seen[key]["cites"]]
-            continue
-        flags = [x for c in cites for f in sources[c].get("values", []) for x in abnormal_values(f) if x in text.replace(" ", "")]
-        seen[key] = {"text": text, "cites": cites, "flags": list(dict.fromkeys(flags))}
-        out.append(seen[key])
-    return out
+    """Sentences their sources support (see tasks.checks.grounded), with out-of-range values flagged."""
+    return with_flags(grounded([i for i in items or [] if isinstance(i, dict)], sources), sources)
 
 
 def charts(notes: list[dict], docs: list[dict], db) -> list[dict]:
@@ -251,30 +208,17 @@ def build(db, v: dict) -> dict:
     visits = [{"note": f"N{n['id']}", "date_text": nice(n["date"])} for n in notes]
     patient = {"age": None if not p or not p["dob"] else date.today().year - int(p["dob"][:4]), "sex": p["sex"] if p else None}
     readable = {k: s for k, s in sources.items() if not s.get("failed")}
-    text = {}
-    if readable:
-        try:
-            text = brief_text(patient, readable, new_ids, visits)
-        except Exception:   # AI unavailable: the plain version still reaches the doctor
-            text = brief_text(patient, readable, new_ids, visits, use_ai=False)
-    new = [s for s in checked(text.get("new"), readable) if all(c in new_ids for c in s["cites"])]
-    missing = [d for d in new_ids if not any(d in s["cites"] for s in new)]
-    if missing:   # a report the AI line didn't survive the check for still gets its plain line
-        new += checked(brief_text(patient, readable, missing, [], use_ai=False)["new"], readable)
-    new += [{"text": f"{d['filename']}: couldn't be read.", "cites": [f"D{d['id']}"], "flags": []}
-            for d in unread if d["created_at"].replace(" ", "T") >= last_signed]
-    lines = {e.get("note"): e for e in text.get("events") or [] if isinstance(e, dict)}
+    summary = tasks.run(brief_summary, patient=patient, sources=readable, new_ids=new_ids, visits=visits)
+    new = with_flags(summary["new"], readable) + [{"text": f"{d['filename']}: couldn't be read.", "cites": [f"D{d['id']}"], "flags": []}
+                                                  for d in unread if d["created_at"].replace(" ", "T") >= last_signed]
+    lines = tasks.run(visit_lines, patient=patient, sources=readable, notes=[v["note"] for v in visits])
     events = []
     for n in notes:
-        nid = f"N{n['id']}"
-        got = checked([lines[nid]], sources) if nid in lines else []
-        if not got:   # the note's own words: why they came, what was found
-            parts = [(f"{nid}.{k}", (sentences(n["content"]["soap"].get(k) or "") or [""])[0]) for k in ("S", "A")]
-            got = [{"text": " ".join(t for _, t in parts if t), "cites": [c for c, t in parts if t]}]
+        line = lines[f"N{n['id']}"]
         own_docs = [{"id": d["id"], "filename": d["filename"], "title": title_of(d)} for d in docs if d["visit_id"] == n["vid"]]
-        events.append({"visit_id": n["vid"], "date": n["date"], "doctor": n["doctor"], "text": got[0]["text"],
-                       "cites": got[0]["cites"] + [f"D{d['id']}" for d in own_docs], "documents": own_docs})
-    return {"summary": [{"kind": "new", "sentences": new}] * bool(new) + [{"kind": "history", "sentences": checked(text.get("history"), sources)}],
+        events.append({"visit_id": n["vid"], "date": n["date"], "doctor": n["doctor"], "text": line["text"],
+                       "cites": line["cites"] + [f"D{d['id']}" for d in own_docs], "documents": own_docs})
+    return {"summary": [{"kind": "new", "sentences": new}] * bool(new) + [{"kind": "history", "sentences": with_flags(summary["history"], readable)}],
             "events": events, "charts": charts(notes, docs, db), "sources": sources, "basis": basis(notes, finished)}
 
 

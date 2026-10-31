@@ -4,7 +4,8 @@ import json
 from fastapi.testclient import TestClient
 
 from app.modules.clinical.brief import service as brief
-from app.shared.ai import llm
+from app.shared.ai import llm, tasks
+from app.shared.ai.tasks.note_values import task as note_values_task
 from app.shared.db import connect
 from app.main import app
 from tests.helpers import clinic
@@ -92,7 +93,8 @@ def test_ai_sentences_without_valid_citations_are_dropped(monkeypatch):
 
 
 def test_report_beats_note_on_the_same_day():
-    notes = [{"id": 1, "date": "2026-10-20", "vals": json.dumps([{"test": "HbA1c", "value": "7.0", "unit": "%", "section": "O"}])}]
+    saved = {"version": tasks.version(note_values_task), "values": [{"test": "HbA1c", "value": "7.0", "unit": "%", "section": "O"}]}
+    notes = [{"id": 1, "date": "2026-10-20", "vals": json.dumps(saved)}]
     docs = [{"id": 5, "created_at": "2026-10-20T09:00:00", "extracted": {"findings": [{"name": "Glycated Hb", "value": "7.2", "unit": "%"}]}}]
     out = brief.charts(notes, docs, None)
     assert out == [{"test": "HbA1c", "unit": "%", "series": [{"name": "HbA1c", "range": [4.0, 5.6], "range_from": "usual",

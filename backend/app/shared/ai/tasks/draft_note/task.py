@@ -45,7 +45,10 @@ def parts(patient: dict, items: list[dict]) -> list[dict]:
 FORMS = {"tab", "tabs", "tablet", "tablets", "cap", "caps", "capsule", "capsules", "syrup", "syp", "inj", "injection",
          "drops", "cream", "ointment", "gel", "mg", "ml", "mcg", "sr", "er", "xr", "ds", "forte", "plus"}
 NEGATION = re.compile(r"\b(?:no|not|don'?t|do not|never|stop|stopped|discontinue|avoid|without|allergic|allergy|hold|instead of)\b")
-CLAUSE = re.compile(r"[,;:]|\b(?:and|but|then|start|give|add|continue|switch to)\b")
+# A new phrase starts at punctuation or a joining word, so "Stop metformin, start X" and "stop metformin and start X"
+# rule out only metformin. Verbs like "give" don't start one: in "do not give X" the "not" belongs to X.
+CLAUSE = re.compile(r"[,;:]|\b(?:and|but|then|instead|also)\b")
+SLOT = {"0", "½", "1/2", "0.5", "1", "1½", "1.5", "2"}   # tablets per slot in a 1-0-1 schedule
 TIMES = {"once": 1, "daily": 1, "od": 1, "twice": 2, "bd": 2, "bid": 2, "two times": 2, "thrice": 3, "three times": 3,
          "tds": 3, "tid": 3, "four times": 4, "qid": 4}
 NUMBER = re.compile(r"\d+(?:\.\d+)?")
@@ -85,12 +88,16 @@ def supported(value: str, where: str, near: str) -> bool:
     if not value.strip():
         return True
     near = digits(near)
-    pattern = re.fullmatch(r"\s*([0-9½]+)-([0-9½]+)-([0-9½]+)\s*", value)
+    pattern = re.fullmatch(r"\s*([0-9½./]+)-([0-9½./]+)-([0-9½./]+)\s*", value)
     if pattern:
+        if pattern.group(0).strip() in near:
+            return True   # said exactly as written
+        if not set(pattern.groups()) <= SLOT:
+            return False  # "10-0-10" is not a tablet schedule anyone said
         per_day = sum(1 for x in pattern.groups() if x != "0")
         said = {TIMES[w] for w in TIMES if re.search(rf"\b{w}\b", where)}
         said = said - {1} if len(said) > 1 else said   # "twice daily" is twice, not also once
-        return pattern.group(0).strip() in near or per_day in said
+        return per_day in said
     words = [w for w in re.findall(r"[a-z]{3,}", value.lower()) if w not in FILLER]
     return (all(n in NUMBER.findall(near) for n in NUMBER.findall(value))
             and all(re.search(rf"\b{re.escape(w.rstrip('s'))}", near) for w in words))

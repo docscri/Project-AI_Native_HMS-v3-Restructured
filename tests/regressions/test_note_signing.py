@@ -17,7 +17,7 @@ def test_signer_recorded_and_signed_note_cannot_change():
         n = c.post(f"/api/visits/{v['id']}/note", headers=h).json()
         signed = c.post(f"/api/notes/{n['id']}/sign", headers=b).json()
         assert signed["signed_by_name"] == "Dr. B"
-        page = c.get(f"/api/notes/{n['id']}/print", params={"token": b["Authorization"].split()[1]}).text
+        page = c.get(f"/api/notes/{n['id']}/print", headers=b).text
         assert "Signed by Dr. B" in page
         assert c.put(f"/api/notes/{n['id']}", headers=h, json={"soap": {"S": "late edit", "O": "", "A": "", "P": ""}, "rx": []}).status_code == 409
         assert c.post(f"/api/notes/{n['id']}/sign", headers=h).status_code == 409
@@ -39,5 +39,5 @@ def test_signer_survives_removal():
         r = c.delete(f"/api/members/{inv['id']}", headers=h).json()
         assert r["deactivated"] and not r["removed"]
         db = connect(); db.execute("update notes set signed_by = null where id = ?", (n["id"],)); db.commit(); db.close()
-        page = c.get(f"/api/notes/{n['id']}/print", params={"token": h["Authorization"].split()[1]}).text
+        page = c.get(f"/api/notes/{n['id']}/print", headers=h).text
         assert "Signed by Dr. Two" in page

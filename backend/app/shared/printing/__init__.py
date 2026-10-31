@@ -37,7 +37,7 @@ def page(title: str, body: str, auto: bool = False, size: str = "A4", narrow: bo
             '<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">'
             f'<style>@page {{ size: {size}; margin: 0; }}{CSS}</style>'
             f'<div class="page{" narrow" if narrow else ""}">{body}</div>'
-            + ('<script>onload=()=>setTimeout(print,300)</script>' if auto else ""))
+            + ('<script>setTimeout(print,300)</script>' if auto else ""))
 
 
 def message(title: str, text: str) -> str:

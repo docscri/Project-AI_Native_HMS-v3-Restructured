@@ -29,6 +29,7 @@ def today(db, me, doctor_id: int | None) -> dict:
 def call_next(db, me, doctor_id: int | None) -> dict:
     did = doctor_id or me["id"]
     clinic_doctor(db, me, did)
+    db.lock(f"doctor:{did}")   # one patient with a doctor at a time, even with parallel clicks
     if repo.busy(db, did, Date.today().isoformat()):
         raise Conflict("Finish the current patient first.")
     v = repo.next_waiting(db, did, Date.today().isoformat())
@@ -39,6 +40,7 @@ def call_next(db, me, doctor_id: int | None) -> dict:
 
 
 def start(db, me, visit_id: int) -> dict:
+    db.lock(f"doctor:{get_visit(db, me, visit_id)['doctor_id']}")
     v = get_visit(db, me, visit_id)
     if repo.busy(db, v["doctor_id"], v["date"], visit_id):
         raise Conflict("Finish the current patient first.")

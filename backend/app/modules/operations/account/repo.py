@@ -81,3 +81,7 @@ def update_owner(db, member_id: int, name, email, phone, kind, speciality) -> No
 
 def finish(db, clinic_id: int) -> None:
     db.execute("update clinics set onboarded = 1 where id = ?", (clinic_id,))
+
+
+def drop_resets(db, member_id: int) -> None:
+    db.execute("delete from password_resets where member_id = ?", (member_id,))

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse
 
 from app.shared import printing as printpage
-from app.shared.auth import member_for_token, public_member, require_screen
+from app.shared.auth import require_screen
 from app.shared.db import get_db
 from app.modules.financial.payments import service
 from app.modules.financial.payments.schema import Refund
@@ -18,12 +18,8 @@ def refund(visit_id: int, body: Refund, me=Depends(front_desk), db=Depends(get_d
 
 
 @router.get("/visits/{visit_id}/receipt", response_class=HTMLResponse)
-def receipt(visit_id: int, token: str, auto: int = 0, db=Depends(get_db)):
-    """Token in the query so it opens in a new tab."""
-    m = member_for_token(db, token)
-    if not m:
-        return HTMLResponse(printpage.message("Log in again", "Your session has ended. Open the receipt from the app."), 401)
-    me = public_member(m)
+def receipt(visit_id: int, auto: int = 0, me=Depends(front_desk), db=Depends(get_db)):
+    """Fetched by the app with the login header and written into a new tab, so the token never sits in a URL."""
     v = service.paid_visit(db, me, visit_id)
     if not v:
         return HTMLResponse(printpage.message("No receipt", "This visit has not been paid yet."), 404)

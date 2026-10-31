@@ -22,15 +22,6 @@ def migrate() -> None:
         db.script("create table if not exists schema_version (version integer primary key, name text not null, applied_at text)")
         db.commit()
         done = {r[0] for r in db.execute("select version from schema_version").fetchall()}
-        # Pre-migration databases already have the 001 tables.
-        if not done:
-            exists = db.execute(
-                "select 1 from sqlite_master where type = 'table' and name = 'clinics'" if db.dialect == "sqlite"
-                else "select 1 from information_schema.tables where table_name = 'clinics'").fetchone()
-            if exists:
-                db.execute("insert into schema_version (version, name, applied_at) values (1, '001_init', ?)", (now(),))
-                db.commit()
-                done = {1}
         for path in sorted([*MIGRATIONS.glob("*.sql"), *MIGRATIONS.glob("[0-9]*.py")]):
             version = int(path.name.split("_", 1)[0])
             if version in done:

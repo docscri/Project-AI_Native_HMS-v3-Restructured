@@ -1,5 +1,6 @@
 import hashlib
 import re
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -23,7 +24,14 @@ from app.modules.operations.team import routes as team
 
 FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
 
-app = FastAPI(title="Clinic V1")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    config.check()
+    db.init()
+    yield
+
+
+app = FastAPI(title="Dictate", lifespan=lifespan)
 
 
 errors.install(app)
@@ -31,12 +39,6 @@ ROUTERS = (account, administration, scheduling, patients, appointments, payments
            consultation, brief, documents, notes, team, reports)
 for r in ROUTERS:
     app.include_router(r.router)
-
-
-@app.on_event("startup")
-def startup() -> None:
-    config.check()
-    db.init()
 
 
 @app.get("/health")

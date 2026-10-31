@@ -1,7 +1,8 @@
 # Architecture
 
 ```
-backend/requirements.txt  Python packages
+backend/requirements.txt      Python packages the app needs
+backend/requirements-dev.txt  + test tools (pip install -r backend/requirements-dev.txt, then pytest)
 backend/app/
   config.py          provider names (DATABASE, STORAGE, LLM, SPEECH) and models; secrets stay in .env
   main.py            app, routers, static frontend

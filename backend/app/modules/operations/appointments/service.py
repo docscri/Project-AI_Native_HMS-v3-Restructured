@@ -16,9 +16,6 @@ from app.shared.errors import Conflict, Invalid, NotFound
 from app.shared.validate import valid_day
 
 
-CANCEL_REASONS = {"Patient request", "Doctor unavailable", "Booked by mistake", "Other"}
-
-
 def auto_no_show(db, me, day: str) -> None:
     """No-show after session end; "late" patients wait until day end."""
     clinic = clinic_of(db, me)

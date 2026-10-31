@@ -173,6 +173,7 @@ document.addEventListener("click", e => {
       case "mic-pause": pauseMic(); break;
       case "mic-resume": resumeMic(); break;
       case "mic-stop": await stopMic(); break;
+      case "mic-cancel": await cancelMic(); break;
       case "note-edit": S.noteEdit = true; renderConsult(); break;
       case "note-done": { const n = D.cur.note; await api(`/notes/${n.id}`, { method: "PUT", body: readNote() }); S.noteEdit = false; toast("Saved"); refreshConsult(); break; }
       case "cs-mic": {

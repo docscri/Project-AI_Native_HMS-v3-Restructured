@@ -1,6 +1,7 @@
 # Architecture
 
 ```
+backend/requirements.txt  Python packages
 backend/app/
   main.py            app, routers, static frontend
   shared/            plumbing with swappable providers, no clinic rules
@@ -17,6 +18,9 @@ backend/app/
     financial/       payments, collections, day_close
 migrations/          NNN_name.sql or .py with run(db); applied once each at startup
 frontend/            the browser app
+docs/                README.md, ARCHITECTURE.md
+infra/                deployment: render/ (Render blueprints); docker/ etc. go here later
+scripts/             run.py (local start helper)
 tests/               helpers.py (clinic, started_visit) shared by all tests
   operations/ clinical/ financial/   API and direct service tests per area
   regressions/       tests for bugs found in earlier reviews

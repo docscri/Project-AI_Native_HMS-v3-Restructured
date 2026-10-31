@@ -27,7 +27,7 @@ class Rejected(Exception):
 def prompt(task_file: str) -> tuple[int, str]:
     """(version, instructions) from the prompt.md beside a task's task.py (pass its __file__)."""
     path = Path(task_file).parent / "prompt.md"
-    head, _, body = path.read_text().partition("\n")
+    head, _, body = path.read_text(encoding="utf-8").partition("\n")
     m = re.fullmatch(r"Version:\s*(\d+)\s*", head)
     if not m:
         raise ValueError(f"{path} must start with 'Version: N'")

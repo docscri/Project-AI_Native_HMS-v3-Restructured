@@ -32,7 +32,7 @@ def migrate() -> None:
                 spec.loader.exec_module(module)
                 module.run(db)
             else:
-                db.script(_dialect_sql(path.read_text(), db.dialect))
+                db.script(_dialect_sql(path.read_text(encoding="utf-8"), db.dialect))
             db.execute("insert into schema_version (version, name, applied_at) values (?, ?, ?)", (version, path.stem, now()))
             db.commit()
     finally:

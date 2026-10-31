@@ -130,6 +130,7 @@ def walk_in(db, me, body: WalkIn) -> int:
 
 def arrive(db, me, visit_id: int, body: Payment) -> None:
     """The caller commits and queues the brief."""
+    db.lock(f"visit:{visit_id}")   # same lock as refund and undo: one money change per visit at a time
     v = get_visit(db, me, visit_id)
     db.lock(f"tokens:{v['doctor_id']}:{v['date']}")
     v = get_visit(db, me, visit_id)
@@ -148,6 +149,7 @@ def arrive(db, me, visit_id: int, body: Payment) -> None:
 
 def undo_arrival(db, me, visit_id: int, body: Cancel) -> dict:
     """Undo arrival and refund."""
+    db.lock(f"visit:{visit_id}")   # a refund running now must finish first, or both would hand back the fee
     v = get_visit(db, me, visit_id)
     if v["status"] != "waiting" or v["is_walk_in"]:
         raise Conflict("This arrival can't be undone.")

@@ -2,7 +2,9 @@
 function startMic(visitId) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (S.dictBy !== "deepgram" && !SR) { refreshConsult(); return toast("Use Chrome to dictate", true); }
-  Object.assign(S, { recState: "on", recVisit: visitId, recAcc: 0, recStart: Date.now(), dict: null, dictDone: null });
+  const box = $("#free-text");   // what Consult held before this recording, so Cancel can put it back
+  Object.assign(S, { recState: "on", recVisit: visitId, recAcc: 0, recStart: Date.now(), dict: null, dictDone: null, recCancelled: false,
+                     recBase: box && Number(box.dataset.v) === visitId ? box.value : freeText(S.data.cur) });
   listen(visitId);
   clearInterval(S.recT); S.recT = setInterval(() => { const t = $("#dock-timer"); if (t) t.textContent = fmtClock(recElapsed()); }, 500);
   renderConsult();
@@ -14,7 +16,7 @@ function listen(visitId) {
   const r = new SR(); r.lang = "en-IN"; r.continuous = true; r.interimResults = true;
   S.dict = null;
   r.onresult = e => {
-    const el = $("#free-text"); if (!el || el.readOnly) return;
+    const el = $("#free-text"); if (!el || el.readOnly || S.recCancelled) return;
     if (!S.dict || (!S.dict.len && document.activeElement === el)) S.dict = { start: document.activeElement === el ? el.selectionEnd : el.value.length, len: 0 };
     let interim = "";
     for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -49,8 +51,18 @@ async function stopMic() {
   S.dict = null; S.dictDone = id;
   await saveText(id); refreshConsult();
 }
+// Cancel: stop listening, ignore words still on their way, and put Consult back as it was before the recording.
+async function cancelMic() {
+  const id = S.recVisit, r = S.rec, base = S.recBase ?? "";
+  Object.assign(S, { rec: null, recState: null, recCancelled: true, dict: null, dictDone: null }); clearInterval(S.recT);
+  try { r?.abort ? r.abort() : r?.finish ? await r.finish() : r?.stop(); } catch {}
+  await S.finishing;
+  const el = $("#free-text"); if (el && Number(el.dataset.v) === id) el.value = base;
+  edit(id, base); await saveText(id); refreshConsult();
+  toast("Dictation cancelled.");
+}
 function speech(visitId, text, final) {
-  const el = $("#free-text"); if (!el || el.readOnly || Number(el.dataset.v) !== visitId) return;
+  const el = $("#free-text"); if (!el || el.readOnly || Number(el.dataset.v) !== visitId || S.recCancelled) return;
   if (!S.dict || (!S.dict.len && !S.dict.kept && document.activeElement === el)) S.dict = { start: document.activeElement === el ? el.selectionEnd : el.value.length, len: 0 };
   const kept = S.dict.kept;   // words already left in the box when the doctor typed
   if (kept && text.toLowerCase().startsWith(kept.toLowerCase())) text = text.slice(kept.length).trimStart();

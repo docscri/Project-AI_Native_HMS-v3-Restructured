@@ -70,7 +70,8 @@ const WAVE = [4, 9, 14, 7, 11, 5, 3, 16, 10, 6, 12, 8, 5, 13, 18, 7, 11, 6, 9, 4
 function dock(v) {
   if (S.recState && S.recVisit === v.id) {
     const paused = S.recState === "paused";
-    return `<div class="dock rec ${paused ? "paused" : ""}"><div class="dock-wave">${WAVE.map((h, i) => `<i style="--h:${h}px;animation-delay:${(i * 97) % 900}ms"></i>`).join("")}</div>
+    return `<div class="dock rec ${paused ? "paused" : ""}"><button class="dock-cancel" data-a="mic-cancel" aria-label="Cancel dictation" title="Cancel — discard this recording">${ICON.x}</button>
+      <div class="dock-wave">${WAVE.map((h, i) => `<i style="--h:${h}px;animation-delay:${(i * 97) % 900}ms"></i>`).join("")}</div>
       <span class="dock-time" id="dock-timer">${fmtClock(recElapsed())}</span>
       <button class="dock-round" data-a="${paused ? "mic-resume" : "mic-pause"}" aria-label="${paused ? "Resume" : "Pause"}" title="${paused ? "Resume" : "Pause"}">${paused ? ICON.play : ICON.pause}</button>
       <button class="dock-stop" data-a="mic-stop" aria-label="Stop" title="Stop">${ICON.stop}</button></div>`;

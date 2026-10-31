@@ -1,6 +1,9 @@
+// Rough notes: what the doctor types and dictates, in one box. Typing works without the microphone;
+// clicking into the box of a waiting patient starts the visit, just as the microphone does.
 function paneDictate(v) {
-  const n = v.note, can = v.status === "with_doctor" && n?.status !== "signed";
-  return `<textarea class="live-text live-edit" id="free-text" data-a="free-text" data-v="${v.id}" spellcheck="true" aria-label="Transcript" ${can ? "" : "readonly"}>${esc(freeText(v))}</textarea>`;
+  const n = v.note, can = ["waiting", "with_doctor"].includes(v.status) && n?.status !== "signed";
+  return `<textarea class="live-text live-edit" id="free-text" data-a="free-text" data-v="${v.id}" spellcheck="true" aria-label="Rough notes"
+    placeholder="${can ? "Type here, or press the microphone to dictate." : ""}" ${can ? "" : "readonly"}>${esc(freeText(v))}</textarea>`;
 }
 const freeText = v => S.ft?.id === v.id ? S.ft.text : S.drafts?.[v.id]?.saved !== S.drafts?.[v.id]?.text ? S.drafts[v.id].text : (v.text || "");
 const SOAP = [["S", "Subjective"], ["O", "Objective"], ["A", "Assessment"], ["P", "Plan"]];
@@ -69,7 +72,7 @@ function rightCol() {
     <div class="cx-row"><span>Visits</span><b>${p.visits.filter(x => x.status === "done").length}</b></div></div>`;
 }
 function sourceOf(v, id) {
-  if (id.startsWith("T")) { const t = v.note?.sources?.[id] ?? sentences(freeText(v))[Number(id.slice(1)) - 1]?.text; return t && { kind: "Transcript", text: t }; }
+  if (id.startsWith("T")) { const t = v.note?.sources?.[id] ?? sentences(freeText(v))[Number(id.slice(1)) - 1]?.text; return t && { kind: "Rough notes", text: t }; }
   const bs = v.brief?.sources?.[id];
   if (bs) return bs.kind === "note" ? { kind: `Note · ${longDate(bs.date)} · ${bs.section}`, text: bs.body } : { kind: `Report · ${longDate(bs.date)}`, text: bs.label + (bs.summary ? " — " + bs.summary : "") };
   if (id.startsWith("D")) { const d = v.documents.find(x => "D" + x.id === id); return d && { kind: "Document", text: d.filename + (d.extracted?.findings?.length ? " — " + d.extracted.findings.slice(0, 3).map(f => `${f.name} ${f.value} ${f.unit || ""}`.trim()).join(", ") : "") }; }
@@ -90,7 +93,7 @@ function citations(v) {
   if (!groups.length) return `<div class="cx-empty">No sources</div>`;
   const card = id => {
     const bs = b?.sources?.[id], on = S.focusSrc === id ? " hl" : "", n = briefNums(b).get(id), no = n ? `${n} · ` : "";
-    // Brief sources name the report or note; open them for the detail. Transcript sentences (below) show their text.
+    // Brief sources name the report or note; open them for the detail. Rough-notes sentences (below) show their text.
     if (bs?.kind === "document") return `<div class="src-doc${on}" id="src-${id}"><small>${no}REPORT · ${longDate(bs.date).toUpperCase()}</small><b>${esc(bs.label)}</b>${bs.failed ? `<span>Couldn't be read.</span>` : ""}
       <span class="actions" style="gap:6px"><button class="btn small" data-a="open-doc" data-v="${bs.doc_id}">Open file</button>${bs.failed ? `<button class="btn small dark" data-a="doc-retry" data-v="${bs.doc_id}">Try again</button>` : ""}</span></div>`;
     if (bs?.kind === "note") return `<button class="${on.trim()}" id="src-${id}" data-a="note-view" data-v="${bs.visit_id}"><small>${no}NOTE · ${longDate(bs.date).toUpperCase()} · ${bs.section.toUpperCase()}</small>Signed note<em>${esc(bs.doctor)}</em></button>`;

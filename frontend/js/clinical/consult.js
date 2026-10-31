@@ -1,5 +1,5 @@
 /* consultation */
-const CTABS = [["brief", "Brief"], ["dictate", "Transcript"], ["note", "Note"]];
+const CTABS = [["brief", "Brief"], ["dictate", "Rough notes"], ["note", "Note"]];
 const BTABS = [["summary", "Summary"], ["events", "Events"], ["charts", "Charts"]];
 async function viewConsult(visitId, doctorParam, patientParam) {
   const g = S.gen;
@@ -77,7 +77,7 @@ function dock(v) {
   }
   const n = v.note, canDraft = v.status === "with_doctor" && n?.status !== "signed" && (freeText(v).trim() || v.documents.some(d => d.ai_status === "ready"));
   if (S.ctab === "dictate" && S.dictDone === v.id && canDraft)
-    return `<div class="dock"><span class="dock-msg ok">Transcript finalized.</span><span class="grow"></span><button class="dock-ghost" data-a="cs-mic" data-v="${v.id}">Dictate more</button><button class="dock-go" data-a="cs-draft" data-v="${v.id}">Generate SOAP note</button></div>`;
+    return `<div class="dock"><span class="dock-msg ok">Dictation saved.</span><span class="grow"></span><button class="dock-ghost" data-a="cs-mic" data-v="${v.id}">Dictate more</button><button class="dock-go" data-a="cs-draft" data-v="${v.id}">Generate SOAP note</button></div>`;
   return micBtn(v);
 }
 const sideBtn = () => !S.rightCollapsed ? "" : `<button class="cx-side-btn" data-a="cs-collapse" aria-label="${S.rightCollapsed ? "Show side panel" : "Hide side panel"}" title="${S.rightCollapsed ? "Show side panel" : "Hide side panel"}"><i></i><i></i></button>`;

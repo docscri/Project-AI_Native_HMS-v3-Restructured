@@ -50,7 +50,7 @@ NEGATION = re.compile(r"\b(?:no|not|don'?t|do not|never|stop|stopped|discontinue
 CLAUSE = re.compile(r"[,;:]|\b(?:and|but|then|instead|also)\b")
 SLOT = {"0", "½", "1/2", "0.5", "1", "1½", "1.5", "2"}   # tablets per slot in a 1-0-1 schedule
 TIMES = {"once": 1, "daily": 1, "od": 1, "twice": 2, "bd": 2, "bid": 2, "two times": 2, "thrice": 3, "three times": 3,
-         "tds": 3, "tid": 3, "four times": 4, "qid": 4}
+         "tds": 3, "tid": 3, "four times": 4, "qid": 4, "at night": 1, "at bedtime": 1, "hs": 1, "in the morning": 1}
 NUMBER = re.compile(r"\d+(?:\.\d+)?")
 
 
@@ -59,16 +59,29 @@ def spoken(items: list[dict]) -> list[str]:
     return [x.lower() for i in items if i["kind"] == "transcript" for x in re.split(r"(?<=[.!?])\s+", i["text"]) if x.strip()]
 
 
-def prescribed_in(medicine: str, said: list[str]) -> int | None:
-    """The sentence where the medicine's own name (not "tab" or a unit) is said without "no", "stop", "allergic"...
-    before it in the same phrase; None if it was never said, or only said that way."""
-    names = [w for w in re.findall(r"[a-z]{3,}", medicine.lower()) if w not in FORMS]
+def names_of(medicine: str) -> list[str]:
+    """A medicine's own name words, without "tab", "syrup" or units."""
+    return [w for w in re.findall(r"[a-z]{3,}", medicine.lower()) if w not in FORMS]
+
+
+def instruction(medicine: str, said: list[str], others: set[str]) -> str | None:
+    """The words that prescribe this medicine: from its name (said without "no", "stop", "allergic"... before it in the
+    same phrase) to where the next medicine starts in that sentence, plus the next sentence when it names no other
+    medicine ("...Continue for five days."). None if it was never prescribed."""
+    def next_drug(s: str, after: int) -> int:
+        starts = [m.start() for w in others for m in re.finditer(rf"\b{re.escape(w)}", s) if m.start() >= after]
+        starts += [m.start() for m in MED.finditer(s) if m.start() >= after]
+        return min(starts, default=len(s))
     for k, s in enumerate(said):
-        for w in names:
+        for w in names_of(medicine):
             for m in re.finditer(rf"\b{re.escape(w)}", s):
-                phrase = CLAUSE.split(s[:m.start()])[-1]
-                if not NEGATION.search(phrase):
-                    return k
+                if NEGATION.search(CLAUSE.split(s[:m.start()])[-1]):
+                    continue
+                end = next_drug(s, m.end())
+                text = s[m.start():end]
+                if end == len(s) and k + 1 < len(said) and next_drug(said[k + 1], 0) == len(said[k + 1]):
+                    text += " " + said[k + 1]
+                return text
     return None
 
 
@@ -82,39 +95,44 @@ def digits(text: str) -> str:
     return re.sub(r"\b(" + "|".join(WORDS) + r")\b", lambda m: WORDS[m.group(1)], text)
 
 
-def supported(value: str, where: str, near: str) -> bool:
-    """A dose, duration or instruction is kept only if it was said: its numbers and words near the medicine,
-    and "1-0-1" only if that many times a day was said in the sentence that prescribes it."""
+COUNT = re.compile(r"\b(half|½|1/2|0\.5|one and a half|1½|1\.5|one|two|1|2)\s+(?:tab|tablet|tablets|cap|capsule|capsules|tsp|teaspoon|teaspoons|puff|puffs)\b")
+AMOUNT = {"half": 0.5, "½": 0.5, "1/2": 0.5, "0.5": 0.5, "one and a half": 1.5, "1½": 1.5, "1.5": 1.5, "one": 1, "1": 1, "two": 2, "2": 2}
+
+
+def supported(value: str, said: str) -> bool:
+    """A dose, duration or instruction is kept only if this medicine's own instruction says it: its numbers and words,
+    and for "1-0-1" both how many times a day and, when said, how many tablets each time."""
     if not value.strip():
         return True
-    near = digits(near)
+    words_said, said = said, digits(said)   # times a day and tablet counts read from the words, numbers from digits
     pattern = re.fullmatch(r"\s*([0-9½./]+)-([0-9½./]+)-([0-9½./]+)\s*", value)
     if pattern:
-        if pattern.group(0).strip() in near:
+        if pattern.group(0).strip() in said:
             return True   # said exactly as written
         if not set(pattern.groups()) <= SLOT:
             return False  # "10-0-10" is not a tablet schedule anyone said
-        per_day = sum(1 for x in pattern.groups() if x != "0")
-        said = {TIMES[w] for w in TIMES if re.search(rf"\b{w}\b", where)}
-        said = said - {1} if len(said) > 1 else said   # "twice daily" is twice, not also once
-        return per_day in said
+        slots = [AMOUNT.get(x, 0) for x in pattern.groups() if x != "0"]
+        times = {TIMES[w] for w in TIMES if re.search(rf"\b{w}\b", words_said)}
+        times = times - {1} if len(times) > 1 else times   # "twice daily" is twice, not also once
+        count = COUNT.search(words_said)
+        return len(slots) in times and (not count or all(x == AMOUNT[count.group(1)] for x in slots))
     words = [w for w in re.findall(r"[a-z]{3,}", value.lower()) if w not in FILLER]
-    return (all(n in NUMBER.findall(near) for n in NUMBER.findall(value))
-            and all(re.search(rf"\b{re.escape(w.rstrip('s'))}", near) for w in words))
+    return (all(n in NUMBER.findall(said) for n in NUMBER.findall(value))
+            and all(re.search(rf"\b{re.escape(w.rstrip('s'))}", said) for w in words))
 
 
 def keep_said(rx: list[dict], items: list[dict]) -> list[dict]:
-    """Only medicines the doctor prescribed, at a strength they said; unsupported dose, duration or instructions are
-    left blank for the doctor to fill rather than guessed."""
+    """Only medicines the doctor prescribed, at the strength said for that medicine; a dose, duration or instruction
+    not said for it is left blank for the doctor to fill rather than guessed."""
     said, out = spoken(items), []
     for r in rx:
-        k = prescribed_in(r["medicine"], said)
-        if k is None:
+        others = {w for o in rx for w in names_of(o["medicine"])} - set(names_of(r["medicine"]))
+        text = instruction(r["medicine"], said, others)
+        if text is None:
             continue
-        near = " ".join(said[k:k + 2])   # the sentence that prescribes it and the one after ("...for five days.")
-        if not all(n in NUMBER.findall(near) for n in NUMBER.findall(r["medicine"])):
-            continue   # a strength that wasn't said
-        out.append({"medicine": r["medicine"]} | {f: r.get(f, "") if supported(r.get(f, ""), said[k], near) else ""
+        if not all(n in NUMBER.findall(text) for n in NUMBER.findall(r["medicine"])):
+            continue   # a strength that wasn't said for this medicine
+        out.append({"medicine": r["medicine"]} | {f: r.get(f, "") if supported(r.get(f, ""), text) else ""
                                                   for f in ("dose", "duration", "instructions")})
     return out
 

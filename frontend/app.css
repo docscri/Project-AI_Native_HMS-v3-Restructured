@@ -597,7 +597,7 @@ table.members tr.click:hover td:first-child b { text-decoration-color: var(--ink
 .cx-tabs button { background: var(--tile); }
 .cx-tabs button:hover { background: var(--tile-2); }
 .cx-tabs button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
-.live-text { font-size: 17px; font-weight: 450; line-height: 1.6; color: var(--ink); min-height: 200px; }
+.live-text { font-size: 16px; font-weight: 450; line-height: 1.6; color: var(--ink); min-height: 200px; }
 @keyframes blink { 50% { opacity: 0; } }
 .cx-body { position: relative; }
 .cx-body.wide { grid-template-columns: 290px minmax(0, 1fr); }
@@ -680,7 +680,7 @@ table.members tr.click:hover td:first-child b { text-decoration-color: var(--ink
 .wl-row { grid-template-columns: 40px minmax(0, 1fr) minmax(0, 1fr) auto !important; }
 
 .live-edit { display: block; width: 100%; min-height: 52vh; border: 0; outline: none; resize: none; background: transparent; padding: 0;
-  font-family: inherit; font-size: clamp(20px, 2.4vw, 26px); font-weight: 500; line-height: 1.6; color: var(--ink); overflow-y: auto; scrollbar-width: none; caret-color: var(--coral); }
+  font-family: inherit; font-size: 16px; font-weight: 450; line-height: 1.6; color: var(--ink); overflow-y: auto; scrollbar-width: none; caret-color: var(--coral); }
 .live-edit::-webkit-scrollbar { display: none; }
 .live-edit::selection { background: var(--lime); }
 
@@ -711,7 +711,7 @@ table.members tr.click:hover td:first-child b { text-decoration-color: var(--ink
 .soap-sec { display: grid; grid-template-columns: 40px 1fr; gap: 16px; align-items: start; }
 .soap-tile { width: 40px; height: 40px; border-radius: 12px; background: var(--ink); color: var(--surface); display: grid; place-items: center; font-size: 17px; font-weight: 800; }
 .soap-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 2px 0 6px; }
-.soap-body { font-size: 18px; font-weight: 500; line-height: 1.8; color: var(--ink); }
+.soap-body { font-size: 16px; font-weight: 450; line-height: 1.7; color: var(--ink); }
 .nb { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: var(--surface); font-size: 11px; font-weight: 700; margin-right: 6px; vertical-align: 2px; }
 .cited { border: 0; background: none; padding: 0; font: inherit; color: #3f6b1f; cursor: pointer; text-decoration: underline dashed color-mix(in srgb, #3f6b1f 70%, transparent); text-decoration-thickness: 1.5px; text-underline-offset: 5px; transition: background .2s; border-radius: 4px; }
 .cited:hover { background: color-mix(in srgb, var(--lime) 35%, transparent); }
@@ -928,3 +928,5 @@ sup.cs button:hover, .cite-sup:hover { background: #3f6b1f; }
 .up-row > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .up-pick { position: relative; }
 .up-pick .up-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
+.cx-actions { display: flex; align-items: center; justify-content: center; gap: 12px; pointer-events: auto; }
+.note-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }

@@ -1,5 +1,5 @@
 /* consultation */
-const CTABS = [["brief", "Brief"], ["dictate", "Rough notes"], ["note", "Note"]];
+const CTABS = [["brief", "Brief"], ["dictate", "Consult"], ["note", "Note"]];
 const BTABS = [["summary", "Summary"], ["events", "Events"], ["charts", "Charts"]];
 async function viewConsult(visitId, doctorParam, patientParam) {
   const g = S.gen;
@@ -75,10 +75,12 @@ function dock(v) {
       <button class="dock-round" data-a="${paused ? "mic-resume" : "mic-pause"}" aria-label="${paused ? "Resume" : "Pause"}" title="${paused ? "Resume" : "Pause"}">${paused ? ICON.play : ICON.pause}</button>
       <button class="dock-stop" data-a="mic-stop" aria-label="Stop" title="Stop">${ICON.stop}</button></div>`;
   }
-  const n = v.note, canDraft = v.status === "with_doctor" && n?.status !== "signed" && (freeText(v).trim() || v.documents.some(d => d.ai_status === "ready"));
-  if (S.ctab === "dictate" && S.dictDone === v.id && canDraft)
-    return `<div class="dock"><span class="dock-msg ok">Dictation saved.</span><span class="grow"></span><button class="dock-ghost" data-a="cs-mic" data-v="${v.id}">Dictate more</button><button class="dock-go" data-a="cs-draft" data-v="${v.id}">Generate SOAP note</button></div>`;
-  return micBtn(v);
+  // Speak or type, then make the note: the microphone, and Generate note beside it once the visit is under way.
+  return `<div class="cx-actions">${micBtn(v)}${S.ctab === "dictate" ? genBtn(v) : ""}</div>`;
+}
+function genBtn(v) {
+  if (v.status !== "with_doctor" || v.note?.status === "signed") return "";
+  return `<button class="dock-go" data-a="${v.note ? "cs-redraft" : "cs-draft"}" data-v="${v.id}">Generate note</button>`;
 }
 const sideBtn = () => !S.rightCollapsed ? "" : `<button class="cx-side-btn" data-a="cs-collapse" aria-label="${S.rightCollapsed ? "Show side panel" : "Hide side panel"}" title="${S.rightCollapsed ? "Show side panel" : "Hide side panel"}"><i></i><i></i></button>`;
 function micBtn(v, small) {

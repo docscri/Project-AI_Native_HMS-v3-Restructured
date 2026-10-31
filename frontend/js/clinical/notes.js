@@ -25,8 +25,11 @@ function soapRead(v, n, still) {
   }).join("");
   const rx = n.content.rx.filter(r => r.medicine);
   const planSrcs = (n.citations?.P || []).map(id => ({ id, text: sourceOf(v, id)?.text || "" }));   // a medicine links to the plan that prescribes it
-  return `<div class="soap-read">${out}${rx.length ? sec("Rx", "Prescription", rx.map(r => `<div class="rx-line">${citeNum(++num, bestSource(r.medicine, planSrcs), still)}<b>${esc(r.medicine)}</b>${[r.dose, r.duration, r.instructions].filter(Boolean).map(x => ` · ${esc(x)}`).join("")}</div>`).join("")) : ""}</div>`;
+  return `<div class="soap-read">${out}${rx.length ? sec("Rx", "Prescription", rx.map(r => `<div class="rx-line">${citeNum(++num, bestSource(r.medicine, planSrcs), still)}<b>${esc(r.medicine)}</b>${[r.dose, r.duration, r.instructions].filter(Boolean).map(x => ` · ${esc(x)}`).join("")}</div>`).join("")) : ""}${addendaRead(n)}</div>`;
 }
+// Addenda: dated, signed additions under a signed note, shown as written.
+const addendaRead = n => (n.addenda || []).length ? `<div class="soap-sec addenda"><b class="soap-tile">+</b><div><span class="soap-label">Addendum</span>
+  ${n.addenda.map(x => `<div class="add-line"><small>${stampOf(x.signed_at)} · ${esc(x.signed_by_name)}</small><p>${esc(x.text)}</p></div>`).join("")}</div></div>` : "";
 // Every sentence number links to where it came from: the section source that shares most words with it.
 function bestSource(sentence, srcs) {
   const words = s => new Set(s.toLowerCase().match(/[a-z0-9]{3,}/g) || []), mine = words(sentence);
@@ -63,7 +66,7 @@ function noteDock(v) {
   const n = v.note, signed = n?.status === "signed";
   if (S.drafting === v.id) return `<div class="dock"><span class="dock-text">Writing your note…</span></div>`;
   if (!n) return "";   // the empty note carries its own Generate note button
-  if (signed) return `<div class="dock"><span class="dock-msg ok">Signed · ${stampOf(n.signed_at)}${n.signed_by_name ? " · " + esc(n.signed_by_name) : ""}</span><span class="grow"></span><button class="dock-go" data-a="note-print" data-v="${n.id}">Print</button></div>`;
+  if (signed) return `<div class="dock"><span class="dock-msg ok">Signed · ${stampOf(n.signed_at)}${n.signed_by_name ? " · " + esc(n.signed_by_name) : ""}</span><span class="grow"></span>${S.me.kind === "doctor" ? `<button class="dock-ghost" data-a="add-addendum" data-v="${n.id}">Add addendum</button>` : ""}<button class="dock-go" data-a="note-print" data-v="${n.id}">Print</button></div>`;
   if (S.noteEdit) return `<div class="dock"><span class="dock-msg">Editing.</span><span class="grow"></span><button class="dock-go" data-a="note-done">Save</button></div>`;
   return `<div class="dock"><span class="dock-msg">${S.aiOn ? "Drafted by AI." : "Draft."}</span><span class="grow"></span>
     <button class="dock-ghost" data-a="note-edit">Edit</button>${v.status === "with_doctor" ? `<button class="dock-ghost" data-a="cs-redraft" data-v="${v.id}">Redraft</button>` : ""}<button class="dock-go" data-a="note-sign-ro" data-v="${n.id}">Sign note</button></div>`;

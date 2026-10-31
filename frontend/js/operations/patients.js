@@ -22,7 +22,7 @@ function profile(p) {
       <div class="muted">${ageOf(p.dob)} ${esc(p.sex || "")} · <span class="mono">${esc(p.uhid)}</span> · ${esc(p.phone)}</div>${p.address ? `<div class="muted">${esc(p.address)}</div>` : ""}${p.consent_at ? `<div class="muted consent-line">✓ Consent ${longDate(p.consent_at)}</div>` : ""}</div><span class="actions" style="gap:6px"><button class="btn small" data-a="pt-edit" data-v="${p.id}">Profile</button><button class="btn small" data-a="pt-merge" data-v="${p.id}">Merge</button></span></div>
     <span class="label">Visit history</span>
     ${visits.length ? `<div class="timeline">${visits.map(v => `<div class="tl"><div class="tl-head"><b>${longDate(v.date)}</b><span>${esc(v.doctor)}</span>${pill(v.status)}</div>
-      <div class="items">${v.note ? `<button class="btn small" data-a="note-view" data-v="${v.id}">${v.note.status === "signed" ? "Note & prescription" : "Draft note"}</button>` : ""}
+      <div class="items">${v.note ? `<button class="btn small" data-a="note-view" data-v="${v.id}">${v.note.status === "signed" ? "Note & prescription" + (v.note.addenda ? ` · ${v.note.addenda} addend${v.note.addenda > 1 ? "a" : "um"}` : "") : "Draft note"}</button>` : ""}
       ${v.documents.map(d => `<button class="btn small" data-a="open-doc" data-v="${d.id}">📄 ${esc(docTitle(d))}</button>${d.ai_status === "failed" ? `<button class="btn small dark" data-a="doc-retry" data-v="${d.id}" title="Couldn't be read. Try again, or tell the clinic admin if it keeps failing.">Couldn't read · Try again</button>` : ""}`).join("")}</div>
       ${v.note?.soap?.A ? `<div class="muted" style="font-size:13.5px;margin-top:6px">${esc(v.note.soap.A)}</div>` : ""}</div>`).join("")}</div>` : `<div class="empty">—</div>`}
   </section>`;
@@ -37,7 +37,7 @@ async function openNoteView(visitId) {
   modal(`<div class="nv">
     <div class="nv-top"><div><h2>${esc(v.patient_name)}${v.age != null ? ", " + v.age : ""}</h2>
       <span class="muted">${longDate(v.date)} · ${esc(v.doctor_name)}${signed ? ` · Signed ${when(n.signed_at)}${by}` : ""}</span></div>
-      <span class="grow"></span><span class="pill ${signed ? "s-paid" : "s-waiting"}">${signed ? "Signed" : "Draft"}</span>${signed ? `<button class="btn small primary" data-a="note-print" data-v="${n.id}">Print</button>` : ""}</div>
+      <span class="grow"></span><span class="pill ${signed ? "s-paid" : "s-waiting"}">${signed ? "Signed" : "Draft"}</span>${signed && S.me.kind === "doctor" ? `<button class="btn small" data-a="add-addendum" data-v="${n.id}" data-visit="${v.id}">Add addendum</button>` : ""}${signed ? `<button class="btn small primary" data-a="note-print" data-v="${n.id}">Print</button>` : ""}</div>
     <div class="nv-body">${soapRead(v, n, true)}</div></div>`, true);
 }
 function renderFollowUp() {

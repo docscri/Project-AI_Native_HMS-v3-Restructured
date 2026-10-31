@@ -13,6 +13,7 @@ def signed_notes(db, patient_id: int, visit_id: int) -> list[dict]:
         (patient_id, visit_id)))
     for n in notes:
         n["content"] = json.loads(n["content"])
+        n["addenda"] = rows(db.execute("select text, signed_by_name, signed_at from note_addenda where note_id = ? order by id", (n["id"],)))
     return notes
 
 

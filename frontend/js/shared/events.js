@@ -174,6 +174,13 @@ document.addEventListener("click", e => {
       case "mic-resume": resumeMic(); break;
       case "mic-stop": await stopMic(); break;
       case "mic-cancel": await cancelMic(); break;
+      case "add-addendum": M = { kind: "addendum", noteId: Number(v), visitId: t.dataset.visit ? Number(t.dataset.visit) : null };
+        modal(`<h2>Add addendum</h2><p class="muted">The signed note stays as it is. This is added under it with today's date and your name, and can't be changed later.</p>
+          <label class="field">Addendum<textarea id="add-text" rows="5" maxlength="4000" placeholder="e.g. HbA1c result received: 7.4%. Continue the same plan."></textarea></label>
+          <div class="foot"><button class="btn primary" data-a="addendum-go">Sign addendum</button></div>`); $("#add-text").focus(); break;
+      case "addendum-go": { const text = $("#add-text").value.trim(); if (!text) return toast("Write the addendum first.", true);
+        await api(`/notes/${M.noteId}/addenda`, { body: { text } }); const back = M.visitId; closeModal(); toast("Addendum signed.");
+        back ? await openNoteView(back) : refreshConsult(); break; }
       case "note-edit": S.noteEdit = true; renderConsult(); break;
       case "note-done": { const n = D.cur.note; await api(`/notes/${n.id}`, { method: "PUT", body: readNote() }); S.noteEdit = false; toast("Saved"); refreshConsult(); break; }
       case "cs-mic": {

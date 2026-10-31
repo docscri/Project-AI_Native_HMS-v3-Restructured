@@ -130,6 +130,29 @@ def sign(db, me, note_id: int) -> dict:
     return load_note(db, n["visit_id"])
 
 
+def add_addendum(db, me, note_id: int, text: str) -> dict:
+    """A dated, signed addition under a signed note; the note itself stays as signed."""
+    n = repo.in_clinic(db, me["clinic_id"], note_id)
+    if not n:
+        raise NotFound("Note not found.")
+    if n["status"] != "signed":
+        raise Conflict("Sign the note first; until then, edit it.")
+    if me["kind"] != "doctor":
+        raise Forbidden("Only a doctor can add an addendum.")
+    text = text.strip()
+    if not text:
+        raise Invalid("Write the addendum first.")
+    if len(text) > 4000:
+        raise Invalid("Keep the addendum under 4000 characters.")
+    repo.add_addendum(db, me["clinic_id"], note_id, text, me["id"], me["name"], now())
+    log_event(db, me["clinic_id"], me["id"], "note", note_id, "addendum_added")
+    return load_note(db, n["visit_id"])
+
+
+def addenda(db, note_id: int) -> list[dict]:
+    return repo.addenda(db, note_id)
+
+
 def get(db, note_id: int) -> dict | None:
     return repo.get(db, note_id)
 

@@ -957,11 +957,13 @@ button.nb:hover, button.nb:focus-visible { background: var(--lime); color: var(-
   .cx-tabrow { flex-direction: column; align-items: flex-start; gap: 10px; }
   .cx-float .dock-msg { display: none; }
 }
-  .cx-float .dock-msg { display: none; }
-}
 .cx-who { min-width: 0; }
 .cx-who b, .cx-who small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dock-cancel { flex: none; width: 40px; height: 40px; margin-right: 6px; border-radius: 50%; border: 1.5px solid #ffffff2e; background: transparent;
   color: var(--surface); display: grid; place-items: center; cursor: pointer; transition: background .15s, border-color .15s; }
 .dock-cancel:hover, .dock-cancel:focus-visible { background: #ffffff14; border-color: #ffffff70; outline: none; }
 .cx-float .dock.rec { padding-left: 10px; }
+.add-line { border-left: 3px solid var(--lime); padding: 2px 0 2px 12px; margin-top: 8px; }
+.add-line small { display: block; font-size: 11.5px; font-weight: 700; color: var(--muted); letter-spacing: .02em; }
+.add-line p { margin: 3px 0 0; white-space: pre-wrap; }
+.soap-sec.addenda .soap-tile { background: var(--lime); color: var(--ink); }

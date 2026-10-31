@@ -106,7 +106,7 @@ def inputs(db, v: dict) -> tuple[list[dict], list[dict]]:
 
 def basis(notes: list[dict], docs: list[dict]) -> str:
     """Changes when a note is signed, a report is read or a brief prompt changes version; the saved brief is reused until then."""
-    return ("n" + ",".join(str(n["id"]) for n in notes) + ";d" + ",".join(str(d["id"]) + ("x" if d["ai_status"] == "failed" else "") for d in docs)
+    return ("n" + ",".join(str(n["id"]) + "+" * len(n.get("addenda") or []) for n in notes) + ";d" + ",".join(str(d["id"]) + ("x" if d["ai_status"] == "failed" else "") for d in docs)
             + (";ai:" + ",".join(tasks.version(t) for t in (brief_summary, visit_lines)) if llm.enabled() else ""))
 
 
@@ -217,7 +217,8 @@ def build(db, v: dict) -> dict:
         line = lines[f"N{n['id']}"]
         own_docs = [{"id": d["id"], "filename": d["filename"], "title": title_of(d)} for d in docs if d["visit_id"] == n["vid"]]
         events.append({"visit_id": n["vid"], "date": n["date"], "doctor": n["doctor"], "text": line["text"],
-                       "cites": line["cites"] + [f"D{d['id']}" for d in own_docs], "documents": own_docs})
+                       "cites": line["cites"] + [f"D{d['id']}" for d in own_docs], "documents": own_docs,
+                       "addenda": n.get("addenda") or []})   # signed corrections, shown as written
     return {"summary": [{"kind": "new", "sentences": new}] * bool(new) + [{"kind": "history", "sentences": with_flags(summary["history"], readable)}],
             "events": events, "charts": charts(notes, docs, db), "sources": sources, "basis": basis(notes, finished)}
 

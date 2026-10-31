@@ -7,7 +7,8 @@ function paneBrief(v) {
     const shown = S.allEvents ? b.events : b.events.slice(0, 5);
     return `<div class="timeline">${shown.map(e => `<div class="tl"><div class="tl-head"><b>${longDate(e.date)}</b><span>${esc(e.doctor)}</span></div>
       <div class="items"><button class="btn small" data-a="note-view" data-v="${e.visit_id}">Note & prescription</button>${e.documents.map(d => `<button class="btn small" data-a="open-doc" data-v="${d.id}">📄 ${esc(docTitle(d))}</button>`).join("")}</div>
-      <div class="muted" style="font-size:13.5px;margin-top:6px">${esc(e.text)}</div></div>`).join("")}</div>
+      <div class="muted" style="font-size:13.5px;margin-top:6px">${esc(e.text)}</div>
+      ${(e.addenda || []).map(x => `<div class="add-line"><small>Addendum · ${stampOf(x.signed_at)} · ${esc(x.signed_by_name)}</small><p>${esc(x.text)}</p></div>`).join("")}</div>`).join("")}</div>
       ${b.events.length > 5 ? `<div><button class="btn small" data-a="cs-allev">${S.allEvents ? "Show fewer" : `Show all ${b.events.length}`}</button></div>` : ""}`;
   }
   if (tab === "charts") {   // single readings as compact tiles first, then trends; each group latest first

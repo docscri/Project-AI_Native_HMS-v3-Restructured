@@ -1137,6 +1137,7 @@
   },
   "note draft": {
    "body": {
+    "addenda": [],
     "citations": {
      "A": [
       "str"
@@ -1188,6 +1189,7 @@
   },
   "note edit": {
    "body": {
+    "addenda": [],
     "citations": {
      "A": [
       "str"
@@ -1243,6 +1245,7 @@
   },
   "note sign": {
    "body": {
+    "addenda": [],
     "citations": {
      "A": [
       "str"
@@ -2112,6 +2115,7 @@
     "is_walk_in": "int",
     "late": "bool",
     "note": {
+     "addenda": [],
      "citations": {
       "A": [
        "str"
@@ -2312,6 +2316,7 @@
   "POST /api/members/{member_id}/invite/email",
   "POST /api/members/{member_id}/reset-link",
   "POST /api/members/{member_id}/reset-link/email",
+  "POST /api/notes/{note_id}/addenda",
   "POST /api/notes/{note_id}/sign",
   "POST /api/onboarding/finish",
   "POST /api/onboarding/owner",

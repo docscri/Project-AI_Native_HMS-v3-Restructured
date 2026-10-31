@@ -35,7 +35,7 @@ class Owner(BaseModel):
     phone: str = ""
     password: str
     is_doctor: bool = True
-    speciality: str = "General medicine"
+    speciality: str = "General Medicine"
 
 
 class OwnerEdit(BaseModel):
@@ -43,4 +43,5 @@ class OwnerEdit(BaseModel):
     email: str
     phone: str = ""
     password: str = ""            # empty = keep the current one
+    speciality: str = ""          # department; empty = keep the current one
     is_doctor: bool = True

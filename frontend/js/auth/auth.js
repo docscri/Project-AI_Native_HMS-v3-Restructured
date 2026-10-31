@@ -35,7 +35,8 @@ function viewOnboarding(step) {
     <label class="field">Name<input id="ob-name" value="${esc(me.name || "")}"></label>
     <div class="grid2"><label class="field">Email<input id="ob-email" type="email" value="${esc(me.email || "")}"></label><label class="field">Phone<input id="ob-phone" value="${esc(me.phone || "")}"></label></div>
     <label class="field">Password<input id="ob-pw" type="password" autocomplete="new-password"></label>
-    <label class="choice"><input type="checkbox" id="ob-doc" ${me.kind === "staff" ? "" : "checked"}><span><b>I am also a doctor here</b></span></label>`);
+    <label class="choice"><input type="checkbox" id="ob-doc" ${me.kind === "staff" ? "" : "checked"} onchange="document.getElementById('ob-dept-wrap').hidden = !this.checked"><span><b>I am also a doctor here</b></span></label>
+    <div id="ob-dept-wrap" ${me.kind === "staff" ? "hidden" : ""}>${deptSelect("ob-dept", me.speciality)}</div>`);
   if (step === 2) obFrame(2, `<h1>Your clinic</h1>
     <label class="field">Clinic name<input id="ob-cname" value="${esc(S.clinic.name)}"></label>
     <label class="field">Phone<input id="ob-cphone" value="${esc(S.clinic.phone)}"></label>
@@ -53,9 +54,9 @@ async function loadMembersStep() {
 const inviteLink = m => m.status === "invited" ? `<button class="btn small" data-a="renew-invite" data-v="${m.id}">Invite link</button>` : `<span class="pill s-paid">Active</span>`;
 
 async function obNext(step) {
-  if (step === 1 && S.me) { S.me = await api("/onboarding/owner", { method: "PUT", body: { name: $("#ob-name").value, email: $("#ob-email").value, phone: $("#ob-phone").value, password: $("#ob-pw").value, is_doctor: $("#ob-doc").checked } }); S.doctors = await api("/doctors"); return viewOnboarding(2); }
+  if (step === 1 && S.me) { S.me = await api("/onboarding/owner", { method: "PUT", body: { name: $("#ob-name").value, email: $("#ob-email").value, phone: $("#ob-phone").value, password: $("#ob-pw").value, is_doctor: $("#ob-doc").checked, speciality: $("#ob-dept")?.value || "" } }); S.doctors = await api("/doctors"); return viewOnboarding(2); }
   if (step === 1) {
-    const r = await api("/onboarding/owner", { body: { name: $("#ob-name").value, email: $("#ob-email").value, phone: $("#ob-phone").value, password: $("#ob-pw").value, is_doctor: $("#ob-doc").checked } });
+    const r = await api("/onboarding/owner", { body: { name: $("#ob-name").value, email: $("#ob-email").value, phone: $("#ob-phone").value, password: $("#ob-pw").value, is_doctor: $("#ob-doc").checked, speciality: $("#ob-dept")?.value || "General Medicine" } });
     setToken(r.token); const me = await api("/me"); S.me = me.member; S.clinic = me.clinic; return viewOnboarding(2);
   }
   if (step === 2) { S.clinic = await api("/clinic", { method: "PUT", body: { name: $("#ob-cname").value, phone: $("#ob-cphone").value, address: $("#ob-caddr").value } }); return viewOnboarding(3); }

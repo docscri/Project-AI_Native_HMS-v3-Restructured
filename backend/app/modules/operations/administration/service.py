@@ -8,6 +8,7 @@ from app.shared.auth import (INVITE_DAYS, RESET_HOURS, SCREENS, create_session, 
 from app.shared.db import now
 from app.shared.errors import BadGateway, Conflict, Gone, Invalid, NotFound
 from app.shared.validate import clean_email, clean_phone, valid_day
+from app.core import departments
 from app.core.clinic import clinic_of, public_clinic
 from app.core.clinic.schedule import validate_sessions
 from app.core.member import allowed_screens
@@ -61,7 +62,7 @@ def add_member(db, me: dict, body) -> dict:
     code = new_code()
     mid = repo.insert_member(
         db, me["clinic_id"], body.kind, int(body.is_admin), body.name.strip(), email, clean_phone(body.phone), code, later(days=INVITE_DAYS),
-        body.speciality if body.kind == "doctor" else None, body.designation if body.kind == "staff" else None,
+        departments.chosen(body.speciality) if body.kind == "doctor" else None, body.designation if body.kind == "staff" else None,
         body.fee_override if body.kind == "doctor" else None, json.dumps(allowed_screens(body.screens, body.kind, body.is_admin)))
     log_event(db, me["clinic_id"], me["id"], "member", mid, "invited", {"email": email})
     send_invite(db, me, mid, code)
@@ -143,6 +144,8 @@ def update_member(db, me: dict, member_id: int, body) -> dict:
     if body.kind and body.kind != m["kind"] and m["kind"] == "doctor" and repo.doctor_has_visits(db, member_id):
         raise Conflict("Doctor has visits. Can't change.")
     changes = body.model_dump(exclude_none=True, exclude={"clear_fee"})
+    if changes.get("kind", m["kind"]) == "doctor" and ("speciality" in changes or changes.get("kind") == "doctor"):
+        changes["speciality"] = departments.chosen(changes.get("speciality"), m["speciality"])   # the department fixes the note template
     if changes.get("joined_on"):
         changes["joined_on"] = valid_day(changes["joined_on"])
     elif "joined_on" in changes:

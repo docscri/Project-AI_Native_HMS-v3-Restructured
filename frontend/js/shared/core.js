@@ -136,7 +136,7 @@ function shell(active) {
   $("#root").innerHTML = `<div class="app">
     <nav class="nav" aria-label="Main">
       <div class="brand"><b>Dictate</b><span>${esc(S.clinic.name)}</span></div>
-      ${SCREENS.filter(s => m.screens.includes(s[0])).map(([k, h, l, i]) => `<a href="${h}" ${h.slice(2) === active ? 'aria-current="page"' : ""}>${i}${l}</a>`).join("")}
+      <div class="nav-links">${SCREENS.filter(s => m.screens.includes(s[0])).map(([k, h, l, i]) => `<a href="${h}" ${h.slice(2) === active ? 'aria-current="page"' : ""}>${i}<span>${l}</span></a>`).join("")}</div>
       <div class="me"><button class="me-open" data-a="account" title="Account"><span class="avatar">${esc(firstName(m.name)[0].toUpperCase())}</span><b>${esc(firstName(m.name))}</b></button><button class="logout-icon" data-a="logout" aria-label="Log out" title="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5M15 12H3M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/></svg></button></div>
     </nav>
     <div class="stage"><main class="surface" id="view"><div class="muted">Loading…</div></main></div></div>`;

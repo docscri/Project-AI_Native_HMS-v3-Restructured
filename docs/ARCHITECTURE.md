@@ -10,7 +10,7 @@ backend/app/
     db/              connect/get_db/row/rows/now; providers/sqlite.py, providers/postgres.py; migrate.py
     auth/            sessions, passwords, roles and screens (current_member, require_screen, require_admin)
     audit/           log_event
-    ai/              llm/ (Gemini provider, prompt()), speech/ (Deepgram), prompts/
+    ai/              llm/ (Gemini provider), speech/ (Deepgram), tasks/ (the AI jobs, see below)
     files/           uploads: providers/local.py, providers/supabase.py
     mail/  printing/ validate.py  errors.py
   core/              entities several features change: clinic (+ schedule rules), member, patient, visit (+ ledger)
@@ -49,3 +49,23 @@ A small feature may be a single `feature.py` until it grows.
 3. Repos return plain dicts. SQL uses `?` placeholders; Postgres gets them translated.
 4. Clinical text (dictation, notes) never leaves through Operations endpoints (`core.visit.VISIT_FIELDS`).
 5. Messages stay short and plain (e.g. "Visit not found.", "Note is signed.").
+
+## AI tasks
+
+Each job the AI does is a folder in `backend/app/shared/ai/tasks/`, laid out the same way:
+
+| Task | Does | Used by |
+|---|---|---|
+| `read_report` | title, summary and values of an uploaded PDF or photo | documents |
+| `note_values` | measured numbers in a signed note (for charts) | brief |
+| `brief_summary` | the brief's Summary: new reports, then history | brief |
+| `visit_lines` | one line per past visit for the event cards | brief |
+| `draft_note` | SOAP note and prescription from the consultation | notes |
+
+- `prompt.md`: the instructions. First line `Version: N`; `{{slots}}` are filled from the inputs.
+- `task.py`: `Reply` (the reply shape, checked with Pydantic), `parts()` (what is sent), `check()` (keeps only what
+  the sources support: real citations, numbers that match, medicines that were said) and `fallback()` (the plain version).
+- `tasks.run(task, **inputs)` is the only way to call one: AI off, a failed call, a reply in the wrong shape or one
+  that fails the checks all give the fallback, and the failure is logged with the task and version (no patient text).
+- Bump `Version:` when you change a prompt: saved briefs and note values made with an older version are made again.
+

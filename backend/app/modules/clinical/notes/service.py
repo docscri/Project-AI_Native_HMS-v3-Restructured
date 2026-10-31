@@ -1,12 +1,12 @@
 """Draft from cited evidence, edit, sign."""
 import json
-import re
 
 from app.core.clinic import clinic_of
 from app.core.patient import age
 from app.core.visit import get_visit, move, text_of
 from app.modules.clinical.documents import service as documents
-from app.shared.ai import llm
+from app.shared.ai import tasks
+from app.shared.ai.tasks.draft_note import task as draft_note_task
 from app.shared.audit import log_event
 from app.shared.db import now
 from app.shared.errors import Conflict, Forbidden, Invalid, NotFound
@@ -37,46 +37,9 @@ def evidence(text: str, documents: list[dict], past_notes: list[dict]) -> list[d
     return items
 
 
-def _keep_known(cites, known: set[str]) -> list[str]:
-    return [c for c in (cites or []) if c in known]
-
-
-MED = re.compile(r"\b([A-Z][a-zA-Z]+(?:\s+syrup)?)\s+(\d+(?:\.\d+)?\s*(?:mg|ml|mcg|g))\b", re.I)
-FREQ = re.compile(r"\b(once|twice|three times|thrice|four times)\s+(?:a\s+day|daily)|\b\d-\d-\d\b|\bevery\s+\d+\s+hours\b", re.I)
-DURATION = re.compile(r"\bfor\s+(\d+\s+(?:days?|weeks?|months?))", re.I)
-
-
 def draft_note(patient: dict, items: list[dict]) -> dict:
     """{"soap": {S, O, A, P}, "rx": [...], "citations": {"S": [ids], ...}}"""
-    known = {i["id"] for i in items}
-    if llm.enabled():
-        out = llm.generate([{"text": llm.prompt("note.txt") + "\n\nPATIENT: " + json.dumps(patient) + "\n\nEVIDENCE:\n" + json.dumps(items)}])
-        out["citations"] = {k: _keep_known(v, known) for k, v in (out.get("citations") or {}).items()}
-        return out
-    soap = {"S": [], "O": [], "A": [], "P": []}
-    cites = {"S": [], "O": [], "A": [], "P": []}
-    rx = []
-    for i in items:
-        if i["kind"] != "transcript":
-            continue
-        for text in [x for x in re.split(r"(?<=[.!?])\s+", i["text"]) if x.strip()]:
-            low = text.lower()
-            if any(w in low for w in ("likely", "looks like", "diagnos", "this is", "suggest")):
-                k = "A"
-            elif re.search(r"\d", low) and any(w in low for w in ("bp", "temp", "weight", "pulse", "report", "hba1c", "sugar", "spo2", "°")):
-                k = "O"
-            elif any(w in low for w in ("mg", "ml", "tablet", "syrup", "review", "come back", "follow", "advice", "walk", "drink", "test")):
-                k = "P"
-            else:
-                k = "O" if re.search(r"\d", low) else "S"
-            soap[k].append(text.rstrip(".") + ".")
-            if i["id"] not in cites[k]:
-                cites[k].append(i["id"])
-            for m in MED.finditer(text):
-                freq, dur = FREQ.search(text), DURATION.search(text)
-                rx.append({"medicine": f"{m.group(1).title()} {m.group(2)}", "dose": freq.group(0) if freq else "as advised",
-                           "duration": dur.group(1) if dur else "", "instructions": ""})
-    return {"soap": {k: " ".join(v) for k, v in soap.items()}, "rx": rx, "citations": cites}
+    return tasks.run(draft_note_task, patient=patient, items=items)
 
 
 def evidence_for(db, v: dict) -> tuple[dict, list[dict]]:

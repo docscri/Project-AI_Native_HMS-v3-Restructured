@@ -1,5 +1,5 @@
 /* events */
-// Clicking into Rough notes for a waiting patient starts the visit, so typing works without the microphone.
+// Clicking into Consult for a waiting patient starts the visit, so typing works without the microphone.
 document.addEventListener("focusin", e => {
   const el = e.target;
   if (el.id !== "free-text" || S.data?.cur?.status !== "waiting" || S.starting) return;

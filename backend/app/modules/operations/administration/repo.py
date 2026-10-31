@@ -80,6 +80,7 @@ def invited_member(db, code: str) -> dict | None:
     return row(db.execute("select * from members where invite_code = ? and status = 'invited'", (code,)).fetchone())
 
 
-def accept_invite(db, member_id: int, password_hash: str) -> None:
-    db.execute("update members set password_hash = ?, status = 'active', invite_code = null, invite_expires_at = null where id = ?",
-               (password_hash, member_id))
+def accept_invite(db, member_id: int, code: str, password_hash: str) -> bool:
+    """Single use: only the request that still finds the code unused gets True."""
+    return db.execute("""update members set password_hash = ?, status = 'active', invite_code = null, invite_expires_at = null
+                         where id = ? and invite_code = ? and status = 'invited'""", (password_hash, member_id, code)).rowcount == 1

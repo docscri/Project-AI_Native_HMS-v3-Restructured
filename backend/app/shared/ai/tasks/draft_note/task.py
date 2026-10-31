@@ -42,26 +42,81 @@ def parts(patient: dict, items: list[dict]) -> list[dict]:
     return [{"text": tasks.fill(__file__, patient=patient, evidence=items)}]
 
 
-def said(items: list[dict]) -> str:
-    return " ".join(i["text"] for i in items if i["kind"] == "transcript").lower()
-
-
 FORMS = {"tab", "tabs", "tablet", "tablets", "cap", "caps", "capsule", "capsules", "syrup", "syp", "inj", "injection",
          "drops", "cream", "ointment", "gel", "mg", "ml", "mcg", "sr", "er", "xr", "ds", "forte", "plus"}
+NEGATION = re.compile(r"\b(?:no|not|don'?t|do not|never|stop|stopped|discontinue|avoid|without|allergic|allergy|hold|instead of)\b")
+CLAUSE = re.compile(r"[,;:]|\b(?:and|but|then|start|give|add|continue|switch to)\b")
+TIMES = {"once": 1, "daily": 1, "od": 1, "twice": 2, "bd": 2, "bid": 2, "two times": 2, "thrice": 3, "three times": 3,
+         "tds": 3, "tid": 3, "four times": 4, "qid": 4}
+NUMBER = re.compile(r"\d+(?:\.\d+)?")
 
 
-def was_said(medicine: str, words: str) -> bool:
-    """The medicine's own name (not "tab", "syrup" or a unit) appears in what was said."""
+def spoken(items: list[dict]) -> list[str]:
+    """What was said in this consultation, sentence by sentence, lower case."""
+    return [x.lower() for i in items if i["kind"] == "transcript" for x in re.split(r"(?<=[.!?])\s+", i["text"]) if x.strip()]
+
+
+def prescribed_in(medicine: str, said: list[str]) -> int | None:
+    """The sentence where the medicine's own name (not "tab" or a unit) is said without "no", "stop", "allergic"...
+    before it in the same phrase; None if it was never said, or only said that way."""
     names = [w for w in re.findall(r"[a-z]{3,}", medicine.lower()) if w not in FORMS]
-    return bool(names) and any(re.search(rf"\b{re.escape(w)}", words) for w in names)
+    for k, s in enumerate(said):
+        for w in names:
+            for m in re.finditer(rf"\b{re.escape(w)}", s):
+                phrase = CLAUSE.split(s[:m.start()])[-1]
+                if not NEGATION.search(phrase):
+                    return k
+    return None
+
+
+WORDS = {w: str(i) for i, w in enumerate("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen "
+                                         "fifteen sixteen seventeen eighteen nineteen twenty".split())} | {"thirty": "30", "a": "1"}
+FILLER = {"the", "and", "for", "with", "then", "per", "each", "take", "times", "time", "tablet", "tablets", "tab", "dose", "doses"}
+
+
+def digits(text: str) -> str:
+    """ "for five days" -> "for 5 days", so said numbers in words match numbers written by the AI."""
+    return re.sub(r"\b(" + "|".join(WORDS) + r")\b", lambda m: WORDS[m.group(1)], text)
+
+
+def supported(value: str, where: str, near: str) -> bool:
+    """A dose, duration or instruction is kept only if it was said: its numbers and words near the medicine,
+    and "1-0-1" only if that many times a day was said in the sentence that prescribes it."""
+    if not value.strip():
+        return True
+    near = digits(near)
+    pattern = re.fullmatch(r"\s*([0-9½]+)-([0-9½]+)-([0-9½]+)\s*", value)
+    if pattern:
+        per_day = sum(1 for x in pattern.groups() if x != "0")
+        said = {TIMES[w] for w in TIMES if re.search(rf"\b{w}\b", where)}
+        said = said - {1} if len(said) > 1 else said   # "twice daily" is twice, not also once
+        return pattern.group(0).strip() in near or per_day in said
+    words = [w for w in re.findall(r"[a-z]{3,}", value.lower()) if w not in FILLER]
+    return (all(n in NUMBER.findall(near) for n in NUMBER.findall(value))
+            and all(re.search(rf"\b{re.escape(w.rstrip('s'))}", near) for w in words))
+
+
+def keep_said(rx: list[dict], items: list[dict]) -> list[dict]:
+    """Only medicines the doctor prescribed, at a strength they said; unsupported dose, duration or instructions are
+    left blank for the doctor to fill rather than guessed."""
+    said, out = spoken(items), []
+    for r in rx:
+        k = prescribed_in(r["medicine"], said)
+        if k is None:
+            continue
+        near = " ".join(said[k:k + 2])   # the sentence that prescribes it and the one after ("...for five days.")
+        if not all(n in NUMBER.findall(near) for n in NUMBER.findall(r["medicine"])):
+            continue   # a strength that wasn't said
+        out.append({"medicine": r["medicine"]} | {f: r.get(f, "") if supported(r.get(f, ""), said[k], near) else ""
+                                                  for f in ("dose", "duration", "instructions")})
+    return out
 
 
 def check(reply: dict, patient: dict, items: list[dict]) -> dict:
-    """Citations only to evidence that exists; medicines only if the doctor said them in this consultation."""
-    known, words = {i["id"] for i in items}, said(items)
-    rx = [r for r in reply["rx"] if was_said(r["medicine"], words)]
+    """Citations only to evidence that exists; medicines only as the doctor prescribed them in this consultation."""
+    known = {i["id"] for i in items}
     cites = {k: [c for c in reply["citations"].get(k) or [] if c in known] for k in SECTIONS}
-    return {"soap": reply["soap"], "rx": rx, "citations": cites}
+    return {"soap": reply["soap"], "rx": keep_said(reply["rx"], items), "citations": cites}
 
 
 def fallback(patient: dict, items: list[dict]) -> dict:
@@ -87,4 +142,4 @@ def fallback(patient: dict, items: list[dict]) -> dict:
                 freq, dur = FREQ.search(text), DURATION.search(text)
                 rx.append({"medicine": f"{m.group(1).title()} {m.group(2)}", "dose": freq.group(0) if freq else "as advised",
                            "duration": dur.group(1) if dur else "", "instructions": ""})
-    return {"soap": {k: " ".join(v) for k, v in soap.items()}, "rx": rx, "citations": cites}
+    return {"soap": {k: " ".join(v) for k, v in soap.items()}, "rx": keep_said(rx, items), "citations": cites}

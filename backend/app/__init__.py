@@ -1,12 +1,14 @@
-"""Settings from environment variables or .env."""
+"""Settings from environment variables or .env (not read when CLINIC_DOTENV=0, as in the tests)."""
+import os
 from pathlib import Path
 
-try:
-    from dotenv import load_dotenv
+if os.environ.get("CLINIC_DOTENV") != "0":
+    try:
+        from dotenv import load_dotenv
 
-    load_dotenv(Path(__file__).resolve().parents[2] / ".env")
-except ImportError:  # dotenv is optional
-    pass
+        load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+    except ImportError:  # dotenv is optional
+        pass
 
 # Servers run on UTC; "today" and times must be clinic-local.
 import os as _os

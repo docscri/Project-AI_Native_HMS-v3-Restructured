@@ -81,9 +81,13 @@ def remove(db, me, doc_id: int) -> dict:
     d = repo.in_clinic(db, me["clinic_id"], doc_id)
     if not d:
         raise NotFound("Document not found.")
+    if d["visit_id"]:
+        db.lock(f"visit:{d['visit_id']}")   # shared with signing, so the check below can't go stale
     if d["visit_id"] and repo.note_signed(db, d["visit_id"]):
         raise Conflict("The note for this visit is signed, so its documents stay.")
     repo.delete(db, doc_id)
+    if d["visit_id"]:
+        repo.uncite_in_draft(db, d["visit_id"], f"D{doc_id}")
     log_event(db, me["clinic_id"], me["id"], "document", doc_id, "removed", {"visit": d["visit_id"], "filename": d["filename"]})
     db.commit()
     try:

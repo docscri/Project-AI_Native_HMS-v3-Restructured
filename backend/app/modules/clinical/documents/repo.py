@@ -47,3 +47,11 @@ def note_signed(db, visit_id: int) -> bool:
 
 def delete(db, doc_id: int) -> None:
     db.execute("delete from documents where id = ?", (doc_id,))
+
+
+def uncite_in_draft(db, visit_id: int, cite: str) -> None:
+    """Takes a removed document out of the visit's draft note citations, so signing can't keep a link to it."""
+    n = row(db.execute("select id, citations from notes where visit_id = ? and status = 'draft'", (visit_id,)).fetchone())
+    if n:
+        cites = {k: [c for c in ids if c != cite] for k, ids in json.loads(n["citations"] or "{}").items()}
+        db.execute("update notes set citations = ? where id = ? and status = 'draft'", (json.dumps(cites), n["id"]))

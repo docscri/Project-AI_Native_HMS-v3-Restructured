@@ -187,6 +187,7 @@ document.addEventListener("click", e => {
       case "note-view": await openNoteView(Number(v)); break;
       case "note-print": openPrint(`/notes/${v}/print?auto=1`); break;
       case "print": openPrint(`/notes/${v}/print`); break;
+      case "doc-retry": await api(`/documents/${v}/retry`, { body: {} }); toast("Reading the document again…"); location.hash.startsWith("#/consult") ? refreshConsult() : route(); break;
       case "open-doc": { const res = await fetch(`/api/documents/${v}/file`, { headers: { Authorization: "Bearer " + S.token } }); window.open(URL.createObjectURL(await res.blob()), "_blank"); break; }
       case "cite": if (v.startsWith("T")) { const src = sourceOf(D.cur, v); if (!src) break;
         if (S.ctab !== "dictate") { S.ctab = "dictate"; renderConsult(); }

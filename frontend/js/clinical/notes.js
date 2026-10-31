@@ -91,7 +91,7 @@ function citations(v) {
   const card = id => {
     const bs = b?.sources?.[id], on = S.focusSrc === id ? " hl" : "", n = briefNums(b).get(id), no = n ? `${n} · ` : "";
     if (bs?.kind === "document") return `<div class="src-doc${on}" id="src-${id}"><small>${no}REPORT · ${longDate(bs.date).toUpperCase()}</small><b>${esc(bs.label)}</b>${bs.summary ? `<span>${esc(bs.summary)}</span>` : ""}
-      ${bs.findings.length ? `<span class="src-vals">${bs.findings.map(f => esc(`${f.name} ${f.value} ${f.unit || ""}`.trim())).join(" · ")}</span>` : ""}<button class="btn small" data-a="open-doc" data-v="${bs.doc_id}">Open file</button></div>`;
+      ${bs.findings.length ? `<span class="src-vals">${bs.findings.map(f => esc(`${f.name} ${f.value} ${f.unit || ""}`.trim())).join(" · ")}</span>` : ""}<span class="actions" style="gap:6px"><button class="btn small" data-a="open-doc" data-v="${bs.doc_id}">Open file</button>${bs.failed ? `<button class="btn small dark" data-a="doc-retry" data-v="${bs.doc_id}">Try again</button>` : ""}</span></div>`;
     if (bs?.kind === "note") return `<button class="${on.trim()}" id="src-${id}" data-a="note-view" data-v="${bs.visit_id}"><small>${no}NOTE · ${longDate(bs.date).toUpperCase()} · ${bs.section.toUpperCase()}</small>${esc(bs.body)}<em>${esc(bs.doctor)}</em></button>`;
     const src = sourceOf(v, id); return src ? `<button data-a="cite" data-v="${id}"><small>${src.kind.toUpperCase()} · ${id}</small>${esc(src.text)}</button>` : "";
   };

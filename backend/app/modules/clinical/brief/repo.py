@@ -16,8 +16,9 @@ def signed_notes(db, patient_id: int, visit_id: int) -> list[dict]:
     return notes
 
 
-def ready_documents(db, patient_id: int) -> list[dict]:
-    docs = rows(db.execute("select * from documents where patient_id = ? and ai_status = 'ready' order by id desc", (patient_id,)))
+def finished_documents(db, patient_id: int) -> list[dict]:
+    """Documents that were read, or that could not be read (the brief names those so they aren't missed)."""
+    docs = rows(db.execute("select * from documents where patient_id = ? and ai_status in ('ready', 'failed') order by id desc", (patient_id,)))
     for d in docs:
         d["extracted"] = json.loads(d["extracted"]) if d["extracted"] else {}
     return docs

@@ -1,6 +1,9 @@
 """Upload, read in the background, serve back."""
 import base64
+import logging
 import re
+
+import httpx
 
 from app.core.visit import get_visit
 from app.modules.clinical.brief import service as brief
@@ -8,8 +11,10 @@ from app.shared import files as storage
 from app.shared.ai import llm
 from app.shared.audit import log_event
 from app.shared.db import connect
-from app.shared.errors import Invalid, NotFound, TooLarge, Unsupported
+from app.shared.errors import Conflict, Invalid, NotFound, TooLarge, Unsupported
 from . import repo
+
+log = logging.getLogger(__name__)
 
 
 def load_docs(db, patient_id: int) -> list[dict]:
@@ -27,6 +32,24 @@ def extract_document(data: bytes, mime: str, filename: str) -> dict:
     return {"summary": text[:300] or f"Uploaded document: {filename}", "findings": findings, "title": head if 0 < len(head) <= 60 and not re.search(r"\d", head) else ""}
 
 
+def reading_error(e: Exception) -> str:
+    """A short reason for the person who uploaded; never the request URL, which can hold a key."""
+    status = getattr(getattr(e, "response", None), "status_code", None)
+    if status == 404:
+        return "The AI model wasn't found. Check LLM_MODEL in backend/app/config.py."
+    if status in (400, 401, 403):
+        return f"The AI service refused the request ({status}). Check the API key."
+    if status == 429:
+        return "The AI service is busy or over its limit. Try again in a minute."
+    if status:
+        return f"The AI service answered {status}. Try again."
+    if isinstance(e, httpx.TimeoutException):
+        return "The AI service took too long. Try again."
+    if isinstance(e, httpx.HTTPError):
+        return "Couldn't reach the AI service. Check the internet connection."
+    return "The file couldn't be read."
+
+
 def run_extraction(doc_id: int) -> None:
     db = connect()
     try:
@@ -35,7 +58,8 @@ def run_extraction(doc_id: int) -> None:
             ex = extract_document(storage.read(d["path"]), d["mime"], d["filename"])
             repo.set_read(db, doc_id, "ready", ex)
         except Exception as e:  # keep the file, flag the failure
-            repo.set_read(db, doc_id, "failed", {"summary": f"Could not read: {e}", "findings": []})
+            log.warning("Reading document %s failed: %s", doc_id, type(e).__name__)
+            repo.set_read(db, doc_id, "failed", {"summary": reading_error(e), "findings": []})
         db.commit()
     finally:
         db.close()
@@ -59,6 +83,18 @@ def upload(db, me, visit_id: int, filename: str | None, mime: str, data: bytes) 
     log_event(db, me["clinic_id"], me["id"], "document", did, "uploaded", {"visit": visit_id})
     db.commit()
     return repo.listed(db, did), did
+
+
+def retry(db, me, doc_id: int) -> dict:
+    """Reads a failed document again; the caller commits and runs run_extraction."""
+    d = repo.in_clinic(db, me["clinic_id"], doc_id)
+    if not d:
+        raise NotFound("Document not found.")
+    if d["ai_status"] != "failed":
+        raise Conflict("This document isn't waiting for another try.")
+    repo.set_processing(db, doc_id)
+    log_event(db, me["clinic_id"], me["id"], "document", doc_id, "read_again")
+    return repo.listed(db, doc_id)
 
 
 def file_of(db, me, doc_id: int) -> tuple[bytes, dict]:

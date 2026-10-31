@@ -1076,9 +1076,9 @@ button.nb:hover, button.nb:focus-visible { background: var(--lime); color: var(-
 input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .field.has-stepper { position: relative; }
-.field.has-stepper input { padding-right: 76px; }
-.stepper { position: absolute; right: 9px; bottom: 7px; display: flex; gap: 5px; }   /* on the value line, clear of the label */
-.stepper button { width: 27px; height: 27px; border-radius: 50%; border: 0; background: var(--tile); color: var(--ink); font: 600 16px/1 var(--f);
+.field.has-stepper input { padding-right: 62px; }
+.stepper { position: absolute; right: 12px; bottom: 9px; display: flex; gap: 4px; }   /* on the value line, clear of the label */
+.stepper button { width: 20px; height: 20px; border-radius: 50%; border: 0; background: var(--tile); color: var(--ink); font: 600 13px/1 var(--f);
   display: grid; place-items: center; cursor: pointer; transition: background .15s, color .15s, transform .1s; }
 .stepper button:hover { background: var(--ink); color: var(--surface); }
 .stepper button:active { transform: scale(.92); }

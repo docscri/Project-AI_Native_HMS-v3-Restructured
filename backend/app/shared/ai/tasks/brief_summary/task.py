@@ -41,11 +41,15 @@ def check(reply: dict, patient: dict, sources: dict, new_ids: list[str], visits:
 
 
 def fallback(patient: dict, sources: dict, new_ids: list[str], visits: list[dict]) -> dict:
-    """Without the AI: each new report in plain words, then each past assessment once, citing every visit it came from."""
+    """Without the AI: each new report in plain words, then each past assessment once, citing every visit it came from.
+    An assessment a signed addendum corrected is never shown alone: its correction follows it."""
     seen = {}
     for v in visits:
-        a = v["note"] + ".A"
-        if a in sources:
+        a, x = v["note"] + ".A", v["note"] + ".X"
+        if x in sources:
+            text = (first(sources[a]["body"]) + " " if a in sources else "") + "Corrected later: " + sources[x]["body"]
+            seen.setdefault(text, []).extend(c for c in (a, x) if c in sources)
+        elif a in sources:
             seen.setdefault(first(sources[a]["body"]), []).append(a)
     history = [{"text": t, "cites": cites} for t, cites in list(seen.items())[:4]]
     return {"new": grounded([report_line(sources, d) for d in new_ids], sources), "history": grounded(history, sources)}

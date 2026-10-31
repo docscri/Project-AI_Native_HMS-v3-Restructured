@@ -1,5 +1,6 @@
 """Patient rules: field checks, duplicates, register, merge."""
 import json
+import re
 from datetime import date
 
 from app.shared.audit import log_event
@@ -68,20 +69,26 @@ def search(db, me: dict, q: str) -> list[dict]:
 
 def visit_lines(db, patient_id: int, notes: dict) -> dict:
     """One line per signed visit: the line the newest pre-visit brief wrote for it (no new AI call), else the note's
-    own words, as the brief does without AI (why they came, what was found)."""
+    own words, as the brief does without AI (why they came, what was found, then any signed correction). A brief
+    line written before the note's latest addendum is not used: it may repeat what the addendum corrected."""
     lines = {}
     for raw in repo.briefs(db, patient_id):
         try:
-            events = json.loads(raw).get("events") or []
+            b = json.loads(raw)
+            events, basis = b.get("events") or [], str(b.get("basis") or "")
         except (ValueError, AttributeError):
             continue
+        made_with = {int(m.group(1)): len(m.group(2)) for m in re.finditer(r"(\d+)(\+*)", basis.split(";")[0])}
         for e in events:
-            if e.get("text"):
-                lines.setdefault(e.get("visit_id"), e["text"])
+            n = notes.get(e.get("visit_id"))
+            if e.get("text") and n and made_with.get(n["id"]) == n["addenda"]:
+                lines.setdefault(e["visit_id"], e["text"])
     for visit_id, n in notes.items():
         if n["status"] == "signed" and visit_id not in lines:
             soap = json.loads(n["content"]).get("soap") or {}
-            lines[visit_id] = " ".join(s for s in ((sentences(soap.get(k) or "") or [""])[0] for k in ("S", "A")) if s)
+            line = " ".join(s for s in ((sentences(soap.get(k) or "") or [""])[0] for k in ("S", "A")) if s)
+            fixes = " ".join(a["text"].strip() for a in repo.addenda(db, n["id"])) if n["addenda"] else ""
+            lines[visit_id] = (line + " Corrected later: " + fixes).strip() if fixes else line
     return {k: t for k, t in lines.items() if t and k in notes and notes[k]["status"] == "signed"}
 
 

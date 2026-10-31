@@ -204,6 +204,7 @@ def accept_invite(db, code: str, password: str) -> dict:
     if m["invite_expires_at"] and m["invite_expires_at"] < now():
         raise Gone("Invite expired. Ask for a new link.")
     validate_password(password)
-    repo.accept_invite(db, m["id"], hash_password(password))
+    if not repo.accept_invite(db, m["id"], code, hash_password(password)):   # opened twice at once: one wins
+        raise Gone("This invitation was already used. Log in instead.")
     log_event(db, m["clinic_id"], m["id"], "member", m["id"], "joined")
     return {"token": create_session(db, m["id"])}

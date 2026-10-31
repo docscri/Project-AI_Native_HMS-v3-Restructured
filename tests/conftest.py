@@ -2,6 +2,8 @@
 import os
 import tempfile
 
+os.environ["CLINIC_DOTENV"] = "0"   # never load the developer's .env: real keys would make real AI and email calls
+
 os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", "")
 os.environ["DATABASE"] = "postgres" if os.environ["DATABASE_URL"] else "sqlite"
 os.environ["STORAGE"] = "local"

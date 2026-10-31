@@ -1,4 +1,5 @@
 import mimetypes
+from urllib.parse import quote
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, UploadFile
 from fastapi.responses import Response
@@ -42,4 +43,10 @@ def retry(doc_id: int, tasks: BackgroundTasks, me=Depends(require_any("operation
 @router.get("/documents/{doc_id}/file")
 def document_file(doc_id: int, me=Depends(require_any("consultation", "patients")), db=Depends(get_db)):
     data, d = service.file_of(db, me, doc_id)
-    return Response(data, media_type=d["mime"], headers={"Content-Disposition": f'inline; filename="{d["filename"]}"'})
+    return Response(data, media_type=d["mime"], headers={"Content-Disposition": disposition(d["filename"])})
+
+
+def disposition(filename: str) -> str:
+    """Headers carry only plain ASCII: an ASCII stand-in for old browsers plus the real name UTF-8 encoded (RFC 6266)."""
+    plain = "".join(c if c.isascii() and c.isprintable() and c not in '"\\' else "_" for c in filename) or "document"
+    return f"inline; filename=\"{plain}\"; filename*=UTF-8''{quote(filename, safe='')}"

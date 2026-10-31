@@ -35,3 +35,15 @@ def set_processing(db, doc_id: int) -> None:
 
 def set_read(db, doc_id: int, status: str, extracted: dict) -> None:
     db.execute("update documents set ai_status = ?, extracted = ? where id = ?", (status, json.dumps(extracted), doc_id))
+
+
+def for_visit(db, visit_id: int) -> list[dict]:
+    return rows(db.execute("select id, filename, ai_status, created_at from documents where visit_id = ? order by id", (visit_id,)))
+
+
+def note_signed(db, visit_id: int) -> bool:
+    return bool(db.execute("select 1 from notes where visit_id = ? and status = 'signed'", (visit_id,)).fetchone())
+
+
+def delete(db, doc_id: int) -> None:
+    db.execute("delete from documents where id = ?", (doc_id,))

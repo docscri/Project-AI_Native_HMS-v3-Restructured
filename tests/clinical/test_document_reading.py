@@ -78,3 +78,30 @@ def test_brief_with_a_failed_document_is_reused_not_rebuilt(monkeypatch):
         monkeypatch.undo()
         c.post(f"/api/visits/{v['id']}/brief", headers=h)
         assert c.get(f"/api/visits/{v['id']}", headers=h).json()["brief"] is not None   # the screen would otherwise rebuild forever
+
+
+def test_front_desk_lists_and_removes_documents_until_the_note_is_signed():
+    from pathlib import Path
+    from app.shared.db import connect
+    from tests.helpers import join, member
+    with TestClient(app) as c:
+        h, doc = clinic(c, "docremove@x.in")
+        desk = join(c, member(c, h, "Desk", "desk-rm@x.in", "staff", ["operations"])["invite_code"])
+        p = c.post("/api/patients", headers=desk, json={"name": "Pat", "consent": True}).json()
+        v = c.post("/api/visits/walk-in", headers=desk, json={"patient_id": p["id"], "doctor_id": doc, "payment_method": "cash"}).json()
+        wrong, right = upload(c, desk, v, "wrong.txt"), upload(c, desk, v, "right.txt")
+        assert [d["filename"] for d in c.get(f"/api/visits/{v['id']}/documents", headers=desk).json()] == ["wrong.txt", "right.txt"]
+        db = connect()
+        path = db.execute("select path from documents where id = ?", (wrong["id"],)).fetchone()[0]
+        db.close()
+        assert c.delete(f"/api/documents/{wrong['id']}", headers=desk).json() == {"ok": True}
+        assert not Path(path).exists()
+        assert [d["filename"] for d in c.get(f"/api/visits/{v['id']}/documents", headers=desk).json()] == ["right.txt"]
+        assert c.delete(f"/api/documents/{wrong['id']}", headers=desk).status_code == 404
+        c.post(f"/api/visits/{v['id']}/start", headers=h)
+        c.put(f"/api/visits/{v['id']}/text", headers=h, json={"text": "Fever.", "rev": 0})
+        n = c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()
+        c.post(f"/api/notes/{n['id']}/sign", headers=h)
+        assert c.delete(f"/api/documents/{right['id']}", headers=desk).status_code == 409   # a signed note may cite it
+        other, _ = clinic(c, "docremove-other@x.in")
+        assert c.delete(f"/api/documents/{right['id']}", headers=other).status_code == 404    # other clinics can't touch it

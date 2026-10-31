@@ -2261,6 +2261,7 @@
   }
  },
  "routes": [
+  "DELETE /api/documents/{doc_id}",
   "DELETE /api/members/{member_id}",
   "DELETE /api/schedules/{doctor_id}/{date}",
   "DELETE /api/waitlist/{wait_id}",
@@ -2287,6 +2288,7 @@
   "GET /api/team/register",
   "GET /api/team/today",
   "GET /api/visits/{visit_id}",
+  "GET /api/visits/{visit_id}/documents",
   "GET /api/visits/{visit_id}/receipt",
   "GET /api/waitlist",
   "GET /health",

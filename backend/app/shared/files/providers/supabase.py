@@ -29,3 +29,14 @@ def read(stored: str) -> bytes:
                   headers={"Authorization": f"Bearer {key}", "apikey": key})
     r.raise_for_status()
     return r.content
+
+
+def delete(stored: str) -> None:
+    sb = settings()
+    if not sb:
+        raise RuntimeError("Supabase storage is not configured.")
+    url, key = sb
+    r = httpx.delete(f"{url}/storage/v1/object/{BUCKET}/{stored.removeprefix(PREFIX)}", timeout=60,
+                     headers={"Authorization": f"Bearer {key}", "apikey": key})
+    if r.status_code != 404:   # already gone is fine
+        r.raise_for_status()

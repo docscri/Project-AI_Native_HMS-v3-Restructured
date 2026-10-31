@@ -111,7 +111,11 @@ document.addEventListener("click", e => {
         toast(`${r.days} day${r.days > 1 ? "s" : ""} ${v === "1" ? (M.leave.all ? "holiday" : "leave") : "working"}${r.bookings_affected ? ` · ${r.bookings_affected} booking${r.bookings_affected > 1 ? "s" : ""} to move` : ""}`, r.bookings_affected > 0);
         M.leave = null; await loadMonth(); break; }
       case "upload": openUpload(Number(v)); break;
-      case "upload-go": { const f = $("#up-file").files[0]; if (!f) return toast("Choose a file first", true); await doUpload(M.visitId, f); closeModal(); location.hash.startsWith("#/consult") ? refreshConsult() : refresh(); break; }
+      case "upload-go": { const f = $("#up-file").files[0]; if (!f) return toast("Choose a file first", true); await doUpload(M.visitId, f); openUpload(M.visitId); break; }
+      case "doc-remove": openUpload(M.visitId, Number(v)); break;
+      case "doc-keep": openUpload(M.visitId); break;
+      case "doc-remove-go": await api(`/documents/${v}`, { method: "DELETE" }); toast("Removed."); openUpload(M.visitId); break;
+      case "upload-done": closeModal(); location.hash.startsWith("#/consult") ? refreshConsult() : refresh(); break;
       case "schedules": await openSchedules(D?.doctor?.id); break;
       case "sc-month": { const [y, m] = M.month.split("-").map(Number); const d = new Date(y, m - 1 + Number(v), 1); M.month = iso(d).slice(0, 7); M.sel = null; await loadMonth(); break; }
       case "sc-day": M.sel = v; renderSched(); break;

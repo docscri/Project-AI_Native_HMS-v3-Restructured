@@ -17,3 +17,7 @@ def save(clinic_id: int, data: bytes, mime: str) -> str:
 
 def read(stored: str) -> bytes:
     return (supabase if stored.startswith(supabase.PREFIX) else local).read(stored)
+
+
+def delete(stored: str) -> None:
+    (supabase if stored.startswith(supabase.PREFIX) else local).delete(stored)

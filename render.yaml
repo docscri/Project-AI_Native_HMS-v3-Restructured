@@ -1,8 +1,8 @@
-# Free demo on Render: SQLite + demo clinic, rebuilt fresh on every restart.
+# Free trial on Render: SQLite, wiped on every restart or deploy.
 # Render → New → Blueprint → this repo. For real clinic use, set DATABASE_URL and the SUPABASE_* keys instead.
 services:
   - type: web
-    name: dictate-demo
+    name: dictate-trial
     runtime: python
     plan: free
     region: singapore
@@ -14,14 +14,6 @@ services:
         value: 3.12.7
       - key: CLINIC_TZ
         value: Asia/Kolkata
-      - key: SEED_DEMO
-        value: "1"
-      - key: DEMO_EMAIL
-        sync: false
-      - key: DEMO_PASSWORD
-        sync: false
-      - key: DEMO_NAME
-        sync: false
       - key: DEEPGRAM_API_KEY      # optional: live dictation
         sync: false
       - key: GEMINI_API_KEY        # optional: AI notes

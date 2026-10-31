@@ -1,5 +1,4 @@
 import hashlib
-import os
 import re
 from pathlib import Path
 
@@ -41,9 +40,6 @@ for r in ROUTERS:
 @app.on_event("startup")
 def startup() -> None:
     db.init()
-    if os.environ.get("SEED_DEMO", "0") == "1":
-        from app.demo.seed import seed
-        seed()
 
 
 @app.get("/health")

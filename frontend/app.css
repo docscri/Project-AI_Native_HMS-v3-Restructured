@@ -242,8 +242,6 @@ table.t tr.selected td { background: transparent; }
 .steps { display: flex; gap: 6px; }
 .steps i { flex: 1; height: 5px; border-radius: 9px; background: var(--line); transition: background .3s; }
 .steps i.on { background: var(--ink); }
-.demo-hint { background: var(--white); border-radius: 14px; padding: 12px 14px; font-size: 13.5px; }
-.demo-hint code { font-family: var(--f-mono); font-size: 12.5px; background: var(--tile); padding: 1px 6px; border-radius: 6px; }
 
 .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--white); padding: 12px 20px; border-radius: 999px; font-weight: 600; z-index: 60; animation: pop .25s var(--ease); max-width: calc(100% - 32px); box-shadow: 0 12px 30px -12px #000a; }
 .toast.err { background: var(--red-ink); }

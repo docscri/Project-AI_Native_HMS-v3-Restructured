@@ -16,7 +16,7 @@ from pathlib import Path
 DATABASE = "sqlite"
 STORAGE = "local"
 LLM = "gemini"
-LLM_MODEL = "gemini-2.5-flash"
+LLM_MODEL = "gemini-3.8-flash"     # newest stable Flash on our key (Oct 2026); "gemini-flash-latest" follows Google's current Flash
 SPEECH = "deepgram"
 SPEECH_MODEL = "nova-3"
 SPEECH_LANGUAGE = "en"

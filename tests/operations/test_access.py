@@ -26,11 +26,10 @@ def test_screen_rules_on_the_server():
         c.put(f"/api/visits/{v['id']}/text", headers=h, json={"text": "Fever for two days.", "rev": 0})
         n = c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()
         up = c.post(f"/api/visits/{v['id']}/documents", headers=rh, files={"file": ("r.txt", b"HbA1c 7.1 %", "text/plain")}).json()
-        rtok = rh["Authorization"].split()[1]
         assert c.get(f"/api/visits/{v['id']}", headers=rh).status_code == 403
         assert c.get(f"/api/documents/{up['id']}/file", headers=rh).status_code == 403
-        assert c.get(f"/api/notes/{n['id']}/print", params={"token": rtok}).status_code == 403
-        assert c.get(f"/api/visits/{v['id']}/receipt", params={"token": rtok}).status_code == 200
+        assert c.get(f"/api/notes/{n['id']}/print", headers=rh).status_code == 403
+        assert c.get(f"/api/visits/{v['id']}/receipt", headers=rh).status_code == 200
         assert c.get(f"/api/visits/{v['id']}", headers=h).status_code == 200
         _, dh = join(c, h, "Dr. C", "dc@x.in", "doctor", ["consultation"])
         assert c.patch(f"/api/patients/{p['id']}", headers=dh, json={"phone": "9847000000"}).status_code == 403

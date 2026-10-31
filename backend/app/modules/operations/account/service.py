@@ -42,6 +42,7 @@ def change_password(db, me: dict, current: str, new: str, token: str) -> dict:
         raise Invalid("Current password is wrong.")
     validate_password(new)
     repo.set_password(db, me["id"], hash_password(new))
+    repo.drop_resets(db, me["id"])   # a link sent before the change must not work after it
     end_sessions(db, me["id"], keep=token)
     log_event(db, me["clinic_id"], me["id"], "member", me["id"], "password_changed")
     return {"ok": True}
@@ -83,6 +84,7 @@ def reset_password(db, code: str, password: str) -> dict:
     validate_password(password)
     repo.reset_password(db, r["member_id"], hash_password(password))
     repo.use_reset(db, r["token_hash"], now())
+    repo.drop_resets(db, r["member_id"])
     end_sessions(db, r["member_id"])
     m = repo.member(db, r["member_id"])
     log_event(db, m["clinic_id"], r["member_id"], "member", r["member_id"], "password_reset")
@@ -128,6 +130,7 @@ def edit_owner(db, me: dict, body) -> dict:
     if body.password:
         validate_password(body.password)
         repo.set_password(db, me["id"], hash_password(body.password))
+        repo.drop_resets(db, me["id"])
     log_event(db, me["clinic_id"], me["id"], "member", me["id"], "updated")
     return public_member(repo.member(db, me["id"]))
 

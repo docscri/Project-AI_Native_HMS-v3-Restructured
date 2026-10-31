@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse
 
 from app.core.patient import age
 from app.shared import printing as printpage
-from app.shared.auth import member_for_token, public_member, require_screen
+from app.shared.auth import require_any, require_screen
 from app.shared.db import get_db
 from . import service
 from .schema import NoteEdit
@@ -36,14 +36,9 @@ def sign(note_id: int, me=Depends(doctor_screen), db=Depends(get_db)):
 
 
 @router.get("/notes/{note_id}/print", response_class=HTMLResponse)
-def print_note(note_id: int, token: str, auto: int = 0, db=Depends(get_db)):
-    """Token in the query so it opens in a new tab."""
-    me = member_for_token(db, token)
+def print_note(note_id: int, auto: int = 0, me=Depends(require_any("consultation", "patients")), db=Depends(get_db)):
+    """Fetched by the app with the login header and written into a new tab, so the token never sits in a URL."""
     n = service.get(db, note_id)
-    if not me:
-        return HTMLResponse(printpage.message("Log in again", "Your session has ended. Open the note from the app."), 401)
-    if not {"consultation", "patients"} & set(public_member(me)["screens"]):
-        return HTMLResponse(printpage.message("No access", "Notes open for doctors and the Patients screen."), 403)
     if not n or n["clinic_id"] != me["clinic_id"]:
         return HTMLResponse(printpage.message("Note not found", "It may have been removed."), 404)
     c, v, p, d = service.print_parts(db, me, n)

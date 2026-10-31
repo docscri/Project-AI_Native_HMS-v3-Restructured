@@ -185,8 +185,8 @@ document.addEventListener("click", e => {
       case "note-save": await api(`/notes/${v}`, { method: "PUT", body: readNote() }); toast("Draft saved"); refreshConsult(); break;
       case "note-sign": await api(`/notes/${v}`, { method: "PUT", body: readNote() }); await api(`/notes/${v}/sign`, { body: {} }); toast("Signed. Visit complete."); refreshConsult(); break;
       case "note-view": await openNoteView(Number(v)); break;
-      case "note-print": window.open(`/api/notes/${v}/print?auto=1&token=${encodeURIComponent(S.token)}`, "_blank"); break;
-      case "print": window.open(`/api/notes/${v}/print?token=${encodeURIComponent(S.token)}`, "_blank"); break;
+      case "note-print": openPrint(`/notes/${v}/print?auto=1`); break;
+      case "print": openPrint(`/notes/${v}/print`); break;
       case "open-doc": { const res = await fetch(`/api/documents/${v}/file`, { headers: { Authorization: "Bearer " + S.token } }); window.open(URL.createObjectURL(await res.blob()), "_blank"); break; }
       case "cite": if (v.startsWith("T")) { const src = sourceOf(D.cur, v); if (!src) break;
         if (S.ctab !== "dictate") { S.ctab = "dictate"; renderConsult(); }

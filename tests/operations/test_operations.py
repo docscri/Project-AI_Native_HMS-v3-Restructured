@@ -61,8 +61,7 @@ def test_billing_discount_waiver_receipt_refund():
         assert c.post(f"/api/visits/{w2['id']}/refund", headers=h, json={"amount": 500, "reason": "Overcharged"}).status_code == 422
         r = c.post(f"/api/visits/{w2['id']}/refund", headers=h, json={"amount": 50, "reason": "Overcharged"}).json()
         assert r["refund_amount"] == 50
-        token = h["Authorization"].split()[1]
-        page = c.get(f"/api/visits/{w2['id']}/receipt", params={"token": token})
+        page = c.get(f"/api/visits/{w2['id']}/receipt", headers=h)
         assert page.status_code == 200 and "Receipt #3" in page.text
 
 

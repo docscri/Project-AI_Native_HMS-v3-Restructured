@@ -19,7 +19,19 @@ const STATUS = { booked: "Booked", waiting: "Waiting", with_doctor: "In consulta
 const pill = st => `<span class="pill s-${st}">${STATUS[st] || st}</span>`;
 const rupees = n => "₹" + Number(n || 0).toLocaleString("en-IN");
 const hoursOf = s => (s.sessions?.length ? s.sessions : [s]).map(x => `${x.start}–${x.end}`).join(" · ");
-const openReceipt = id => window.open(`/api/visits/${id}/receipt?token=${encodeURIComponent(S.token)}`, "_blank");
+const openReceipt = id => openPrint(`/visits/${id}/receipt`);
+// Print pages are fetched with the login header and written into the new tab, so the token never appears in a URL.
+async function openPrint(path) {
+  const w = window.open("", "_blank");   // opened inside the click so pop-up blockers allow it
+  if (!w) return toast("Allow pop-ups for this site to print.", true);
+  w.document.write('<p style="font:16px system-ui;padding:24px;color:#555">Loading…</p>');
+  try {
+    const res = await fetch("/api" + path, { headers: { Authorization: "Bearer " + S.token } });
+    const html = res.headers.get("content-type")?.includes("text/html") ? await res.text()
+      : `<p style="font:16px system-ui;padding:24px">${esc((await res.json().catch(() => ({}))).detail || "Could not open this page.")}</p>`;
+    w.document.open(); w.document.write(html); w.document.close();
+  } catch { w.close(); toast("Could not open the page. Check the connection.", true); }
+}
 const CANCEL_REASONS = ["Patient asked", "Doctor unavailable", "Booked by mistake"];
 const RESCHED_REASONS = ["Patient asked", "Doctor unavailable", "Clinic change"];
 const REFUND_REASONS = ["Charged twice", "Visit not done", "Fee changed"];

@@ -30,6 +30,7 @@ def charge(db, me, fee: int, body: Payment) -> dict:
 
 
 def refund(db, me, visit_id: int, body: Refund) -> dict:
+    db.lock(f"visit:{visit_id}")   # parallel refunds must see each other's
     v = get_visit(db, me, visit_id)
     left = balance(db, visit_id)
     amount = body.amount or left

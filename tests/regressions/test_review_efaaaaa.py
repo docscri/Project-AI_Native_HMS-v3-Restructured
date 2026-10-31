@@ -8,7 +8,7 @@ from app.main import app
 from app.modules.clinical.notes import service as notes
 from app.shared.ai.tasks.draft_note import task as draft_note
 from app.shared.db import connect
-from tests.helpers import clinic, started_visit
+from tests.helpers import cites_by_letter, clinic, started_visit
 from tests.regressions.test_security_and_races import in_the_gap
 
 
@@ -19,7 +19,7 @@ def test_a_report_removed_while_the_note_is_redrafted_is_never_cited_by_the_sign
         d = c.post(f"/api/visits/{v['id']}/documents", headers=h, files={"file": ("lab.txt", b"HbA1c 7.1 %", "text/plain")}).json()
         c.put(f"/api/visits/{v['id']}/text", headers=h, json={"text": "Sugar review.", "rev": 0})
         c.post(f"/api/visits/{v['id']}/note/draft", headers=h)
-        monkeypatch.setattr(notes, "draft_note", lambda patient, items: {   # the AI read the report and cites it
+        monkeypatch.setattr(notes, "draft_note", lambda patient, items, sheet=None: {   # the AI read the report and cites it
             "soap": {"S": "Sugar review.", "O": "HbA1c 7.1 %.", "A": "", "P": ""}, "rx": [],
             "citations": {"S": ["T1"], "O": [f"D{d['id']}"]}})
         removed = []
@@ -30,7 +30,7 @@ def test_a_report_removed_while_the_note_is_redrafted_is_never_cited_by_the_sign
         finally:
             back()
         n = c.get(f"/api/visits/{v['id']}", headers=h).json()["note"]
-        assert removed == [200] and f"D{d['id']}" not in n["citations"]["O"]
+        assert removed == [200] and f"D{d['id']}" not in cites_by_letter(n)["O"]
         assert c.post(f"/api/notes/{n['id']}/sign", headers=h).status_code == 200
         db = connect()
         signed = json.loads(db.execute("select citations from notes where id = ?", (n["id"],)).fetchone()[0])

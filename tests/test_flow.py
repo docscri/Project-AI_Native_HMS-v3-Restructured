@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.main import app  # noqa: E402
+from tests.helpers import cites_by_letter  # noqa: E402
 
 TODAY = date.today().isoformat()
 
@@ -56,7 +57,7 @@ def test_full_flow():
         assert brief["summary"][0]["kind"] == "new" and brief["summary"][0]["sentences"][0]["cites"] == [f"D{up.json()['id']}"]
         note = c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()
         assert note["content"]["soap"]["A"] and note["content"]["rx"][0]["medicine"].startswith("Paracetamol")
-        assert "T3" in note["citations"]["A"]
+        assert "T3" in cites_by_letter(note)["A"]
         signed = c.post(f"/api/notes/{note['id']}/sign", headers=h).json()
         assert signed["status"] == "signed"
         assert c.put(f"/api/notes/{note['id']}", headers=h, json={"soap": {}, "rx": []}).status_code == 409

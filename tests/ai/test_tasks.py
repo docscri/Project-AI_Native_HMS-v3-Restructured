@@ -9,6 +9,7 @@ from app.main import app
 from app.modules.clinical.brief import service as brief
 from app.shared.ai import llm, tasks
 from app.shared.ai.tasks.brief_summary import task as brief_summary
+from app.core import departments
 from app.shared.ai.tasks.draft_note import task as draft_note
 from app.shared.ai.tasks.note_values import task as note_values
 from app.shared.ai.tasks.read_report import task as read_report
@@ -78,12 +79,34 @@ def test_a_visit_line_may_cite_only_its_own_visit(ai):
 
 
 def test_draft_keeps_only_medicines_that_were_said_and_known_citations(ai):
-    ai({"soap": {"S": "Fever.", "A": "Viral fever.", "O": None},
+    ai({"sections": {"1": "Fever.", "6": "Viral fever.", "4": None},
+        "vitals": {"Temp": "101", "BP": "120/80"},                                  # BP was never said
         "rx": [{"medicine": "Tab Dolo 650 mg", "dose": "1-0-1"}, {"medicine": "Amoxicillin 500 mg", "dose": "1-1-1"}],
-        "citations": {"S": ["T1", "T9"], "A": ["T1"]}})
-    out = tasks.run(draft_note, **INPUTS[draft_note])
+        "citations": {"1": ["T1", "T9"], "6": ["T1"]}})
+    out = tasks.run(draft_note, patient={"age": 40}, items=[{"id": "T1", "kind": "transcript", "text": "Fever, temp 101. Give Dolo 650 mg twice daily."}])
     assert [r["medicine"] for r in out["rx"]] == ["Tab Dolo 650 mg"]                  # amoxicillin was never said
-    assert out["citations"] == {"S": ["T1"], "O": [], "A": ["T1"], "P": []} and out["soap"]["O"] == ""
+    assert out["citations"]["1"] == ["T1"] and out["citations"]["6"] == ["T1"] and out["citations"]["4"] == []
+    assert out["vitals"] == {"Temp": "101"} and out["template"]["department"] == "General Medicine"
+    assert [x["title"] for x in out["sections"]][:2] == ["C/O", "History of presenting illness"]
+    assert out["soap"]["S"] == "Fever." and out["soap"]["A"] == "Viral fever." and out["soap"]["O"] == "Temp 101."
+
+
+def test_the_draft_follows_the_doctors_department_format(ai):
+    sheet = departments.template("Psychiatry")
+    seen = []
+    ai(lambda parts: seen.append(parts[0]["text"]) or {"sections": {"1": "Low mood for a month."}, "citations": {"1": ["T1"]}})
+    out = tasks.run(draft_note, patient={"age": 30}, items=[{"id": "T1", "kind": "transcript", "text": "Low mood for a month."}], sheet=sheet)
+    assert "O/E and mental status examination" in seen[0] and all(r in seen[0] for r in departments.RULES[:2])
+    assert [x["title"] for x in out["sections"]] == [s["title"] for s in sheet["sections"]]
+    assert out["template"] == {"department": "Psychiatry", "version": departments.VERSION}
+
+
+def test_without_ai_the_draft_still_uses_the_department_sections():
+    items = [{"id": "T1", "kind": "transcript", "text": "Pain in right knee for two weeks. BP 130/80. Likely osteoarthritis."}]
+    out = draft_note.fallback({}, items, departments.template("Orthopaedics"))
+    by = {x["title"]: x["text"] for x in out["sections"]}
+    assert out["template"]["department"] == "Orthopaedics" and out["vitals"] == {"BP": "130/80"}
+    assert "right knee" in out["sections"][0]["text"] and "osteoarthritis" in next(t for k, t in by.items() if "iagnos" in k)
 
 
 def test_a_report_the_ai_cant_read_is_raised_not_replaced(ai):

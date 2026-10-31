@@ -7,6 +7,12 @@ function paneDictate(v) {
 }
 const freeText = v => S.ft?.id === v.id ? S.ft.text : S.drafts?.[v.id]?.saved !== S.drafts?.[v.id]?.text ? S.drafts[v.id].text : (v.text || "");
 const SOAP = [["S", "Subjective"], ["O", "Objective"], ["A", "Assessment"], ["P", "Plan"]];
+const VITALS = ["BP", "Pulse", "RR", "Temp", "SpO2", "Weight", "Height"];
+// Notes are written in the doctor's department format (numbered sections); notes from before that stay S/O/A/P.
+const isDept = n => Array.isArray(n?.content?.sections);
+const noteParts = n => isDept(n) ? n.content.sections.map(x => [x.key, x.title, x.text || ""]) : SOAP.map(([k, label]) => [k, label, n.content.soap[k] || ""]);
+const planKey = n => isDept(n) ? n.content.sections.filter(x => /management/i.test(x.title)).map(x => x.key) : ["P"];
+const vitalsLine = n => VITALS.filter(k => (n.content.vitals?.[k] || "").trim()).map(k => `<span class="vit-chip"><small>${k}</small>${esc(n.content.vitals[k])}</span>`).join("");
 function paneNote(v) {
   const n = v.note, signed = n?.status === "signed";
   if (S.drafting === v.id) return `<div class="note-gen"><i></i><i></i><i></i></div>`;
@@ -17,14 +23,15 @@ function paneNote(v) {
 function soapRead(v, n, still) {
   let num = 0;
   const sec = (k, label, body) => `<div class="soap-sec"><b class="soap-tile">${k}</b><div><span class="soap-label">${label}</span><div class="soap-body">${body}</div></div></div>`;
-  const out = SOAP.map(([k, label]) => {
-    const text = (n.content.soap[k] || "").trim();
+  const vit = isDept(n) ? vitalsLine(n) : "";
+  const out = (vit ? `<div class="vit-strip" aria-label="Vitals">${vit}</div>` : "") + noteParts(n).map(([k, label, body]) => {
+    const text = body.trim();
     const sents = sentences(text).map(x => x.text);
     const srcs = (n.citations?.[k] || []).map(id => ({ id, text: sourceOf(v, id)?.text || "" }));
-    return sec(k, label, sents.map(t => `${citeNum(++num, bestSource(t, srcs), still)}${marked(t, srcs, still)}`).join(" ") || `<span class="muted">—</span>`);
+    return sec(k, esc(label), sents.map(t => `${citeNum(++num, bestSource(t, srcs), still)}${marked(t, srcs, still)}`).join(" ") || `<span class="muted">—</span>`);
   }).join("");
   const rx = n.content.rx.filter(r => r.medicine);
-  const planSrcs = (n.citations?.P || []).map(id => ({ id, text: sourceOf(v, id)?.text || "" }));   // a medicine links to the plan that prescribes it
+  const planSrcs = planKey(n).flatMap(k => n.citations?.[k] || []).map(id => ({ id, text: sourceOf(v, id)?.text || "" }));   // a medicine links to the plan that prescribes it
   return `<div class="soap-read">${out}${rx.length ? sec("Rx", "Prescription", rx.map(r => `<div class="rx-line">${citeNum(++num, bestSource(r.medicine, planSrcs), still)}<b>${esc(r.medicine)}</b>${[r.dose, r.duration, r.instructions].filter(Boolean).map(x => ` · ${esc(x)}`).join("")}</div>`).join("")) : ""}${addendaRead(n)}</div>`;
 }
 // Addenda: dated, signed additions under a signed note, shown as written.
@@ -92,7 +99,7 @@ function sourceOf(v, id) {
 function citations(v) {
   if (!v) return `<div class="cx-empty">—</div>`;
   const groups = [], cites = v.note?.citations || {}, b = v.brief;
-  ["S", "O", "A", "P"].forEach(k => { if (cites[k]?.length) groups.push([k, cites[k]]); });
+  (v.note ? noteParts(v.note).map(([k]) => k) : []).forEach(k => { if (cites[k]?.length) groups.push([k, cites[k]]); });
   const briefIds = [...new Set([...(b?.summary || []).flatMap(p => p.sentences.flatMap(x => x.cites)), ...(b?.charts || []).flatMap(c => c.series.flatMap(x => x.points.map(p => p.cite)))])];
   const docIcon = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Reports"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>`;
   const noteIcon = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-label="Notes"><path d="M5 6h14M5 12h14M5 18h9"/></svg>`;
@@ -115,14 +122,19 @@ const citeLabel = id => { const bs = S.data?.cur?.brief?.sources?.[id]; return !
 // Citations as small dark superscripts: transcript sentence number, R for a report, N for an earlier note.
 function citeBtns(ids) { return (ids || []).map(c => `<button class="cite-sup" data-a="cite" data-v="${c}" title="${esc(citeLabel(c))}">${c[0] === "T" ? c.slice(1) : c[0] === "D" ? "R" : "N"}</button>`).join(""); }
 function noteEditor(n, ro) {
-  const soap = n.content.soap, rx = n.content.rx;
-  return `<div class="choices">${["S", "O", "A", "P"].map(k => `<div class="soap"><b>${k}</b><div>${ro ? `<div class="ro">${esc(soap[k] || "—")}</div>` : `<textarea id="soap-${k}">${esc(soap[k] || "")}</textarea>`}<div>${citeBtns(n.citations?.[k])}</div></div></div>`).join("")}</div>
+  const rx = n.content.rx, dept = isDept(n);
+  const vit = dept ? `<div class="vit-edit" aria-label="Vitals">${VITALS.map(k => `<label><small>${k}</small>${ro ? `<b>${esc(n.content.vitals?.[k] || "—")}</b>` : `<input data-vital="${k}" value="${esc(n.content.vitals?.[k] || "")}" aria-label="${k}">`}</label>`).join("")}</div>` : "";
+  return `<div class="choices" id="note-ed">${vit}${noteParts(n).map(([k, label, text]) => `<div class="soap${dept ? " dept" : ""}"><b>${k}</b><div>${dept ? `<span class="soap-label">${esc(label)}</span>` : ""}${ro ? `<div class="ro">${esc(text || "—")}</div>` : `<textarea data-sec="${k}" data-title="${esc(label)}" aria-label="${esc(label)}">${esc(text)}</textarea>`}<div>${citeBtns(n.citations?.[k])}</div></div></div>`).join("")}</div>
     <div class="scroll"><table class="t" id="rx"><thead><tr><th>Medicine</th><th>Dose</th><th>Duration</th><th>Instructions</th>${ro ? "" : "<th></th>"}</tr></thead><tbody>
       ${rx.map((r, i) => `<tr>${["medicine", "dose", "duration", "instructions"].map(f => `<td>${ro ? esc(r[f]) : `<input data-f="${f}" value="${esc(r[f])}" aria-label="${f}">`}</td>`).join("")}${ro ? "" : `<td><button class="icon-x" data-a="rx-del" data-v="${i}" aria-label="Remove">×</button></td>`}</tr>`).join("") || `<tr><td colspan="5" class="muted">—</td></tr>`}
     </tbody></table></div>${ro ? "" : `<div><button class="btn small" data-a="rx-add">+ Add medicine</button></div>`}`;
 }
+// The editor's note, in the same shape as the saved content (the server takes it as is).
 function readNote() {
-  const soap = Object.fromEntries(["S", "O", "A", "P"].map(k => [k, $("#soap-" + k)?.value || ""]));
   const rx = [...document.querySelectorAll("#rx tbody tr")].filter(tr => tr.querySelector("input")).map(tr => Object.fromEntries([...tr.querySelectorAll("input")].map(i => [i.dataset.f, i.value])));
-  return { soap, rx };
+  const cur = S.data?.cur?.note?.content || {}, boxes = [...document.querySelectorAll("#note-ed [data-sec]")];
+  if (!isDept({ content: cur })) return { soap: Object.fromEntries(SOAP.map(([k]) => [k, boxes.find(b => b.dataset.sec === k)?.value || ""])), rx };
+  const sections = boxes.map(b => ({ key: b.dataset.sec, title: b.dataset.title, text: b.value }));
+  const vitals = Object.fromEntries([...document.querySelectorAll("#note-ed [data-vital]")].map(i => [i.dataset.vital, i.value]));
+  return { ...cur, sections, vitals, rx };
 }

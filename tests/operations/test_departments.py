@@ -8,7 +8,9 @@ from fastapi.testclient import TestClient
 from app.core import departments
 from app.main import app
 from app.shared.db import connect
-from tests.helpers import clinic, join, member
+import json
+
+from tests.helpers import clinic, join, member, started_visit
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -58,3 +60,31 @@ def test_old_free_text_specialities_become_departments():
         m018.run(db); db.commit()
         assert db.execute("select speciality from members where id = ?", (doc,)).fetchone()[0] == "Paediatrics"
         db.close()
+
+
+def test_notes_follow_the_visit_doctors_department_and_old_notes_stay_soap():
+    with TestClient(app) as c:
+        h, doc = clinic(c, "dept-note@x.in")
+        c.put("/api/me", headers=h, json={"name": "Dr. Bone", "email": "dept-note@x.in", "speciality": "Orthopaedics"})
+        v = started_visit(c, h, doc)
+        c.put(f"/api/visits/{v['id']}/text", headers=h, json={"text": "Pain in right knee for two weeks. BP 130/80. Likely osteoarthritis.", "rev": 0})
+        n = c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()
+        assert n["content"]["template"]["department"] == "Orthopaedics" and n["content"]["vitals"] == {"BP": "130/80"}
+        assert [x["title"] for x in n["content"]["sections"]] == [s["title"] for s in departments.template("Orthopaedics")["sections"]]
+        assert "osteoarthritis" in n["content"]["soap"]["A"]                       # the S/O/A/P summary the brief reads
+        assert c.put(f"/api/notes/{n['id']}", headers=h, json=n["content"]).json()["edited"] == 0   # the saved shape, sent back
+        sections = {x["key"]: x["text"] for x in n["content"]["sections"]} | {"7": "Knee brace. Review in 2 weeks."}
+        n = c.put(f"/api/notes/{n['id']}", headers=h, json={"sections": sections, "vitals": {"BP": "130/80", "Pulse": "76"}, "rx": []}).json()
+        assert n["edited"] == 1 and n["content"]["vitals"]["Pulse"] == "76" and n["content"]["soap"]["P"] == "Knee brace. Review in 2 weeks."
+        page = c.get(f"/api/notes/{n['id']}/print", headers=h).text
+        assert "Knee brace" in page and "BP 130/80 · Pulse 76" in page
+        assert c.post(f"/api/notes/{n['id']}/sign", headers=h).status_code == 200
+
+        old = started_visit(c, h, doc, "Old")                                       # a note written before department formats
+        o = c.post(f"/api/visits/{old['id']}/note", headers=h).json()
+        db = connect()
+        db.execute("update notes set content = ? where id = ?", (json.dumps({"soap": {"S": "Cough.", "O": "", "A": "", "P": ""}, "rx": []}), o["id"]))
+        db.commit(); db.close()
+        o = c.put(f"/api/notes/{o['id']}", headers=h, json={"soap": {"S": "Cough, dry.", "O": "", "A": "", "P": ""}, "rx": []}).json()
+        assert "sections" not in o["content"] and o["content"]["soap"]["S"] == "Cough, dry."
+        assert "Subjective" in c.get(f"/api/notes/{o['id']}/print", headers=h).text

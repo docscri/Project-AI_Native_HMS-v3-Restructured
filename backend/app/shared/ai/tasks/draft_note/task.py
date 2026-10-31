@@ -1,10 +1,13 @@
-"""Drafts the SOAP note and prescription from this consultation's words, with reports and earlier notes as evidence."""
+"""Drafts the note in the doctor's department format (sections, vitals, prescription) from this consultation's words,
+with reports and earlier notes as evidence."""
 import re
 
 from pydantic import field_validator
 
+from app.core import departments
 from app.shared.ai import tasks
 from app.shared.ai.tasks.models import Shape, as_text
+from app.shared.ai.tasks.note_values import task as note_values   # the same vitals patterns the charts use
 
 NAME = "draft_note"
 SECTIONS = ("S", "O", "A", "P")
@@ -13,14 +16,16 @@ MED = re.compile(r"\b([A-Z][a-zA-Z]+(?:\s+syrup)?)\s+(\d+(?:\.\d+)?\s*(?:mg|ml|m
 FREQ = re.compile(r"\b(once|twice|three times|thrice|four times)\s+(?:a\s+day|daily)|\b\d-\d-\d\b|\bevery\s+\d+\s+hours\b", re.I)
 DURATION = re.compile(r"\bfor\s+(\d+\s+(?:days?|weeks?|months?))", re.I)
 
-
-class Soap(Shape):
-    S: str = ""
-    O: str = ""
-    A: str = ""
-    P: str = ""
-
-    _text = field_validator(*SECTIONS, mode="before")(lambda v: as_text(v))
+FORMS = {"tab", "tabs", "tablet", "tablets", "cap", "caps", "capsule", "capsules", "syrup", "syp", "inj", "injection",
+         "drops", "cream", "ointment", "gel", "mg", "ml", "mcg", "sr", "er", "xr", "ds", "forte", "plus"}
+NEGATION = re.compile(r"\b(?:no|not|don'?t|do not|never|stop|stopped|discontinue|avoid|without|allergic|allergy|hold|instead of)\b")
+# A new phrase starts at punctuation or a joining word, so "Stop metformin, start X" and "stop metformin and start X"
+# rule out only metformin. Verbs like "give" don't start one: in "do not give X" the "not" belongs to X.
+CLAUSE = re.compile(r"[,;:]|\b(?:and|but|then|instead|also)\b")
+SLOT = {"0", "½", "1/2", "0.5", "1", "1½", "1.5", "2"}   # tablets per slot in a 1-0-1 schedule
+TIMES = {"once": 1, "daily": 1, "od": 1, "twice": 2, "bd": 2, "bid": 2, "two times": 2, "thrice": 3, "three times": 3,
+         "tds": 3, "tid": 3, "four times": 4, "qid": 4, "at night": 1, "at bedtime": 1, "hs": 1, "in the morning": 1}
+NUMBER = re.compile(r"\d+(?:\.\d+)?")
 
 
 class Rx(Shape):
@@ -33,25 +38,22 @@ class Rx(Shape):
 
 
 class Reply(Shape):
-    soap: Soap = Soap()
+    sections: dict[str, str] = {}
+    vitals: dict[str, str] = {}
     rx: list[Rx] = []
     citations: dict[str, list[str]] = {}
 
+    @field_validator("sections", "vitals", mode="before")
+    @classmethod
+    def _texts(cls, v):
+        return {str(k): as_text(x) for k, x in (v or {}).items()} if isinstance(v, dict) else v
 
-def parts(patient: dict, items: list[dict]) -> list[dict]:
-    return [{"text": tasks.fill(__file__, patient=patient, evidence=items)}]
 
-
-FORMS = {"tab", "tabs", "tablet", "tablets", "cap", "caps", "capsule", "capsules", "syrup", "syp", "inj", "injection",
-         "drops", "cream", "ointment", "gel", "mg", "ml", "mcg", "sr", "er", "xr", "ds", "forte", "plus"}
-NEGATION = re.compile(r"\b(?:no|not|don'?t|do not|never|stop|stopped|discontinue|avoid|without|allergic|allergy|hold|instead of)\b")
-# A new phrase starts at punctuation or a joining word, so "Stop metformin, start X" and "stop metformin and start X"
-# rule out only metformin. Verbs like "give" don't start one: in "do not give X" the "not" belongs to X.
-CLAUSE = re.compile(r"[,;:]|\b(?:and|but|then|instead|also)\b")
-SLOT = {"0", "½", "1/2", "0.5", "1", "1½", "1.5", "2"}   # tablets per slot in a 1-0-1 schedule
-TIMES = {"once": 1, "daily": 1, "od": 1, "twice": 2, "bd": 2, "bid": 2, "two times": 2, "thrice": 3, "three times": 3,
-         "tds": 3, "tid": 3, "four times": 4, "qid": 4, "at night": 1, "at bedtime": 1, "hs": 1, "in the morning": 1}
-NUMBER = re.compile(r"\d+(?:\.\d+)?")
+def parts(patient: dict, items: list[dict], sheet: dict | None = None) -> list[dict]:
+    sheet = sheet or departments.template(None)
+    template = [{"key": str(i + 1), "title": s["title"], "prompts": s["prompts"]} for i, s in enumerate(sheet["sections"])]
+    return [{"text": tasks.fill(__file__, patient=patient, evidence=items, template=template,
+                                rules="\n".join("- " + r for r in sheet["rules"]), note=sheet.get("note") or "none")}]
 
 
 def spoken(items: list[dict]) -> list[str]:
@@ -155,15 +157,56 @@ def keep_said(rx: list[dict], items: list[dict]) -> list[dict]:
     return out
 
 
-def check(reply: dict, patient: dict, items: list[dict]) -> dict:
-    """Citations only to evidence that exists; medicines only as the doctor prescribed them in this consultation."""
+def shaped(sheet: dict, texts: dict, cites: dict, vitals: dict, rx: list, items: list[dict]) -> dict:
+    """The saved note: the department's sections in order, vitals, prescription, citations and the S/O/A/P summary."""
     known = {i["id"] for i in items}
-    cites = {k: [c for c in reply["citations"].get(k) or [] if c in known] for k in SECTIONS}
-    return {"soap": reply["soap"], "rx": keep_said(reply["rx"], items), "citations": cites}
+    sections = [{"key": str(i + 1), "title": s["title"], "text": (texts.get(str(i + 1)) or "").strip()} for i, s in enumerate(sheet["sections"])]
+    cites = {x["key"]: [c for c in cites.get(x["key"]) or [] if c in known] for x in sections}
+    return {"template": {"department": sheet["department"], "version": sheet["version"]}, "sections": sections,
+            "vitals": vitals, "rx": rx, "citations": cites, "soap": departments.soap_of(sections, vitals)}
 
 
-def fallback(patient: dict, items: list[dict]) -> dict:
-    """Without the AI: each sentence said in the consultation sorted into S, O, A or P by its words; medicines by pattern."""
+def stated_vitals(vitals: dict, items: list[dict]) -> dict:
+    """Only vitals whose numbers were said in this consultation."""
+    words = " ".join(spoken(items))
+    out = {}
+    for k in departments.VITALS:
+        v = (vitals.get(k) or "").strip()
+        if v and NUMBER.findall(v) and all(n in NUMBER.findall(words) for n in NUMBER.findall(v)):
+            out[k] = v
+    return out
+
+
+def check(reply: dict, patient: dict, items: list[dict], sheet: dict | None = None) -> dict:
+    """Citations only to evidence that exists; vitals only as said; medicines only as the doctor prescribed them."""
+    sheet = sheet or departments.template(None)
+    return shaped(sheet, reply["sections"], reply["citations"], stated_vitals(reply["vitals"], items),
+                  keep_said(reply["rx"], items), items)
+
+
+PLAIN_VITALS = {"BP": "BP", "Pulse": "Pulse", "Temperature": "Temp", "SpO2": "SpO2", "Weight": "Weight"}
+
+
+def into_sections(sheet: dict, soap: dict, cites: dict | None = None) -> tuple[dict, dict]:
+    """S/O/A/P text (and its citations) placed in the first section of the department's format that feeds each letter."""
+    first = {}
+    for i, s in enumerate(sheet["sections"]):
+        first.setdefault(departments.letter(s["title"]), str(i + 1))
+    texts, keyed = {}, {}
+    for k in SECTIONS:
+        key = first.get(k) or "1"
+        if (soap.get(k) or "").strip():
+            texts[key] = (texts.get(key, "") + " " + str(soap[k]).strip()).strip()
+        for c in (cites or {}).get(k) or []:
+            keyed.setdefault(key, [])
+            if c not in keyed[key]:
+                keyed[key].append(c)
+    return texts, keyed
+
+
+def fallback(patient: dict, items: list[dict], sheet: dict | None = None) -> dict:
+    """Without the AI: each sentence said sorted into S, O, A or P by its words and put in the first section of the
+    department's format that feeds that letter; vitals and medicines by pattern."""
     soap, cites, rx = {k: [] for k in SECTIONS}, {k: [] for k in SECTIONS}, []
     for i in items:
         if i["kind"] != "transcript":
@@ -185,4 +228,8 @@ def fallback(patient: dict, items: list[dict]) -> dict:
                 freq, dur = FREQ.search(text), DURATION.search(text)
                 rx.append({"medicine": f"{m.group(1).title()} {m.group(2)}", "dose": freq.group(0) if freq else "as advised",
                            "duration": dur.group(1) if dur else "", "instructions": ""})
-    return {"soap": {k: " ".join(v) for k, v in soap.items()}, "rx": keep_said(rx, items), "citations": cites}
+    sheet = sheet or departments.template(None)
+    texts, keyed = into_sections(sheet, {k: " ".join(v) for k, v in soap.items()}, cites)
+    said = " ".join(spoken(items))
+    vitals = {PLAIN_VITALS[f["test"]]: f["value"] for f in note_values.fallback({"O": said}) if f["test"] in PLAIN_VITALS}
+    return shaped(sheet, texts, keyed, vitals, keep_said(rx, items), items)

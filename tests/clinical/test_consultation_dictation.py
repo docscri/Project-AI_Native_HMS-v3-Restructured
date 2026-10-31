@@ -5,7 +5,7 @@ from starlette.websockets import WebSocketDisconnect
 
 from app.shared.ai.speech.providers import deepgram as transcribe
 from app.main import app
-from tests.helpers import clinic, started_visit
+from tests.helpers import cites_by_letter, clinic, started_visit
 
 
 class FakeStream:
@@ -108,7 +108,8 @@ def test_dictated_paragraph_is_cited_by_sentence():
         text = "Fever and sore throat for three days. Temperature 100.8 F, throat congested. Likely acute pharyngitis. Paracetamol 650 mg three times a day for 3 days."
         c.put(f"/api/visits/{v['id']}/text", headers=h, json={"text": text, "rev": 0})
         n = c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()
-        cited = {k: v for k, v in n["citations"].items() if v}
+        cited = cites_by_letter(n)
+        assert n["content"]["template"]["department"] == "General Medicine" and n["content"]["sections"][0]["title"] == "C/O"
         assert cited["S"] == ["T1"] and cited["O"] == ["T2"] and cited["A"] == ["T3"]
         assert "100.8" in n["content"]["soap"]["O"]
 
@@ -120,8 +121,9 @@ def test_hand_edits_are_flagged_until_redraft():
         c.put(f"/api/visits/{v['id']}/text", headers=h, json={"text": "Fever for two days. Likely viral fever.", "rev": 0})
         n = c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()
         assert n["edited"] == 0
-        assert c.put(f"/api/notes/{n['id']}", headers=h, json=n["content"]).json()["edited"] == 0     # unchanged save
-        changed = {**n["content"], "soap": {**n["content"]["soap"], "A": "Viral fever, mild."}}
+        editor = {"sections": {x["key"]: x["text"] for x in n["content"]["sections"]}, "vitals": n["content"]["vitals"], "rx": n["content"]["rx"]}
+        assert c.put(f"/api/notes/{n['id']}", headers=h, json=editor).json()["edited"] == 0          # unchanged save
+        changed = {**editor, "sections": editor["sections"] | {"6": "Viral fever, mild."}}
         assert c.put(f"/api/notes/{n['id']}", headers=h, json=changed).json()["edited"] == 1
         assert c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()["edited"] == 0
 
@@ -141,7 +143,7 @@ def test_citations_keep_their_sentences_after_the_transcript_changes():
 def test_untouched_ai_draft_saved_back_is_not_an_edit(monkeypatch):
     from app.modules.clinical.notes import service as notes
     # Gemini-like output: a missing section, a null field, an extra key
-    monkeypatch.setattr(notes, "draft_note", lambda patient, items: {
+    monkeypatch.setattr(notes, "draft_note", lambda patient, items, sheet=None: {
         "soap": {"S": "Fever.", "A": "Viral fever."}, "rx": [{"medicine": "Paracetamol 650 mg", "dose": "1-1-1", "duration": None, "route": "oral"}],
         "citations": {"S": ["T1"], "A": ["T1"]}})
     with TestClient(app) as c:

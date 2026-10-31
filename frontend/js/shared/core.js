@@ -19,6 +19,11 @@ const STATUS = { booked: "Booked", waiting: "Waiting", with_doctor: "In consulta
 const pill = st => `<span class="pill s-${st}">${STATUS[st] || st}</span>`;
 const rupees = n => "₹" + Number(n || 0).toLocaleString("en-IN");
 const hoursOf = s => (s.sessions?.length ? s.sessions : [s]).map(x => `${x.start}–${x.end}`).join(" · ");
+// The 12 departments (same list as the server's app/core/departments); a doctor's department fixes their note template.
+const DEPARTMENTS = ["General Medicine", "General Surgery", "Obstetrics", "Gynaecology", "Paediatrics", "Orthopaedics", "ENT",
+  "Ophthalmology", "Dermatology", "Psychiatry", "Emergency Medicine", "Urology"];
+const deptOf = cur => DEPARTMENTS.find(d => d.toLowerCase() === String(cur || "").trim().toLowerCase()) || "General Medicine";
+const deptSelect = (id, cur) => `<label class="field">Department<select id="${id}">${DEPARTMENTS.map(d => `<option ${d === deptOf(cur) ? "selected" : ""}>${d}</option>`).join("")}</select></label>`;
 const openReceipt = id => openPrint(`/visits/${id}/receipt`);
 // Print pages are fetched with the login header and written into the new tab, so the token never appears in a URL.
 async function openPrint(path) {

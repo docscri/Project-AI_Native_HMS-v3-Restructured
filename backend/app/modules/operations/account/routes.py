@@ -1,6 +1,7 @@
 """Login, logout, passwords, /api/me and owner onboarding."""
 from fastapi import APIRouter, Depends, Header
 
+from app.core import departments
 from app.shared.auth import current_member, require_admin
 from app.shared.db import get_db
 
@@ -38,6 +39,18 @@ def forgot(body: Forgot, db=Depends(get_db)):
 @router.post("/auth/reset")
 def reset_password(body: Reset, db=Depends(get_db)):
     return service.reset_password(db, body.code, body.password)
+
+
+@router.get("/departments")
+def department_list():
+    """The 12 departments; public, because sign-up needs it before anyone is logged in."""
+    return {"departments": departments.DEPARTMENTS}
+
+
+@router.get("/departments/template")
+def department_template(name: str | None = None, me=Depends(current_member)):
+    """A department's case-sheet template; without a name, the signed-in doctor's own."""
+    return departments.template(name or me.get("speciality"))
 
 
 @router.get("/me")

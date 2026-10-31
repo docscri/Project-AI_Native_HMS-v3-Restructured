@@ -1,6 +1,7 @@
 """Login, passwords, own profile and owner onboarding."""
 import json
 
+from app.core import departments
 from app.core.clinic import clinic_of, public_clinic
 from app.shared import mail as mailer
 from app.shared.audit import log_event
@@ -105,7 +106,7 @@ def edit_me(db, me: dict, body) -> dict:
     if repo.email_taken(db, email, me["id"]):
         raise Conflict("Email already registered.")
     repo.update_profile(db, me["id"], " ".join(body.name.split()), email, clean_phone(body.phone),
-                        body.speciality.strip() or None if me["kind"] == "doctor" else None,
+                        departments.chosen(body.speciality, me.get("speciality")) if me["kind"] == "doctor" else None,
                         body.designation.strip() or None if me["kind"] != "doctor" else me.get("designation"))
     log_event(db, me["clinic_id"], me["id"], "member", me["id"], "updated")
     return public_member(repo.member(db, me["id"]))
@@ -119,7 +120,7 @@ def create_owner(db, body) -> dict:
         raise Conflict("Email already registered.")
     clinic_id = repo.create_clinic(db)
     mid = repo.create_owner(db, clinic_id, "doctor" if body.is_doctor else "staff", body.name.strip(), email, clean_phone(body.phone),
-                            hash_password(body.password), body.speciality if body.is_doctor else None, json.dumps(SCREENS))
+                            hash_password(body.password), departments.chosen(body.speciality) if body.is_doctor else None, json.dumps(SCREENS))
     log_event(db, clinic_id, mid, "clinic", clinic_id, "created")
     return {"token": create_session(db, mid)}
 
@@ -131,7 +132,7 @@ def edit_owner(db, me: dict, body) -> dict:
     if email_taken(db, email, me["id"]):
         raise Conflict("Email already registered.")
     repo.update_owner(db, me["id"], body.name.strip(), email, clean_phone(body.phone), "doctor" if body.is_doctor else "staff",
-                      (me.get("speciality") or "General medicine") if body.is_doctor else None)
+                      departments.chosen(body.speciality, me.get("speciality")) if body.is_doctor else None)
     if body.password:
         validate_password(body.password)
         db.lock(f"password:{me['id']}")

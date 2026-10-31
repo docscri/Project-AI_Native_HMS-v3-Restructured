@@ -8,7 +8,7 @@ function openMember(kind, m) {
       ${m ? `<span class="pill ${m.status === "active" ? "s-paid" : m.status === "invited" ? "s-waiting" : "s-no_show"}">${{ active: "Active", invited: "Invited", inactive: "Inactive" }[m.status]}</span>` : ""}</div></div>
     <div class="grid2"><label class="field">Name<input id="mb-name" value="${esc(m?.name || "")}"></label><label class="field">Phone<input id="mb-phone" value="${esc(m?.phone || "")}"></label></div>
     <label class="field">Email<input id="mb-email" type="email" value="${esc(m?.email || "")}"></label>
-    <div class="grid2">${k === "doctor" ? `<label class="field">Department<input id="mb-spec" value="${esc(m?.speciality || "General medicine")}"></label>`
+    <div class="grid2">${k === "doctor" ? `<div class="dept-row">${deptSelect("mb-spec", m?.speciality)}<button class="btn small" data-a="tpl-view" data-from="mb-spec">Preview template</button></div>`
         : `<label class="field">Designation<select id="mb-spec">${["Receptionist", "Nurse", "IT", "Other"].map(d => `<option ${m?.designation === d ? "selected" : ""}>${d}</option>`).join("")}</select></label>`}</div>
     ${k === "doctor" ? `<div class="fee-row"><div class="seg"><button data-a="mb-fee-mode" data-v="clinic" aria-pressed="${m?.fee_override == null}">Clinic fee</button><button data-a="mb-fee-mode" data-v="own" aria-pressed="${m?.fee_override != null}">Own fee</button></div>
       <label class="field" id="mb-fee-wrap" ${m?.fee_override == null ? "hidden" : ""}>Fee (₹)<input id="mb-fee" type="number" min="0" value="${m?.fee_override ?? S.clinic.fee}"></label></div>` : ""}
@@ -65,13 +65,30 @@ async function openAccount() {
   modal(`<div class="mb-head"><div class="avatar big">${esc(initials(m.name))}</div><div><h2>${esc(m.name)}</h2><span class="muted">${esc(doc ? m.speciality || "Doctor" : m.designation || "Staff")}</span></div>
       <span class="grow"></span>${att.check_out ? `<span class="pill s-paid">${hhmm(att.check_in)} – ${hhmm(att.check_out)}</span>` : att.check_in ? `<button class="btn small" data-a="att-out">Check out · in ${hhmm(att.check_in)}</button>` : `<button class="btn small dark" data-a="att-in">Check in</button>`}</div>
     ${upcoming.length ? `<div class="rows my-leave">${upcoming.map(l => `<div class="r my-leave-row"><span class="num">${niceDate(l.start_date)}${l.end_date !== l.start_date ? " – " + niceDate(l.end_date) : ""}</span><span class="who muted">${esc(l.reason || "")}</span><span class="actions" style="gap:6px"><span class="pill ${LEAVE_ST[l.status][1]}">${LEAVE_ST[l.status][0]}</span><button class="btn small icon-btn" data-a="lv-cancel" data-v="${l.id}" aria-label="Cancel leave">×</button></span></div>`).join("")}</div>` : ""}
-    <div class="grid2"><label class="field">Name<input id="ac-name" value="${esc(m.name)}"></label><label class="field">${doc ? "Speciality" : "Designation"}<input id="ac-role" value="${esc((doc ? m.speciality : m.designation) || "")}"></label></div>
+    <div class="grid2"><label class="field">Name<input id="ac-name" value="${esc(m.name)}"></label>${doc ? deptSelect("ac-role", m.speciality) : `<label class="field">Designation<input id="ac-role" value="${esc(m.designation || "")}"></label>`}</div>
     <div class="grid2"><label class="field">Email<input id="ac-email" type="email" value="${esc(m.email)}"></label><label class="field">Phone<input id="ac-phone" value="${esc(m.phone || "")}"></label></div>
     <label class="field">Current password<input id="ac-cur" type="password" autocomplete="current-password"></label>
     <div class="grid2"><label class="field">New password<input id="ac-new" type="password" autocomplete="new-password"></label><label class="field">Repeat new password<input id="ac-new2" type="password" autocomplete="new-password"></label></div>
-    <div class="foot"><button class="btn danger" data-a="logout" style="margin-right:auto">Log out</button><button class="btn" data-a="my-leave">Leave</button>${doc ? `<button class="btn" data-a="my-schedule">My schedule</button>` : ""}<button class="btn primary" data-a="ac-save">Save</button></div>`);
+    <div class="foot"><button class="btn danger" data-a="logout" style="margin-right:auto">Log out</button><button class="btn" data-a="my-leave">Leave</button>${doc ? `<button class="btn" data-a="my-schedule">My schedule</button><button class="btn" data-a="tpl-view" data-from="ac-role">Template</button>` : ""}<button class="btn primary" data-a="ac-save">Save</button></div>`);
 }
 function copyInvite(code, msg) {
   const link = `${location.origin}/#/invite/${code}`;
   navigator.clipboard?.writeText(link).then(() => toast(msg || "Invite link copied"), () => toast(link));
+}
+
+// A department's OPD case-sheet template, in the app's own style: the vitals strip, then each section with its prompts.
+async function openTemplate(dept) {
+  const t = await api(`/departments/template?name=${encodeURIComponent(deptOf(dept))}`);
+  // A layer of its own above any open form, so closing it leaves that form (and unsaved edits) as it was.
+  const layer = document.getElementById("tpl-layer") || document.body.appendChild(Object.assign(document.createElement("div"), { id: "tpl-layer" }));
+  layer.innerHTML = `<div class="scrim" data-a="tpl-close"><div class="modal wide" role="dialog" aria-modal="true" aria-label="Note template">
+    <button class="icon-x modal-x" data-a="tpl-close" aria-label="Close">×</button><div class="tp"><div class="tp-top"><div><span class="tp-kicker">Note template</span><h2>${esc(t.title)}</h2>
+      <span class="muted">The OPD case sheet for this department: its sections, in order.</span></div></div>
+    <div class="tp-body">
+      <div class="tp-strip"><span class="tp-label">Patient</span>${t.header.patient.map(x => `<span class="tp-chip">${esc(x)}</span>`).join("")}</div>
+      <div class="tp-strip"><span class="tp-label">Vitals</span>${t.header.vitals.map(x => `<span class="tp-chip">${esc(x)}</span>`).join("")}</div>
+      <div class="tp-secs">${t.sections.map((s, i) => `<div class="soap-sec"><b class="soap-tile">${i + 1}</b><div><span class="soap-label">${esc(s.title)}</span>
+        <ul class="tp-prompts">${s.prompts.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div></div>`).join("")}</div>
+      ${t.note ? `<p class="tp-note">${esc(t.note)}</p>` : ""}
+    </div></div></div></div>`;
 }

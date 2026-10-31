@@ -14,6 +14,7 @@ document.addEventListener("focusin", e => {
 document.addEventListener("click", e => {
   const t = e.target.closest("[data-a]"); if (!t) return;
   const a = t.dataset.a, v = t.dataset.v;
+  if (a === "tpl-close") { if (e.target === t) $("#tpl-layer").innerHTML = ""; return; }
   if (a === "scrim") { if (e.target === t && M?.kind !== "sched") closeModal(); return; }
   if (["lim", "mb-admin", "mr-range", "lvm-m", "lvm-y", "rgm-m", "rgm-y", "free-text", "up-file", "mg-q", "vf-q", "vf-doc", "pay-disc", "bk-q", "pt-q", "cs-q", "bk-date", "bk-doc", "sc-doc", "sc-month-picker", "sc-year-picker", "cs-doc"].includes(a)) return;
   e.preventDefault();
@@ -38,6 +39,7 @@ document.addEventListener("click", e => {
         if (nw) await api("/auth/change-password", { body: { current: $("#ac-cur").value, new: nw } });
         S.me = me; S.doctors = await api("/doctors"); S.shellFor = null; closeModal(); toast("Saved"); route(); break; }
       case "my-schedule": await openSchedules(S.me.id, true); break;
+      case "tpl-view": await openTemplate(t.dataset.from ? $("#" + t.dataset.from)?.value : S.me.speciality); break;
       case "pw-save": {
         if ($("#ac-new").value !== $("#ac-new2").value) return toast("New passwords don't match", true);
         await api("/auth/change-password", { body: { current: $("#ac-cur").value, new: $("#ac-new").value } }); closeModal(); toast("Password changed"); break; }

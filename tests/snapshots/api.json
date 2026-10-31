@@ -429,7 +429,7 @@
       "no_shows": "int",
       "refunded": "int",
       "seen": "int",
-      "speciality": "NoneType",
+      "speciality": "str",
       "walk_ins": "int"
      }
     ],
@@ -635,7 +635,7 @@
        ],
        "start": "str"
       },
-      "speciality": "NoneType",
+      "speciality": "str",
       "used": "int"
      }
     ],
@@ -705,7 +705,7 @@
      "id": "int",
      "letter": "str",
      "name": "str",
-     "speciality": "NoneType",
+     "speciality": "str",
      "status": "str"
     }
    ],
@@ -1005,7 +1005,7 @@
     "screens": [
      "str"
     ],
-    "speciality": "NoneType",
+    "speciality": "str",
     "status": "str",
     "work_days": "NoneType",
     "work_end": "NoneType",
@@ -1111,7 +1111,7 @@
      "screens": [
       "str"
      ],
-     "speciality": "NoneType",
+     "speciality": "str",
      "status": "str",
      "work_days": "NoneType",
      "work_end": "NoneType",
@@ -1554,7 +1554,7 @@
     "doctor": {
      "id": "int",
      "name": "str",
-     "speciality": "NoneType"
+     "speciality": "str"
     },
     "not_seen": [],
     "schedule": {
@@ -1848,7 +1848,7 @@
       "leave": "int",
       "name": "str",
       "present": "int",
-      "role": "NoneType",
+      "role": "str",
       "working": "int"
      }
     ]
@@ -1870,7 +1870,7 @@
       "kind": "str",
       "name": "str",
       "note": "str",
-      "speciality": "NoneType",
+      "speciality": "str",
       "start": "str",
       "status": "str",
       "work_days": "NoneType",
@@ -2275,6 +2275,8 @@
   "GET /api/collections",
   "GET /api/consultation/today",
   "GET /api/day-close",
+  "GET /api/departments",
+  "GET /api/departments/template",
   "GET /api/dictation",
   "GET /api/doctors",
   "GET /api/documents/{doc_id}/file",

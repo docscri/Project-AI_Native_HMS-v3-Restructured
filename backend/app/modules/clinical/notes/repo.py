@@ -67,3 +67,11 @@ def visit(db, visit_id: int) -> dict | None:
 
 def doctor(db, member_id: int) -> dict | None:
     return row(db.execute("select name, speciality from members where id = ?", (member_id,)).fetchone())
+
+
+def document_ids(db, patient_id: int) -> set[int]:
+    return {r[0] for r in db.execute("select id from documents where patient_id = ?", (patient_id,)).fetchall()}
+
+
+def set_citations(db, note_id: int, citations: str) -> None:
+    db.execute("update notes set citations = ? where id = ? and status = 'draft'", (citations, note_id))

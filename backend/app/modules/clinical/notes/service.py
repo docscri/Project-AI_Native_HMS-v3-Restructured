@@ -49,6 +49,12 @@ def evidence_for(db, v: dict) -> tuple[dict, list[dict]]:
     return patient, evidence(text_of(v), docs, past_notes(db, v["patient_id"], v["id"]))
 
 
+def existing_reports_only(db, patient_id: int, citations: dict) -> dict:
+    """Citations without reports that have since been removed (D ids that no longer exist)."""
+    have = {f"D{i}" for i in repo.document_ids(db, patient_id)}
+    return {k: [c for c in ids if not c.startswith("D") or c in have] for k, ids in citations.items()}
+
+
 def draft(db, me, visit_id: int) -> dict:
     v = get_visit(db, me, visit_id)
     existing = load_note(db, visit_id)
@@ -62,6 +68,8 @@ def draft(db, me, visit_id: int) -> dict:
     soap = {k: str((d.get("soap") or {}).get(k) or "") for k in ("S", "O", "A", "P")}
     rx = [{f: str(r.get(f) or "") for f in ("medicine", "dose", "duration", "instructions")} for r in d.get("rx") or [] if isinstance(r, dict)]
     d["citations"] = {k: list((d.get("citations") or {}).get(k) or []) for k in ("S", "O", "A", "P")}
+    db.lock(f"patient:{v['patient_id']}")   # shared with document removal: a report removed while the AI wrote stays uncited
+    d["citations"] = existing_reports_only(db, v["patient_id"], d["citations"])
     content = json.dumps({"soap": soap, "rx": rx})
     cited = {c for ids in d["citations"].values() for c in ids}
     # Saved so citations keep pointing at the right words if the transcript changes later.
@@ -109,6 +117,9 @@ def sign(db, me, note_id: int) -> dict:
         raise Conflict("Already signed.")
     if me["kind"] != "doctor":
         raise Forbidden("Only a doctor can sign.")
+    cites = json.loads(n["citations"] or "{}")
+    if (kept := existing_reports_only(db, n["patient_id"], cites)) != cites:   # a report removed since the draft was made
+        repo.set_citations(db, note_id, json.dumps(kept))
     ts = now()
     if not repo.sign(db, note_id, ts, me["id"], me["name"]):
         raise Conflict("Already signed.")

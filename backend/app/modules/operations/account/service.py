@@ -37,6 +37,7 @@ def logout(db, token: str) -> dict:
 
 
 def change_password(db, me: dict, current: str, new: str, token: str) -> dict:
+    db.lock(f"password:{me['id']}")   # shared with reset_password, so neither overwrites the other
     m = repo.member(db, me["id"])
     if not check_password(current, m["password_hash"]):
         raise Invalid("Current password is wrong.")
@@ -82,6 +83,10 @@ def reset_password(db, code: str, password: str) -> dict:
     if not r or r["used_at"] or r["expires_at"] < now():
         raise Gone("Link expired. Ask for a new one.")
     validate_password(password)
+    db.lock(f"password:{r['member_id']}")
+    r = repo.reset(db, token_hash(code))   # look again under the lock: a password change may have cancelled it
+    if not r or r["used_at"] or r["expires_at"] < now():
+        raise Gone("Link expired. Ask for a new one.")
     repo.reset_password(db, r["member_id"], hash_password(password))
     repo.use_reset(db, r["token_hash"], now())
     repo.drop_resets(db, r["member_id"])
@@ -129,6 +134,7 @@ def edit_owner(db, me: dict, body) -> dict:
                       (me.get("speciality") or "General medicine") if body.is_doctor else None)
     if body.password:
         validate_password(body.password)
+        db.lock(f"password:{me['id']}")
         repo.set_password(db, me["id"], hash_password(body.password))
         repo.drop_resets(db, me["id"])
     log_event(db, me["clinic_id"], me["id"], "member", me["id"], "updated")

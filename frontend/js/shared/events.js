@@ -1,4 +1,16 @@
 /* events */
+// Clicking into Rough notes for a waiting patient starts the visit, so typing works without the microphone.
+document.addEventListener("focusin", e => {
+  const el = e.target;
+  if (el.id !== "free-text" || S.data?.cur?.status !== "waiting" || S.starting) return;
+  const id = Number(el.dataset.v); S.starting = id;
+  run(async () => {
+    try { await api(`/visits/${id}/start`, { body: {} }); await S.reloadConsult(); }
+    finally { S.starting = null; }
+    const box = $("#free-text");
+    if (box && Number(box.dataset.v) === id && document.activeElement !== box) { box.focus(); box.setSelectionRange(box.value.length, box.value.length); }
+  });
+});
 document.addEventListener("click", e => {
   const t = e.target.closest("[data-a]"); if (!t) return;
   const a = t.dataset.a, v = t.dataset.v;

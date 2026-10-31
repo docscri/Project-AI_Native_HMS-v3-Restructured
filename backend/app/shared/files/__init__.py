@@ -1,5 +1,7 @@
-"""Uploads: Supabase Storage if configured, else the server's disk."""
+"""Uploads go to STORAGE in app/config.py; reading follows where each file was saved."""
 import uuid
+
+from app import config
 
 from .providers import local, supabase
 
@@ -10,7 +12,7 @@ EXT = {"application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png", "image
 
 def save(clinic_id: int, data: bytes, mime: str) -> str:
     name = f"{clinic_id}/{uuid.uuid4().hex}.{EXT.get(mime, 'bin')}"
-    return (supabase if supabase.settings() else local).save(name, data, mime)
+    return config.provider("STORAGE").save(name, data, mime)
 
 
 def read(stored: str) -> bytes:

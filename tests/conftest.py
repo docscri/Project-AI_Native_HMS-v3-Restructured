@@ -3,6 +3,10 @@ import os
 import tempfile
 
 os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", "")
+os.environ["DATABASE"] = "postgres" if os.environ["DATABASE_URL"] else "sqlite"
+os.environ["STORAGE"] = "local"
+for name in ("LLM", "LLM_MODEL", "SPEECH", "SPEECH_MODEL", "SPEECH_LANGUAGE"):
+    os.environ.pop(name, None)
 
 os.environ["CLINIC_DATA_DIR"] = tempfile.mkdtemp()
 os.environ.pop("GEMINI_API_KEY", None)

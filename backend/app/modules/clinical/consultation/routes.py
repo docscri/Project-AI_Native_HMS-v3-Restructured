@@ -8,7 +8,7 @@ from starlette.websockets import WebSocketState
 from app.core.visit import get_visit
 from app.modules.clinical.consultation.service import editable
 from app.shared.ai import llm
-from app.shared.ai.speech.providers import deepgram as transcribe
+from app.shared.ai import speech as transcribe
 from app.shared.auth import current_member, member_for_token, public_member, require_any, require_screen
 from app.shared.db import connect, get_db
 from app.shared.errors import DomainError
@@ -65,7 +65,7 @@ _active: set[int] = set()   # one live stream per visit (single server process)
 
 @router.get("/dictation")
 def provider(me=Depends(current_member)):
-    return {"provider": "deepgram" if transcribe.enabled() else "browser", "ai": llm.enabled()}
+    return {"provider": transcribe.name(), "ai": llm.enabled()}
 
 
 def _check(token: str, visit_id: int) -> str | None:
@@ -115,7 +115,7 @@ async def dictate(ws: WebSocket, visit_id: int):
                 with suppress(Exception):
                     await ws.send_json({"type": "transcript", **event})
 
-        stream = transcribe.DeepgramStream()
+        stream = transcribe.open_stream()
         await stream.connect(on_text)
         await ws.send_json({"type": "ready"})
         while True:

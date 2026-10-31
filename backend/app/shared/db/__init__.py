@@ -1,17 +1,16 @@
-"""Postgres when DATABASE_URL is set, else SQLite; queries use `?` placeholders.
+"""Database chosen by DATABASE in app/config.py (providers/<name>.py); queries use `?` placeholders.
 
     db.execute(sql, params) -> cursor with fetchone/fetchall/rowcount/lastrowid
     db.lock(key)            -> serialise writes that allocate numbers (tokens, UHIDs, receipts)
 """
 from datetime import datetime
 
-from .config import DATA_DIR, DATABASE_URL, DB_PATH, UPLOAD_DIR, is_postgres
-from .providers.postgres import PgDB
-from .providers.sqlite import SqliteDB
+from app import config as app_config
+from .config import DATA_DIR, DATABASE_URL, DB_PATH, UPLOAD_DIR
 
 
 def connect():
-    return PgDB() if is_postgres() else SqliteDB()
+    return app_config.provider("DATABASE").DB()
 
 
 def get_db():

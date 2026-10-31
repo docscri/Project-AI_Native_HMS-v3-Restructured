@@ -76,3 +76,6 @@ class PgDB:
 
     def close(self):
         self.conn.close()
+
+
+DB = PgDB

@@ -90,9 +90,10 @@ function citations(v) {
   if (!groups.length) return `<div class="cx-empty">No sources</div>`;
   const card = id => {
     const bs = b?.sources?.[id], on = S.focusSrc === id ? " hl" : "", n = briefNums(b).get(id), no = n ? `${n} · ` : "";
-    if (bs?.kind === "document") return `<div class="src-doc${on}" id="src-${id}"><small>${no}REPORT · ${longDate(bs.date).toUpperCase()}</small><b>${esc(bs.label)}</b>${bs.summary ? `<span>${esc(bs.summary)}</span>` : ""}
-      ${bs.findings.length ? `<span class="src-vals">${bs.findings.map(f => esc(`${f.name} ${f.value} ${f.unit || ""}`.trim())).join(" · ")}</span>` : ""}<span class="actions" style="gap:6px"><button class="btn small" data-a="open-doc" data-v="${bs.doc_id}">Open file</button>${bs.failed ? `<button class="btn small dark" data-a="doc-retry" data-v="${bs.doc_id}">Try again</button>` : ""}</span></div>`;
-    if (bs?.kind === "note") return `<button class="${on.trim()}" id="src-${id}" data-a="note-view" data-v="${bs.visit_id}"><small>${no}NOTE · ${longDate(bs.date).toUpperCase()} · ${bs.section.toUpperCase()}</small>${esc(bs.body)}<em>${esc(bs.doctor)}</em></button>`;
+    // Brief sources name the report or note; open them for the detail. Transcript sentences (below) show their text.
+    if (bs?.kind === "document") return `<div class="src-doc${on}" id="src-${id}"><small>${no}REPORT · ${longDate(bs.date).toUpperCase()}</small><b>${esc(bs.label)}</b>${bs.failed ? `<span>Couldn't be read.</span>` : ""}
+      <span class="actions" style="gap:6px"><button class="btn small" data-a="open-doc" data-v="${bs.doc_id}">Open file</button>${bs.failed ? `<button class="btn small dark" data-a="doc-retry" data-v="${bs.doc_id}">Try again</button>` : ""}</span></div>`;
+    if (bs?.kind === "note") return `<button class="${on.trim()}" id="src-${id}" data-a="note-view" data-v="${bs.visit_id}"><small>${no}NOTE · ${longDate(bs.date).toUpperCase()} · ${bs.section.toUpperCase()}</small>Signed note<em>${esc(bs.doctor)}</em></button>`;
     const src = sourceOf(v, id); return src ? `<button data-a="cite" data-v="${id}"><small>${src.kind.toUpperCase()} · ${id}</small>${esc(src.text)}</button>` : "";
   };
   return `<div class="cite-list">${groups.map(([k, ids]) => `<div class="cite-item"><b>${k}</b><div class="cite-src">${ids.map(card).join("")}</div></div>`).join("")}</div>`;

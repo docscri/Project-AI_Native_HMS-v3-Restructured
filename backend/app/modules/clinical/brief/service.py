@@ -104,9 +104,15 @@ def inputs(db, v: dict) -> tuple[list[dict], list[dict]]:
     return repo.signed_notes(db, v["patient_id"], v["id"]), repo.finished_documents(db, v["patient_id"])
 
 
+# Bump when what a brief contains changes without a prompt version change (e.g. the plain, no-AI wording): every
+# saved brief, and every visit-history line taken from one, is then made again. 2: signed corrections in the plain lines.
+FORMAT = 2
+
+
 def basis(notes: list[dict], docs: list[dict]) -> str:
-    """Changes when a note is signed, a report is read or a brief prompt changes version; the saved brief is reused until then."""
-    return ("n" + ",".join(str(n["id"]) + "+" * len(n.get("addenda") or []) for n in notes) + ";d" + ",".join(str(d["id"]) + ("x" if d["ai_status"] == "failed" else "") for d in docs)
+    """Changes when a note is signed or corrected, a report is read, a brief prompt changes version or FORMAT changes;
+    the saved brief is reused until then."""
+    return (f"v{FORMAT};n" + ",".join(str(n["id"]) + "+" * len(n.get("addenda") or []) for n in notes) + ";d" + ",".join(str(d["id"]) + ("x" if d["ai_status"] == "failed" else "") for d in docs)
             + (";ai:" + ",".join(tasks.version(t) for t in (brief_summary, visit_lines)) if llm.enabled() else ""))
 
 

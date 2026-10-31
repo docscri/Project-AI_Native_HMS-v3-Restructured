@@ -10,7 +10,7 @@ const SOAP = [["S", "Subjective"], ["O", "Objective"], ["A", "Assessment"], ["P"
 function paneNote(v) {
   const n = v.note, signed = n?.status === "signed";
   if (S.drafting === v.id) return `<div class="note-gen"><i></i><i></i><i></i></div>`;
-  if (!n) return `<div class="note-empty"><p class="muted cx-lead">${v.status === "with_doctor" ? "No note yet. Type or dictate in Consult, then generate it." : "No note for this visit."}</p>${genBtn(v)}</div>`;
+  if (!n) return `<div class="note-empty"><p class="muted cx-lead">${v.status === "with_doctor" ? "No note yet. Type or dictate in Consult, then press Generate note." : "No note for this visit."}</p></div>`;
   if (S.noteEdit && !signed) return noteEditor(n, false);
   return soapRead(v, n);
 }

@@ -28,6 +28,16 @@ footer .s { color: #6B7C75; font-size: 13px; font-weight: 600; }
 footer .sign { width: 210px; text-align: center; font-size: 12px; color: #6B7C75; font-weight: 600; padding-top: 44px; background: linear-gradient(#0B1411, #0B1411) bottom 22px center / 100% 1.5px no-repeat; }
 .msg { max-width: 460px; margin: 18vh auto; background: #F6FAF7; border-radius: 28px; padding: 36px; text-align: center; }
 .msg b { display: block; font-size: 20px; margin-bottom: 6px; } .msg span { color: #6B7C75; font-weight: 600; }
+@media screen and (max-width: 640px) {   /* opened on a phone: the same page, full width */
+  .page, .page.narrow { margin: 0; border-radius: 0; padding: 18px 16px 28px; }
+  header { flex-direction: column; gap: 10px; padding: 18px 18px; border-radius: 18px; }
+  header .r { text-align: left; }
+  header h1 { font-size: 19px; }
+  table { display: block; overflow-x: auto; font-size: 13.5px; white-space: nowrap; }
+  td, th { padding-left: 10px; padding-right: 10px; }
+  .total { padding: 14px 18px; } .total b { font-size: 21px; }
+  footer { flex-direction: column; align-items: stretch; gap: 8px; margin-top: 30px; } footer .sign { width: 100%; }
+}
 @media print { body { background: #fff; } .page { margin: 0; padding: 14mm; background: #fff; border-radius: 0; max-width: none; } }
 """
 

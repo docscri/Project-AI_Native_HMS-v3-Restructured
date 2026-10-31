@@ -21,6 +21,16 @@ async def upload(visit_id: int, tasks: BackgroundTasks, file: UploadFile = File(
     return out
 
 
+@router.get("/visits/{visit_id}/documents")
+def visit_documents(visit_id: int, me=Depends(require_any("operations", "consultation", "patients")), db=Depends(get_db)):
+    return service.for_visit(db, me, visit_id)
+
+
+@router.delete("/documents/{doc_id}")
+def remove(doc_id: int, me=Depends(require_any("operations", "consultation", "patients")), db=Depends(get_db)):
+    return service.remove(db, me, doc_id)
+
+
 @router.post("/documents/{doc_id}/retry")
 def retry(doc_id: int, tasks: BackgroundTasks, me=Depends(require_any("operations", "consultation", "patients")), db=Depends(get_db)):
     out = service.retry(db, me, doc_id)

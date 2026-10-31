@@ -97,6 +97,28 @@ def retry(db, me, doc_id: int) -> dict:
     return repo.listed(db, doc_id)
 
 
+def for_visit(db, me, visit_id: int) -> list[dict]:
+    get_visit(db, me, visit_id)
+    return repo.for_visit(db, visit_id)
+
+
+def remove(db, me, doc_id: int) -> dict:
+    """Removes a wrongly added document, until the visit's note is signed (a signed note may cite it)."""
+    d = repo.in_clinic(db, me["clinic_id"], doc_id)
+    if not d:
+        raise NotFound("Document not found.")
+    if d["visit_id"] and repo.note_signed(db, d["visit_id"]):
+        raise Conflict("The note for this visit is signed, so its documents stay.")
+    repo.delete(db, doc_id)
+    log_event(db, me["clinic_id"], me["id"], "document", doc_id, "removed", {"visit": d["visit_id"], "filename": d["filename"]})
+    db.commit()
+    try:
+        storage.delete(d["path"])
+    except Exception:   # the record is gone; a leftover file is harmless
+        log.warning("Couldn't delete the stored file for document %s", doc_id)
+    return {"ok": True}
+
+
 def file_of(db, me, doc_id: int) -> tuple[bytes, dict]:
     d = repo.in_clinic(db, me["clinic_id"], doc_id)
     if not d:

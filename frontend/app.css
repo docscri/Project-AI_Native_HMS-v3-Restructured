@@ -923,3 +923,6 @@ sup.cs button:hover, .cite-sup:hover { background: #3f6b1f; }
   background: var(--login-filled); border-color: var(--surface); color: var(--surface); caret-color: var(--surface);
 }
 .login-input:-webkit-autofill { border-color: var(--surface); }
+.up-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.up-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--white); border-radius: 14px; padding: 6px 6px 6px 14px; font-weight: 600; font-size: 14px; }
+.up-row > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

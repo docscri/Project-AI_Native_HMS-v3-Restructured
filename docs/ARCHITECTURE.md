@@ -3,6 +3,7 @@
 ```
 backend/requirements.txt  Python packages
 backend/app/
+  config.py          provider names (DATABASE, STORAGE, LLM, SPEECH) and models; secrets stay in .env
   main.py            app, routers, static frontend
   shared/            plumbing with swappable providers, no clinic rules
     db/              connect/get_db/row/rows/now; providers/sqlite.py, providers/postgres.py; migrate.py

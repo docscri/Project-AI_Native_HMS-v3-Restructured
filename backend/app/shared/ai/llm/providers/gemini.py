@@ -1,10 +1,10 @@
-"""Gemini: JSON in, JSON out. Used only when GEMINI_API_KEY is set."""
+"""Gemini: JSON in, JSON out. Used only when GEMINI_API_KEY is set; LLM_MODEL in app/config.py picks the model."""
 import json
 import os
 
 import httpx
 
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+from app import config
 
 
 def enabled() -> bool:
@@ -12,7 +12,7 @@ def enabled() -> bool:
 
 
 def generate(parts: list[dict]) -> dict:
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{config.value("LLM_MODEL")}:generateContent"
     r = httpx.post(url, params={"key": os.environ["GEMINI_API_KEY"]}, timeout=90, json={
         "contents": [{"role": "user", "parts": parts}],
         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},

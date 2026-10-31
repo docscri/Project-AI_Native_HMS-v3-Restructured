@@ -16,6 +16,10 @@ services:
         value: 3.12.7
       - key: CLINIC_TZ
         value: Asia/Kolkata
+      - key: DATABASE              # provider names override backend/app/config.py for this deployment
+        value: postgres
+      - key: STORAGE
+        value: supabase
       - key: DATABASE_URL          # Supabase → Connect → Session pooler URI
         sync: false
       - key: SUPABASE_URL          # Supabase → Project Settings → API → Project URL

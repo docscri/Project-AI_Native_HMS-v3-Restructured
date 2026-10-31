@@ -38,3 +38,6 @@ class SqliteDB:
 
     def close(self):
         self.conn.close()
+
+
+DB = SqliteDB

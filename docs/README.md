@@ -35,12 +35,19 @@ Open **http://localhost:8050** in **Chrome**. Stop with **Ctrl+C**.
 - **Settings:** copy `.env.example` to `.env` and fill in what you need. With no `.env`, data is saved locally in `data/`.
 - **Port busy?** Use another one, e.g. `--port 8070`.
 
+## Switching providers
+
+`backend/app/config.py` names the provider for the database, file storage, AI model and speech. Change a name there and restart.
+Keys and passwords stay in `.env` (or the Render dashboard), never in `config.py`.
+To add a provider, put a new file in that service's `providers/` folder and use its file name in `config.py`.
+
 ## Use Supabase (recommended for a real clinic)
 
 1. Create a project at supabase.com.
 2. **Database:** Project Settings → Database → Connection string → **URI (Session pooler)**. Put it in `.env` as `DATABASE_URL`.
 3. **Files:** Storage → New bucket `clinic-documents` (**private**). Project Settings → API: put the URL in `SUPABASE_URL` and the `service_role` key in `SUPABASE_SERVICE_KEY`.
-4. Start the app. Tables are created automatically on first start.
+4. In `backend/app/config.py` set `DATABASE = "postgres"` and `STORAGE = "supabase"`.
+5. Start the app. Tables are created automatically on first start.
 
 Keep `.env` private: it holds keys to your clinic's data.
 

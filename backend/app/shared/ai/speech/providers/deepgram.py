@@ -4,6 +4,8 @@ import logging
 import os
 from contextlib import suppress
 
+from app import config
+
 log = logging.getLogger(__name__)
 
 
@@ -24,7 +26,7 @@ class DeepgramStream:
     async def connect(self, on_text) -> None:
         from deepgram.core.events import EventType
         from deepgram.listen.v1.types import ListenV1Results
-        options = {"model": os.environ.get("DEEPGRAM_MODEL", "nova-3"), "language": os.environ.get("DEEPGRAM_LANGUAGE", "en"),
+        options = {"model": config.value("SPEECH_MODEL"), "language": config.value("SPEECH_LANGUAGE"),
                    "interim_results": True, "smart_format": True, "encoding": "linear16", "sample_rate": 16000, "channels": 1}
         for attempt in range(3):
             try:
@@ -96,3 +98,7 @@ class DeepgramStream:
                 with suppress(Exception):
                     await self.ctx.__aexit__(None, None, None)
                 self.conn = self.ctx = self.listen_task = self.keep_task = None
+
+
+def open_stream() -> DeepgramStream:
+    return DeepgramStream()

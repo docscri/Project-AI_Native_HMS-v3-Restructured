@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from app import config
 from app.shared import db, errors
 from app.modules.clinical.brief import routes as brief
 from app.modules.clinical.consultation import routes as consultation
@@ -34,6 +35,7 @@ for r in ROUTERS:
 
 @app.on_event("startup")
 def startup() -> None:
+    config.check()
     db.init()
 
 

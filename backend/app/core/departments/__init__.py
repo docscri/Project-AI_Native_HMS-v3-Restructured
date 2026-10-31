@@ -44,3 +44,36 @@ def chosen(text: str | None, keep: str | None = None) -> str:
     if not label:
         raise Invalid("Choose a department from the list.")
     return label
+
+
+VITALS = ["BP", "Pulse", "RR", "Temp", "SpO2", "Weight", "Height"]
+
+
+def letter(title: str) -> str:
+    """Which of S/O/A/P a template section feeds, so briefs, charts and past-visit lines keep working."""
+    t = title.lower()
+    if t.startswith("o/e") or "risk assessment" in t or "available" in t or "bedside" in t:
+        return "O"
+    if any(w in t for w in ("diagnos", "impression", "assessment", "formulation")):
+        return "A"
+    if "management" in t:
+        return "P"
+    return "S"
+
+
+def sections_for(label: str | None) -> list[dict]:
+    """The doctor's template as empty note sections: key, title and the prompts the AI follows."""
+    return [{"key": str(i + 1), "title": s["title"], "prompts": s["prompts"], "text": ""} for i, s in enumerate(template(label)["sections"])]
+
+
+def soap_of(sections: list[dict], vitals: dict | None = None) -> dict:
+    """The S/O/A/P summary of a department-format note (vitals lead O, unless the text already gives them)."""
+    soap = {k: [] for k in "SOAP"}
+    written = " ".join(s.get("text") or "" for s in sections).replace(" ", "")
+    v = "; ".join(f"{k} {x}" for k, x in (vitals or {}).items() if str(x).strip() and str(x).replace(" ", "") not in written)
+    if v:
+        soap["O"].append(v + ".")
+    for s in sections:
+        if (s.get("text") or "").strip():
+            soap[letter(s["title"])].append(s["text"].strip())
+    return {k: " ".join(v) for k, v in soap.items()}

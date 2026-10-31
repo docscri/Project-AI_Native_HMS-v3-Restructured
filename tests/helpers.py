@@ -21,3 +21,12 @@ def member(c, h, name, email, kind, screens, admin=False):
 
 def join(c, code, pw="member123"):
     return {"Authorization": "Bearer " + c.post("/api/invites/accept", json={"code": code, "password": pw}).json()["token"]}
+
+
+def cites_by_letter(note):
+    """A department-format note's citations grouped by the S/O/A/P letter each section feeds."""
+    from app.core.departments import letter
+    out = {k: [] for k in "SOAP"}
+    for x in note["content"]["sections"]:
+        out[letter(x["title"])] += [c for c in note["citations"].get(x["key"], []) if c not in out[letter(x["title"])]]
+    return out

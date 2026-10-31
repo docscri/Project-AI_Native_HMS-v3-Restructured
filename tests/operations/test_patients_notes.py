@@ -4,6 +4,7 @@ from datetime import date
 from fastapi.testclient import TestClient
 
 from app.main import app
+from tests.helpers import cites_by_letter
 
 TODAY = date.today().isoformat()
 
@@ -72,7 +73,7 @@ def test_free_text_space():
         assert c.get(f"/api/visits/{v['id']}", headers=h).json()["text"] == text
         n = c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()
         assert "Fever" in n["content"]["soap"]["S"] and "Paracetamol" in n["content"]["rx"][0]["medicine"]
-        assert n["citations"]["A"] == ["T3"]
+        assert cites_by_letter(n)["A"] == ["T3"]
         c.post(f"/api/notes/{n['id']}/sign", headers=h)
         assert c.put(f"/api/visits/{v['id']}/text", headers=h, json={"text": "late edit", "rev": 0}).status_code == 409
 

@@ -1,6 +1,7 @@
 """Draft from cited evidence, edit, sign."""
 import json
 
+from app.core import departments
 from app.core.clinic import clinic_of
 from app.core.patient import age
 from app.core.visit import get_visit, move, text_of
@@ -37,9 +38,32 @@ def evidence(text: str, documents: list[dict], past_notes: list[dict]) -> list[d
     return items
 
 
-def draft_note(patient: dict, items: list[dict]) -> dict:
-    """{"soap": {S, O, A, P}, "rx": [...], "citations": {"S": [ids], ...}}"""
-    return tasks.run(draft_note_task, patient=patient, items=items)
+def draft_note(patient: dict, items: list[dict], sheet: dict | None = None) -> dict:
+    """{"sections": [{key, title, text}], "vitals": {...}, "rx": [...], "citations": {"1": [ids], ...}, ...}"""
+    return tasks.run(draft_note_task, patient=patient, items=items, sheet=sheet)
+
+
+def sheet_of(db, doctor_id: int) -> dict:
+    """The visit doctor's department template: their notes are written in its format."""
+    return departments.template((repo.doctor(db, doctor_id) or {}).get("speciality"))
+
+
+def rx_of(rx) -> list[dict]:
+    return [{f: str(r.get(f) or "") for f in ("medicine", "dose", "duration", "instructions")} for r in rx or [] if isinstance(r, dict)]
+
+
+def vitals_of(vitals) -> dict:
+    vitals = vitals if isinstance(vitals, dict) else {}
+    return {k: str(vitals[k]).strip() for k in departments.VITALS if str(vitals.get(k) or "").strip()}
+
+
+def formatted(sheet: dict, texts: dict, vitals: dict, rx) -> dict:
+    """A department-format note as saved (and as the editor sends it back): sections in the template's order,
+    vitals, prescription and the S/O/A/P summary the brief and past-visit lines read."""
+    sections = [{"key": str(i + 1), "title": s["title"], "text": str(texts.get(str(i + 1)) or "")} for i, s in enumerate(sheet["sections"])]
+    vitals = vitals_of(vitals)
+    return {"template": {"department": sheet["department"], "version": sheet["version"]}, "sections": sections,
+            "vitals": vitals, "soap": departments.soap_of(sections, vitals), "rx": rx_of(rx)}
 
 
 def evidence_for(db, v: dict) -> tuple[dict, list[dict]]:
@@ -63,14 +87,19 @@ def draft(db, me, visit_id: int) -> dict:
     patient, items = evidence_for(db, v)
     if not any(i["kind"] == "transcript" for i in items) and not any(i["kind"] == "document" for i in items):
         raise Invalid("Dictate or add a document first.")
-    d = draft_note(patient, items)
+    sheet = sheet_of(db, v["doctor_id"])
+    d = draft_note(patient, items, sheet)
+    if isinstance(d.get("sections"), list):
+        texts = {str(x.get("key")): x.get("text") for x in d["sections"] if isinstance(x, dict)}
+        cites = d.get("citations") or {}
+    else:   # an S/O/A/P draft: placed in the department's sections
+        texts, cites = draft_note_task.into_sections(sheet, {k: str(t or "") for k, t in (d.get("soap") or {}).items()}, d.get("citations"))
     # Same shape the editor sends back, so saving an untouched draft doesn't count as an edit.
-    soap = {k: str((d.get("soap") or {}).get(k) or "") for k in ("S", "O", "A", "P")}
-    rx = [{f: str(r.get(f) or "") for f in ("medicine", "dose", "duration", "instructions")} for r in d.get("rx") or [] if isinstance(r, dict)]
-    d["citations"] = {k: list((d.get("citations") or {}).get(k) or []) for k in ("S", "O", "A", "P")}
+    note = formatted(sheet, texts, d.get("vitals"), d.get("rx"))
+    d["citations"] = {x["key"]: [str(c) for c in cites.get(x["key"]) or []] for x in note["sections"]}
     db.lock(f"patient:{v['patient_id']}")   # shared with document removal: a report removed while the AI wrote stays uncited
     d["citations"] = existing_reports_only(db, v["patient_id"], d["citations"])
-    content = json.dumps({"soap": soap, "rx": rx})
+    content = json.dumps(note)
     cited = {c for ids in d["citations"].values() for c in ids}
     # Saved so citations keep pointing at the right words if the transcript changes later.
     sources = json.dumps({i["id"]: i["text"] for i in items if i["kind"] == "transcript" and i["id"] in cited})
@@ -89,19 +118,32 @@ def blank(db, me, visit_id: int) -> dict:
         raise Conflict("Start the visit first.")
     if not load_note(db, visit_id):
         repo.add(db, me["clinic_id"], v["patient_id"], visit_id, v["doctor_id"],
-                 json.dumps({"soap": {"S": "", "O": "", "A": "", "P": ""}, "rx": []}), "{}")
+                 json.dumps(formatted(sheet_of(db, v["doctor_id"]), {}, {}, [])), "{}")
         log_event(db, me["clinic_id"], me["id"], "note", visit_id, "started")
     return load_note(db, visit_id)
 
 
-def edit(db, me, note_id: int, soap: dict, rx: list) -> dict:
+def edit(db, me, note_id: int, soap: dict | None, rx: list, sections: dict | list | None = None, vitals: dict | None = None) -> dict:
+    """Saves the editor's note. A department-format note takes section texts by key and vitals; S/O/A/P text sent
+    for one is placed in its sections. Notes written before the department formats stay S/O/A/P."""
     n = repo.in_clinic(db, me["clinic_id"], note_id)
     if not n:
         raise NotFound("Note not found.")
     if n["status"] == "signed":
         raise Conflict("Note is signed.")
-    new = {"soap": soap, "rx": rx}
-    edited = 1 if new != json.loads(n["content"]) else n["edited"]
+    old = json.loads(n["content"])
+    if "sections" in old:
+        sheet = departments.template(old["template"]["department"])
+        sheet = sheet | {"version": old["template"]["version"],
+                         "sections": [{"title": x["title"]} for x in old["sections"]]}   # the format the note was drafted in
+        if isinstance(sections, list):   # the saved shape, sent back as is
+            sections = {str(x.get("key")): str(x.get("text") or "") for x in sections if isinstance(x, dict)}
+        if sections is None:
+            sections, _ = draft_note_task.into_sections(sheet, soap or {})
+        new = formatted(sheet, {str(k): t for k, t in sections.items()}, old.get("vitals") if vitals is None else vitals, rx)
+    else:
+        new = {"soap": {k: str((soap or {}).get(k) or "") for k in ("S", "O", "A", "P")}, "rx": rx_of(rx)}
+    edited = 1 if new != old else n["edited"]
     if not repo.save(db, note_id, json.dumps(new), edited):
         raise Conflict("Note is signed.")
     return load_note(db, n["visit_id"])

@@ -1139,16 +1139,7 @@
    "body": {
     "addenda": [],
     "citations": {
-     "A": [
-      "str"
-     ],
-     "O": [
-      "str"
-     ],
-     "P": [
-      "str"
-     ],
-     "S": [
+     "<id>": [
       "str"
      ]
     },
@@ -1162,11 +1153,25 @@
        "medicine": "str"
       }
      ],
+     "sections": [
+      {
+       "key": "str",
+       "text": "str",
+       "title": "str"
+      }
+     ],
      "soap": {
       "A": "str",
       "O": "str",
       "P": "str",
       "S": "str"
+     },
+     "template": {
+      "department": "str",
+      "version": "int"
+     },
+     "vitals": {
+      "Temp": "str"
      }
     },
     "created_at": "str",
@@ -1191,16 +1196,7 @@
    "body": {
     "addenda": [],
     "citations": {
-     "A": [
-      "str"
-     ],
-     "O": [
-      "str"
-     ],
-     "P": [
-      "str"
-     ],
-     "S": [
+     "<id>": [
       "str"
      ]
     },
@@ -1214,11 +1210,25 @@
        "medicine": "str"
       }
      ],
+     "sections": [
+      {
+       "key": "str",
+       "text": "str",
+       "title": "str"
+      }
+     ],
      "soap": {
       "A": "str",
       "O": "str",
       "P": "str",
       "S": "str"
+     },
+     "template": {
+      "department": "str",
+      "version": "int"
+     },
+     "vitals": {
+      "Temp": "str"
      }
     },
     "created_at": "str",
@@ -1247,16 +1257,7 @@
    "body": {
     "addenda": [],
     "citations": {
-     "A": [
-      "str"
-     ],
-     "O": [
-      "str"
-     ],
-     "P": [
-      "str"
-     ],
-     "S": [
+     "<id>": [
       "str"
      ]
     },
@@ -1270,11 +1271,25 @@
        "medicine": "str"
       }
      ],
+     "sections": [
+      {
+       "key": "str",
+       "text": "str",
+       "title": "str"
+      }
+     ],
      "soap": {
       "A": "str",
       "O": "str",
       "P": "str",
       "S": "str"
+     },
+     "template": {
+      "department": "str",
+      "version": "int"
+     },
+     "vitals": {
+      "Temp": "str"
      }
     },
     "created_at": "str",
@@ -2117,16 +2132,7 @@
     "note": {
      "addenda": [],
      "citations": {
-      "A": [
-       "str"
-      ],
-      "O": [
-       "str"
-      ],
-      "P": [
-       "str"
-      ],
-      "S": [
+      "<id>": [
        "str"
       ]
      },
@@ -2140,11 +2146,25 @@
         "medicine": "str"
        }
       ],
+      "sections": [
+       {
+        "key": "str",
+        "text": "str",
+        "title": "str"
+       }
+      ],
       "soap": {
        "A": "str",
        "O": "str",
        "P": "str",
        "S": "str"
+      },
+      "template": {
+       "department": "str",
+       "version": "int"
+      },
+      "vitals": {
+       "Temp": "str"
       }
      },
      "created_at": "str",

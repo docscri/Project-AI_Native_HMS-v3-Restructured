@@ -161,7 +161,7 @@ document.addEventListener("click", e => {
       case "pt-open": go(`#/patients/${v}`); break;
       case "pt-edit": openPatientEdit(await api(`/patients/${v}`)); break;
       case "pe-save": await api(`/patients/${M.id}`, { method: "PATCH", body: { name: $("#pe-name").value, phone: $("#pe-phone").value, dob: $("#pe-dob").value || null, sex: $("#pe-sex").value, address: $("#pe-addr").value } }); closeModal(); toast("Saved"); route(); break;
-      case "cs-tab": await flushText(); if (D.cur?.note && $("#soap-S")) D.cur.note.content = readNote(); S.ctab = v; renderConsult(); break;
+      case "cs-tab": await flushText(); if (D.cur?.note && $("#note-ed [data-sec]")) D.cur.note.content = readNote(); S.ctab = v; renderConsult(); break;
       case "cs-side": S.cside = v; renderConsult(); break;
       case "cs-btab": S.btab = v; renderConsult(); break;
       case "cs-allev": S.allEvents = !S.allEvents; renderConsult(); break;
@@ -230,7 +230,11 @@ function payShow() {
   if (rw) rw.hidden = !(w || disc > 0);
   if (due) due.textContent = rupees(w ? 0 : Math.max(0, fee - disc));
 }
-function rerenderNote() { const c = $("#cx-center"); if (c) c.innerHTML = center(); restoreFree(); }
+function rerenderNote() {   // keeps the floating Save bar: it lives in the same box as the note
+  const c = $("#cx-center"), dockEl = c?.querySelector(".cx-float");
+  if (c) { c.innerHTML = center(); if (dockEl) c.appendChild(dockEl); }
+  restoreFree();
+}
 document.addEventListener("input", e => {
   const a = e.target.dataset?.a;
   if (a === "bk-q") searchPatients(e.target.value);

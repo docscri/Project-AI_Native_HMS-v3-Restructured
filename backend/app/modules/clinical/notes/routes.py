@@ -27,7 +27,7 @@ def blank_note(visit_id: int, me=Depends(doctor_screen), db=Depends(get_db)):
 
 @router.put("/notes/{note_id}")
 def edit_note(note_id: int, body: NoteEdit, me=Depends(doctor_screen), db=Depends(get_db)):
-    return service.edit(db, me, note_id, body.soap, body.rx)
+    return service.edit(db, me, note_id, body.soap, body.rx, body.sections, body.vitals)
 
 
 @router.post("/notes/{note_id}/sign")
@@ -50,8 +50,14 @@ def print_note(note_id: int, auto: int = 0, me=Depends(require_any("consultation
 
     content, e = json.loads(n["content"]), html.escape
     labels = {"S": "Subjective", "O": "Objective", "A": "Assessment", "P": "Plan"}
-    soap = "".join(f'<div class="sec"><b class="tile">{k}</b><div><small>{labels[k]}</small><p>{e(t)}</p></div></div>'
-                   for k, t in content["soap"].items() if t and k in labels)
+    if "sections" in content:   # department format: its sections in order, numbered; vitals as one line
+        vit = " · ".join(f"{k} {t}" for k, t in (content.get("vitals") or {}).items() if t)
+        soap = (f'<div class="vit"><small>Vitals</small><p>{e(vit)}</p></div>' if vit else "") + "".join(
+            f'<div class="sec"><b class="tile">{x["key"]}</b><div><small>{e(x["title"])}</small><p>{e(x["text"])}</p></div></div>'
+            for x in content["sections"] if (x.get("text") or "").strip())
+    else:
+        soap = "".join(f'<div class="sec"><b class="tile">{k}</b><div><small>{labels[k]}</small><p>{e(t)}</p></div></div>'
+                       for k, t in content["soap"].items() if t and k in labels)
     rx = [r for r in content["rx"] if r.get("medicine")]
     rx_html = ("<h2>Prescription</h2><table><tr><th>Medicine</th><th>Dose</th><th>Duration</th><th>Instructions</th></tr>" + "".join(
         f"<tr><td><b>{e(r.get('medicine', ''))}</b></td><td>{e(r.get('dose', ''))}</td><td>{e(r.get('duration', ''))}</td><td>{e(r.get('instructions', ''))}</td></tr>"
@@ -69,7 +75,8 @@ def print_note(note_id: int, auto: int = 0, me=Depends(require_any("consultation
     note_css = ("<style>.secs{display:flex;flex-direction:column;gap:20px;margin:30px 0 8px}.sec{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start}"
                 ".tile{width:28px;height:28px;border-radius:8px;background:#0B1411;color:#E8F1EC;display:grid;place-items:center;font-size:12px;font-weight:800}"
                 ".sec small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#6B7C75;margin-top:2px}"
-                ".sec p{margin:4px 0 0;font-size:15.5px;line-height:1.65;font-weight:500}"
+                ".sec p{margin:4px 0 0;font-size:15.5px;line-height:1.65;font-weight:500;white-space:pre-wrap}"
+                ".vit small{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#6B7C75}.vit p{margin:4px 0 0;font-size:15px;font-weight:600}"
                 ".add{border-left:3px solid #B6F36B;padding:4px 0 4px 14px;margin:10px 0}.add small{font-size:11px;font-weight:700;color:#6B7C75}"
                 ".add p{margin:4px 0 0;font-size:15px;line-height:1.6;white-space:pre-wrap}</style>")
     return printpage.page(f"{p['name']} · {printpage.day(v['date'])}", note_css + body, auto=bool(auto))

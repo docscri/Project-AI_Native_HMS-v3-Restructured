@@ -349,8 +349,10 @@ h1 { font-weight: 800; letter-spacing: -.02em; }
 .toast { background: var(--ink); color: var(--surface); border: 1px solid var(--frame-line); }
 .toast.err { background: var(--red-ink); }
 
-.soap { grid-template-columns: 44px 1fr; gap: 20px; }
-.soap > b { width: 44px; height: 44px; border-radius: 12px; background: var(--ink); color: var(--lime); display: grid; place-items: center; font-size: 22px; font-weight: 800; padding: 0; }
+.soap { grid-template-columns: 28px 1fr; gap: 14px; }
+.soap > b { width: 28px; height: 28px; border-radius: 8px; background: var(--ink); color: var(--lime); display: grid; place-items: center; font-size: 12px; font-weight: 800; padding: 0; margin-top: 6px; }
+.soap.dept > b { margin-top: 0; }
+.soap.dept .soap-label { margin: 6px 0 2px 12px; }
 .soap textarea { border: 2px solid transparent; background: transparent; font-size: 17px; font-weight: 500; line-height: 1.7; min-height: 48px; border-radius: 14px; padding: 6px 12px; transition: background .2s, border-color .2s; }
 .soap textarea:hover { background: var(--tile); }
 .soap textarea:focus { background: var(--surface); border-color: var(--green-ink); }
@@ -1105,3 +1107,14 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
   .tp-label { width: 100%; }
   .dept-row { flex-direction: column; align-items: stretch; }
 }
+
+/* Department-format notes: vitals as a strip of chips (read) or a row of small inputs (edit) */
+.vit-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+.vit-chip { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--tile); font-size: 14px; font-weight: 700; color: var(--ink); }
+.vit-chip small { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.vit-edit { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; margin: 0 0 10px 42px; }
+.vit-edit label { display: flex; flex-direction: column; gap: 4px; }
+.vit-edit small { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.vit-edit input { width: 100%; min-width: 0; border: 1.5px solid var(--line); border-radius: 10px; padding: 7px 9px; background: var(--white); font-size: 14px; font-weight: 600; }
+.vit-edit input:focus { border-color: var(--ink); outline: none; }
+@media (max-width: 620px) { .vit-edit { margin-left: 0; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); } }

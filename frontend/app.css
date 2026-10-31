@@ -678,9 +678,9 @@ table.members tr.click:hover td:first-child b { text-decoration-color: var(--ink
 .pick-seg label { cursor: pointer; }
 .pick-seg span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 18px; border-radius: 999px; font-weight: 700; font-size: 14px; color: var(--muted); transition: background .2s, color .2s; white-space: nowrap; }
 .pick-seg input:checked + span { background: var(--ink); color: var(--surface); }
-.rule-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.rule-row { display: flex; align-items: center; gap: 12px; flex-wrap: nowrap; }
 .rule-row .field { width: 190px; }
-.rule-hint { color: var(--muted); font-size: 13.5px; font-weight: 600; }
+.rule-hint { color: var(--muted); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
 .ob-top { padding-bottom: 4px; }
 
 /* consultation tabs */
@@ -704,7 +704,7 @@ table.members tr.click:hover td:first-child b { text-decoration-color: var(--ink
 .cx-body:not(.wide) .cx-collapse { right: 312px; }
 .panel .day-dots span, .panel .pick-seg { background: var(--tile-2); }
 .panel .day-dots input:checked + span { background: var(--ink); }
-.rule-row .field { width: 180px; }
+.rule-row .field { width: 180px; flex: 0 1 180px; min-width: 120px; }
 
 /* account links */
 .me-open { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; margin-left: 0 !important; background: none; border: 0; color: inherit; cursor: pointer; padding: 4px 6px; border-radius: 14px; text-align: left; transition: background .2s; }

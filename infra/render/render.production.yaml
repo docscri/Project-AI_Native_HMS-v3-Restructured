@@ -1,5 +1,5 @@
 # Production on Render with Supabase (database + document storage). Data survives restarts and deploys.
-# Render → New → Blueprint → this repo → Blueprint path: render.production.yaml
+# Render → New → Blueprint → this repo → Blueprint path: infra/render/render.production.yaml
 # In Supabase use the "Session pooler" connection string (Render can't reach the direct one).
 services:
   - type: web
@@ -7,7 +7,7 @@ services:
     runtime: python
     plan: starter            # always on; the free plan sleeps after 15 idle minutes
     region: singapore
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r backend/requirements.txt
     startCommand: uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
     healthCheckPath: /health
     autoDeploy: true

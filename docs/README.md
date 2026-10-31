@@ -7,17 +7,19 @@ Runs on your laptop at `http://localhost:8050`. No database setup needed.
 You need **Python 3.10+** and **Git**. Check with `python --version`.
 
 ```bash
-git clone https://github.com/docscri/Project-AI_Native_HMS.git
-cd Project-AI_Native_HMS
-pip install -r requirements.txt
+git clone https://github.com/docscri/Project-AI_Native_HMS-v3-Restructured.git
+cd Project-AI_Native_HMS-v3-Restructured
+pip install -r backend/requirements.txt
 ```
 
 ## 2. Start
 
 ```bash
-cd Project-AI_Native_HMS
-python -m uvicorn app.main:app --port 8050
+cd Project-AI_Native_HMS-v3-Restructured
+python -m uvicorn app.main:app --app-dir backend --port 8050
 ```
+
+Or just `python scripts/run.py`, which picks a free port and opens the browser.
 
 Open **http://localhost:8050** in **Chrome**. Stop with **Ctrl+C**.
 
@@ -49,14 +51,14 @@ Without email, admins copy invite and password-reset links from **Administration
 
 ## Trial on Render (free)
 
-`render.yaml` sets this up: Render → **New → Blueprint** → pick this repo → **Apply**.
+`infra/render/render.yaml` sets this up: Render → **New → Blueprint** → pick this repo → **Blueprint path** `infra/render/render.yaml` → **Apply**.
 It runs on SQLite. Render's free disk is wiped on every restart or deploy, so you sign up again each time. Not for real patient data; use Supabase for that.
 Keep it awake with a free monitor (e.g. UptimeRobot) that opens the address every 5 minutes.
 
 ## Production on Render + Supabase
 
 1. Supabase: create a project and a **private** bucket `clinic-documents`. Copy the **Session pooler** connection string, the Project URL and the `service_role` key.
-2. Render → **New → Blueprint** → this repo → **Blueprint path** `render.production.yaml`.
+2. Render → **New → Blueprint** → this repo → **Blueprint path** `infra/render/render.production.yaml`.
 3. Fill `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` and `APP_URL` (email and AI are optional) → **Apply**.
 4. Open the address, **Create account**, and set up the clinic. Tables are created on first start.
 

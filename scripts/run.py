@@ -1,6 +1,6 @@
 """Start the clinic app on a free port and open it in the browser.
 
-    python run.py            (from the Project_HMS folder)
+    python scripts/run.py    (from the repo folder)
 """
 import os
 import socket
@@ -10,7 +10,7 @@ import threading
 import time
 import webbrowser
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # repo root
 
 
 def free_port(start: int = 8010) -> int:
@@ -26,7 +26,7 @@ def ensure_packages() -> None:
         import fastapi, uvicorn, multipart, httpx  # noqa: F401
     except ImportError:
         print("Installing requirements…")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", os.path.join(HERE, "requirements.txt")])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", os.path.join(HERE, "backend", "requirements.txt")])
 
 
 def main() -> None:

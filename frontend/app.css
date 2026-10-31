@@ -1115,7 +1115,8 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 .vit-edit { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px 18px; margin: 0 0 10px 42px; }
 .vit-edit label { display: flex; flex-direction: column; gap: 4px; }
 .vit-edit small { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
-.vit-edit input, .vit-edit input:hover { width: 100%; min-width: 0; height: auto; min-height: 0; border: 0; border-bottom: 1.5px dashed var(--line); border-radius: 0; box-shadow: none; padding: 4px 2px; background: transparent; font-size: 17px; font-weight: 600; color: var(--ink); transition: border-color .2s; }
-.vit-edit input:focus { border-bottom: 1.5px solid var(--green-ink); background: transparent; outline: none; }
-.vit-edit small { padding-left: 2px; }
+.vit-edit input { width: 100%; min-width: 0; height: auto; min-height: 0; border: 2px solid transparent; border-radius: 999px; box-shadow: none; padding: 6px 14px; background: var(--tile); font-size: 15px; font-weight: 700; color: var(--ink); transition: background .2s, border-color .2s; }
+.vit-edit input:hover { background: var(--tile-2); }
+.vit-edit input:focus { background: var(--surface); border-color: var(--green-ink); outline: none; }
+.vit-edit small { padding-left: 14px; }
 @media (max-width: 620px) { .vit-edit { margin-left: 0; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); } }

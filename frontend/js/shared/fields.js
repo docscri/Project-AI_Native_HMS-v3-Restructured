@@ -110,12 +110,13 @@ new MutationObserver(() => { if (enhanceQueued) return; enhanceQueued = true; re
 
 boot();
 
-// Number boxes: the browser's tiny arrows are hidden; round − and + buttons sit inside the field instead.
+// Number boxes: the browser's arrows are hidden; two slim chevrons (up, down) sit at the right edge instead.
 function makeStepper(inp) {
   inp.dataset.step = "1"; inp.inputMode = "numeric";
   const box = document.createElement("span"); box.className = "stepper";
-  box.innerHTML = `<button type="button" tabindex="-1" aria-label="Less">−</button><button type="button" tabindex="-1" aria-label="More">+</button>`;
-  const [less, more] = box.children;
+  const chev = d => `<svg viewBox="0 0 12 8" width="10" height="7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+  box.innerHTML = `<button type="button" tabindex="-1" aria-label="More">${chev("M2 6l4-4 4 4")}</button><button type="button" tabindex="-1" aria-label="Less">${chev("M2 2l4 4 4-4")}</button>`;
+  const [more, less] = box.children;
   const bump = up => {
     if (inp.disabled || inp.readOnly) return;
     if (inp.value === "") inp.value = inp.min || 0; else up ? inp.stepUp() : inp.stepDown();

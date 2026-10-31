@@ -86,7 +86,7 @@ function modal(html, wide) {
   $("#modal").innerHTML = html ? `<div class="scrim" data-a="scrim"><div class="modal ${wide ? "wide" : ""} ${old ? "re" : ""}" role="dialog" aria-modal="true">${/data-a="close(-refresh)?"[^>]*>(Cancel|Close)</.test(html) ? "" : `<button class="icon-x modal-x" data-a="close-refresh" aria-label="Close">×</button>`}${html}</div></div>` : "";
   if (html && old) { $("#modal .modal").scrollTop = top; $("#modal .scrim").scrollTop = scrim; }
 }
-const closeModal = () => { modal(""); M = null; };
+const closeModal = () => { if (M?.url) URL.revokeObjectURL(M.url); modal(""); M = null; };
 const go = h => { if (location.hash === h) route(); else location.hash = h; };
 function setToken(t) { S.token = t; try { t ? localStorage.setItem("clinic.token", t) : localStorage.removeItem("clinic.token"); } catch {} }
 function endLocal() { setToken(null); S.me = null; stopTimers(); closeModal(); go("#/login"); }

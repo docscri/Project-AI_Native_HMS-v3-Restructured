@@ -211,7 +211,7 @@ document.addEventListener("click", e => {
       case "note-print": openPrint(`/notes/${v}/print?auto=1`); break;
       case "print": openPrint(`/notes/${v}/print`); break;
       case "doc-retry": await api(`/documents/${v}/retry`, { body: {} }); toast("Reading the document again…"); location.hash.startsWith("#/consult") ? refreshConsult() : route(); break;
-      case "open-doc": { const res = await fetch(`/api/documents/${v}/file`, { headers: { Authorization: "Bearer " + S.token } }); window.open(URL.createObjectURL(await res.blob()), "_blank"); break; }
+      case "open-doc": await openDocViewer(Number(v)); break;
       case "cite": if (v.startsWith("T")) { const src = sourceOf(D.cur, v); if (!src) break;
         if (S.ctab !== "dictate") { S.ctab = "dictate"; renderConsult(); }
         const ta = $("#free-text"), at = ta.value.indexOf(src.text); ta.focus(); if (at >= 0) ta.setSelectionRange(at, at + src.text.length); break; }

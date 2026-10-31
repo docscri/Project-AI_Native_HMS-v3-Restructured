@@ -75,12 +75,12 @@ function dock(v) {
       <button class="dock-round" data-a="${paused ? "mic-resume" : "mic-pause"}" aria-label="${paused ? "Resume" : "Pause"}" title="${paused ? "Resume" : "Pause"}">${paused ? ICON.play : ICON.pause}</button>
       <button class="dock-stop" data-a="mic-stop" aria-label="Stop" title="Stop">${ICON.stop}</button></div>`;
   }
-  // Speak or type, then make the note: the microphone, and Generate note beside it once the visit is under way.
-  return `<div class="cx-actions">${micBtn(v)}${S.ctab === "dictate" ? genBtn(v) : ""}</div>`;
+  return micBtn(v);
 }
+// Generate note sits at the top beside Follow-up, on every tab, while the visit is under way and the note unsigned.
 function genBtn(v) {
   if (v.status !== "with_doctor" || v.note?.status === "signed") return "";
-  return `<button class="dock-go" data-a="${v.note ? "cs-redraft" : "cs-draft"}" data-v="${v.id}">Generate note</button>`;
+  return `<button class="cx-pill-btn cx-gen" data-a="${v.note ? "cs-redraft" : "cs-draft"}" data-v="${v.id}">Generate note</button>`;
 }
 const sideBtn = () => !S.rightCollapsed ? "" : `<button class="cx-side-btn" data-a="cs-collapse" aria-label="${S.rightCollapsed ? "Show side panel" : "Hide side panel"}" title="${S.rightCollapsed ? "Show side panel" : "Hide side panel"}"><i></i><i></i></button>`;
 function micBtn(v, small) {
@@ -115,7 +115,7 @@ function center() {
   return `<div class="cx-card">
     <div class="cx-head"><div><h1>${esc(v.patient_name)}${v.age != null ? ", " + v.age : ""}</h1>
 </div>
-      <span class="cx-top-right">${["with_doctor", "done"].includes(v.status) ? `<button class="cx-pill-btn" data-a="fu-open" data-v="${v.id}">Follow-up</button>` : ""}<span class="cx-status st-${v.status}"><i></i>${stateLabel}</span>${sideBtn()}</span></div>
+      <span class="cx-top-right">${genBtn(v)}${["with_doctor", "done"].includes(v.status) ? `<button class="cx-pill-btn" data-a="fu-open" data-v="${v.id}">Follow-up</button>` : ""}<span class="cx-status st-${v.status}"><i></i>${stateLabel}</span>${sideBtn()}</span></div>
     <div class="cx-tabrow"><div class="cx-tabs">${CTABS.map(([k, l]) => `<button data-a="cs-tab" data-v="${k}" aria-pressed="${S.ctab === k}">${l}</button>`).join("")}</div>
       ${S.ctab === "brief" ? `<div class="cx-tabs">${BTABS.map(([k, l]) => `<button data-a="cs-btab" data-v="${k}" aria-pressed="${(S.btab || "summary") === k}">${l}</button>`).join("")}</div>` : ""}</div>
     <div class="cx-pane">${({ brief: paneBrief, dictate: paneDictate, note: paneNote })[S.ctab](v)}</div>

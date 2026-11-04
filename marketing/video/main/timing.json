@@ -1,17 +1,17 @@
 {
- "total": 73.76,
+ "total": 77.3,
  "scenes": {
   "s1": 0.0,
   "s2": 4.2,
   "s3": 10.66,
   "s4": 18.32,
   "s5": 28.28,
-  "s6": 35.94,
-  "s7": 46.18,
-  "s8": 54.24,
-  "s9": 58.13,
-  "s10": 63.25,
-  "s11": 67.76
+  "s6": 39.48,
+  "s7": 49.72,
+  "s8": 57.79,
+  "s9": 61.68,
+  "s10": 66.79,
+  "s11": 71.3
  },
  "captions": [
   [
@@ -82,92 +82,97 @@
   [
    "Every patient's history is in one",
    28.68,
-   30.71
+   30.74
   ],
   [
    "place: past visits,",
-   30.71,
-   31.88
+   30.74,
+   31.92
   ],
   [
    "prescriptions and reports,",
-   31.88,
-   33.49
+   31.92,
+   33.54
+  ],
+  [
+   "with trends charted over time,",
+   33.54,
+   35.41
   ],
   [
    "ready before they walk in.",
-   33.49,
-   35.09
+   35.41,
+   37.03
   ],
   [
    "And the consultation is AI-native.",
-   36.34,
-   38.55
+   39.88,
+   42.09
   ],
   [
    "After seeing your patient,",
-   38.55,
-   40.25
+   42.09,
+   43.79
   ],
   [
    "tap the mic and dictate.",
-   40.25,
-   41.81
+   43.79,
+   45.35
   ],
   [
    "Your words appear as you speak.",
-   41.81,
-   43.83
+   45.35,
+   47.37
   ],
   [
    "Then press Generate note.",
-   46.58,
-   48.02
+   50.12,
+   51.56
   ],
   [
    "The note comes ready in your",
-   48.02,
-   49.64
+   51.56,
+   53.18
   ],
   [
    "department's format, with every line linked",
-   49.64,
-   52.13
+   53.18,
+   55.67
   ],
   [
    "to where it came from.",
-   52.13,
-   53.4
+   55.67,
+   56.94
   ],
   [
    "Review it, sign it,",
-   54.64,
-   55.73
+   58.19,
+   59.28
   ],
   [
    "and print the prescription.",
-   55.73,
-   57.28
+   59.28,
+   60.83
   ],
   [
    "Collections, staff attendance and leave are",
-   58.53,
-   61.13
+   62.08,
+   64.68
   ],
   [
    "all in one place too.",
-   61.13,
-   62.39
+   64.68,
+   65.94
   ],
   [
    "It works the same on a",
-   63.65,
-   65.09
+   67.19,
+   68.63
   ],
   [
    "laptop, a tablet or a phone.",
-   65.09,
-   66.91
+   68.63,
+   70.45
   ]
  ]
 }

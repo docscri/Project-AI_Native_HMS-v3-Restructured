@@ -13,18 +13,26 @@
     
   </style>
   <div id="root" data-composition-id="s5" data-width="1920" data-height="1080">
-    <div id="s5-win" class="win"><div id="s5-cam" class="cam"><img id="s5-a" class="shot" src="assets/shots/05a-patient.jpg" style="opacity:1"><img id="s5-b" class="shot" src="assets/shots/05b-brief.jpg" style="opacity:0"></div></div>
+    <div id="s5-win" class="win"><div id="s5-cam" class="cam"><img id="s5-a" class="shot" src="assets/shots/05a-patient.jpg" style="opacity:1"><img id="s5-b" class="shot" src="assets/shots/05b-brief.jpg" style="opacity:0"><img id="s5-c" class="shot" src="assets/shots/05d-charts.jpg" style="opacity:0"></div></div><div id="s5-cursor" class="cursor" style="opacity:0"><svg viewBox="0 0 32 32" width="64" height="64"><path d="M6 3 L6 27 L12.5 21 L16.8 30 L21 28.2 L16.8 19.4 L25 19.4 Z" fill="#FFFFFF" stroke="#0B1411" stroke-width="2" stroke-linejoin="round"/></svg></div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
     tl.fromTo("#s5-win", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.5, ease:"expo.out" }, 0.00);
 tl.to("#s5-cam", { x:-640.0, y:-269.2, scale:1.4, duration:0.7, ease:"power2.inOut" }, 0.50);
-tl.to("#s5-cam", { x:0, y:0, scale:1, duration:0.45, ease:"power2.inOut" }, 3.30);
-tl.to("#s5-a", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 3.60);
-tl.fromTo("#s5-b", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 3.60);
-tl.to("#s5-cam", { x:-538.8, y:0, scale:1.7, duration:0.7, ease:"power2.inOut" }, 3.90);
+tl.to("#s5-cam", { x:0, y:0, scale:1, duration:0.45, ease:"power2.inOut" }, 2.90);
+tl.to("#s5-a", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 3.20);
+tl.fromTo("#s5-b", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 3.20);
+tl.to("#s5-cam", { x:-460.0, y:0, scale:1.6, duration:0.6, ease:"power2.inOut" }, 3.40);
+tl.to("#s5-cam", { x:0, y:0, scale:1, duration:0.45, ease:"power2.inOut" }, 5.00);
+tl.fromTo("#s5-cursor", { x:2000, y:960, opacity:1 }, { x:1387.5, y:185.7, opacity:1, duration:0.7, ease:"power3.out" }, 4.90);
+tl.to("#s5-cursor svg", { scale:0.82, duration:0.08, ease:"power2.in", transformOrigin:"20% 10%" }, 5.82);
+tl.to("#s5-cursor svg", { scale:1, duration:0.18, ease:"power2.out" }, 5.90);
+tl.to("#s5-b", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 5.90);
+tl.fromTo("#s5-c", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 5.90);
+tl.to("#s5-cursor", { opacity:0, duration:0.2 }, 6.2);
+tl.to("#s5-cam", { x:-263.1, y:-90.6, scale:1.35, duration:0.7, ease:"power2.inOut" }, 6.20);
 
-    tl.to({}, { duration: 7.66 }, 0);
+    tl.to({}, { duration: 11.20 }, 0);
     window.__timelines["s5"] = tl;
   </script>
 </template>

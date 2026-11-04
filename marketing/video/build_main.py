@@ -20,7 +20,7 @@ BOXES = {"ops.walkin": [410, 266, 93, 48], "ops.rows": [286, 734, 1570, 468], "w
          "consult.notetab": [539, 171, 64, 36], "note.read": [378, 225, 1134, 846], "note.cite": [419, 385, 15, 15],
          "sources.item": [1637, 251, 244, 60], "signed.dock": [665, 977, 560, 54], "money.panel1": [266, 251, 900, 106],
          "team.list": [266, 251, 1000, 290], "gen": [1167, 112, 138, 41], "mic": [913, 970, 64, 64], "stop": [1177, 981, 42, 42],
-         "text.top": [378, 225, 1134, 800]}
+         "text.top": [378, 225, 1134, 800], "brief.charts": [1434, 164, 78, 36], "charts.pane": [378, 218, 1134, 525]}
 DICTATION = ("Exams are over, she is relaxed and sleeping well. No panic attacks in six weeks. Wants to know how long to continue the tablets. "
              "Calm, euthymic, good insight. Generalised anxiety disorder in remission. Continue sertraline 50 mg once daily for 3 months, "
              "then plan a slow taper. Review in 6 weeks.")
@@ -135,6 +135,7 @@ def words(sid, text, cls=""):
 def build_scenes(lines, vo):
     durs = [vo[i] + LEAD + HOLD for i in range(len(vo))]
     durs[-1] = vo[-1] + LEAD + END_HOLD
+    durs[4] += 1.6   # history: the brief, then its charts
     durs[5] += 1.5   # dictation: time for the words to appear at a speaking pace
     sc = []
 
@@ -214,9 +215,12 @@ def build_scenes(lines, vo):
     sc.append(("s4", durs[3], "", html4, js4))
 
     # 5. history: visit history, then the brief
-    html5 = window("s5", [("a", "05a-patient"), ("b", "05b-brief")])
+    chx, chy = on_canvas("brief.charts")
+    html5 = window("s5", [("a", "05a-patient"), ("b", "05b-brief"), ("c", "05d-charts")]) + f'<div id="s5-cursor" class="cursor" style="opacity:0">{CURSOR}</div>'
     js5 = (js_rise("#s5-win", 0.0, 0.5) + js_cam("s5", cam("patient.timeline", 1.4), 0.5, 0.7)
-           + js_cam("s5", (0, 0, 1), 3.3, 0.45) + js_swap("s5", "a", "b", 3.6) + js_cam("s5", cam("brief.pane", 1.7), 3.9, 0.7))
+           + js_cam("s5", (0, 0, 1), 2.9, 0.45) + js_swap("s5", "a", "b", 3.2) + js_cam("s5", cam("brief.pane", 1.6), 3.4, 0.6)
+           + js_cam("s5", (0, 0, 1), 5.0, 0.45) + js_cursor("s5", [(chx, chy, 5.9, True)], 4.9) + js_swap("s5", "b", "c", 5.9)
+           + 'tl.to("#s5-cursor", { opacity:0, duration:0.2 }, 6.2);\n' + js_cam("s5", cam("charts.pane", 1.35), 6.2, 0.7))
     sc.append(("s5", durs[4], "", html5, js5))
 
     # 6. dictation: tap the mic, the words appear as the doctor speaks, stop

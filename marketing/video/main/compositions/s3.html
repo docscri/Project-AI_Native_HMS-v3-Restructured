@@ -20,7 +20,9 @@
   .call i { width:12px; height:12px; border-radius:50%; background:#2F6B1E; box-shadow:0 0 0 5px #B6F36B88; }
 
     
-      #s3-mark { position:absolute; left:0; right:0; top:230px; text-align:center; font-size:150px; font-weight:800; letter-spacing:-.04em; }
+      #s3-sub { position:absolute; left:0; right:0; top:560px; text-align:center; font-size:52px; font-weight:700; letter-spacing:-.01em; }
+      #s3-sub span { color:var(--lime); }
+      #s3-mark { position:absolute; left:0; right:0; top:330px; text-align:center; font-size:150px; font-weight:800; letter-spacing:-.04em; }
       #s3-mark i { color:var(--lime); font-style:normal; }
       .pills { position:absolute; left:0; right:0; top:500px; display:flex; justify-content:center; gap:26px; }
       .pill { width:330px; padding:30px 28px; border-radius:26px; background:#E8F1EC; color:#0B1411; display:flex; flex-direction:column; gap:18px; }
@@ -30,16 +32,13 @@
     
   </style>
   <div id="root" data-composition-id="s3" data-width="1920" data-height="1080">
-    <div id="s3-mark" data-layout-allow-overflow>Dictate<i>.</i></div><div class="pills"><div class="pill" id="s3-p0"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></b><span>Front desk</span></div><div class="pill" id="s3-p1"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></b><span>Patients</span></div><div class="pill" id="s3-p2"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg></b><span>Consultation</span></div><div class="pill" id="s3-p3"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></b><span>Collections</span></div></div><div id="s3-win" class="win"><div id="s3-cam" class="cam"><img id="s3-a" class="shot" src="assets/shots/03-home.jpg" style="opacity:1"></div></div>
+    <div id="s3-mark" data-layout-allow-overflow>Dictate<i>.</i></div><div id="s3-sub">One simple place to run your <span>whole clinic.</span></div><div id="s3-win" class="win"><div id="s3-cam" class="cam"><img id="s3-a" class="shot" src="assets/shots/03-home.jpg" style="opacity:1"></div></div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
     tl.fromTo("#s3-mark", { opacity:0, scale:1.15, filter:"blur(14px)" }, { opacity:1, scale:1, filter:"blur(0px)", duration:0.6, ease:"expo.out" }, 0.1);
-tl.fromTo("#s3-p0", { opacity:0, y:50 }, { opacity:1, y:0, duration:0.5, ease:"expo.out" }, 1.53);
-tl.fromTo("#s3-p1", { opacity:0, y:50 }, { opacity:1, y:0, duration:0.5, ease:"expo.out" }, 1.65);
-tl.fromTo("#s3-p2", { opacity:0, y:50 }, { opacity:1, y:0, duration:0.5, ease:"expo.out" }, 1.77);
-tl.fromTo("#s3-p3", { opacity:0, y:50 }, { opacity:1, y:0, duration:0.5, ease:"expo.out" }, 1.89);
-tl.to(["#s3-mark", ".pills"], { opacity:0, y:-80, filter:"blur(10px)", duration:0.35, ease:"power3.in" }, 4.82);
+tl.fromTo("#s3-sub", { opacity:0, filter:"blur(8px)" }, { opacity:1, filter:"blur(0px)", duration:0.4, ease:"power2.out" }, 1.53);
+tl.to(["#s3-mark", "#s3-sub"], { opacity:0, y:-80, filter:"blur(10px)", duration:0.35, ease:"power3.in" }, 4.82);
 tl.fromTo("#s3-win", { y:300, opacity:0, scale:0.9 }, { y:0, opacity:1, scale:1, duration:0.8, ease:"expo.out" }, 4.98);
 
     tl.to({}, { duration: 8.23 }, 0);

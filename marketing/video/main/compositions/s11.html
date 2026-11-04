@@ -20,9 +20,9 @@
   .call i { width:12px; height:12px; border-radius:50%; background:#2F6B1E; box-shadow:0 0 0 5px #B6F36B88; }
 
     
-      #s11-mark { position:absolute; left:0; right:0; top:250px; text-align:center; font-size:170px; font-weight:800; letter-spacing:-.04em; }
+      #s11-mark { position:absolute; left:0; right:0; top:330px; text-align:center; font-size:170px; font-weight:800; letter-spacing:-.04em; }
       #s11-mark i { color:var(--lime); font-style:normal; }
-      #s11-line { position:absolute; left:0; right:0; top:490px; text-align:center; font-size:58px; font-weight:700; }
+      #s11-line { position:absolute; left:0; right:0; top:570px; text-align:center; font-size:58px; font-weight:700; }
       #s11-line .hi { color:var(--lime); }
       .row { position:absolute; left:0; right:0; top:640px; display:flex; justify-content:center; gap:18px; }
       .chipx { display:flex; align-items:center; gap:12px; padding:14px 24px 14px 16px; border-radius:999px; background:#E8F1EC; color:#0B1411; font-size:26px; font-weight:800; }
@@ -31,14 +31,12 @@
     
   </style>
   <div id="root" data-composition-id="s11" data-width="1920" data-height="1080">
-    <div id="s11-mark">Dictate<i>.</i></div><div id="s11-line"><span class="w ">Your</span> <span class="w ">whole</span> <span class="w ">clinic,</span> <span class="w hi">made</span> <span class="w hi">simple.</span></div><div class="row"><div class="chipx" id="s11-c0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Front desk</div><div class="chipx" id="s11-c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Patients</div><div class="chipx" id="s11-c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>Consultation</div><div class="chipx" id="s11-c3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Collections</div></div><div id="s11-for">Built for clinics and solo doctors</div>
+    <div id="s11-mark">Dictate<i>.</i></div><div id="s11-line"><span class="w ">Your</span> <span class="w ">whole</span> <span class="w ">clinic,</span> <span class="w hi">made</span> <span class="w hi">simple.</span></div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
     tl.fromTo("#s11-mark", { opacity:0, scale:1.12, filter:"blur(14px)" }, { opacity:1, scale:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 0.1);
 tl.fromTo("#s11-line .w", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", stagger:0.1 }, 0.85);
-tl.fromTo("#s11-c0, #s11-c1, #s11-c2, #s11-c3", { opacity:0, y:30 }, { opacity:1, y:0, duration:0.45, ease:"expo.out", stagger:0.1 }, 1.75);
-tl.fromTo("#s11-for", { opacity:0 }, { opacity:1, duration:0.4 }, 2.35);
 
     tl.to({}, { duration: 6.69 }, 0);
     window.__timelines["s11"] = tl;

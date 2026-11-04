@@ -23,20 +23,21 @@
       #s2-ui { position:absolute; left:110px; top:60px; width:1700px; height:690px; border-radius:26px; background:#C9D2CD; }
       .big { position:absolute; left:260px; font-size:108px; font-weight:800; letter-spacing:-.03em; display:flex; align-items:center; gap:34px; }
       .big i { width:30px; height:30px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 12px #FFB04D33; }
-      #s2-l0 { top:250px; } #s2-l1 { top:420px; } #s2-l2 { top:590px; }
+      #s2-l0 { top:300px; } #s2-l1 { top:460px; } #s2-l2 { top:620px; }
+      #s2-lead { position:absolute; left:264px; top:200px; font-size:40px; font-weight:600; color:var(--muted); }
     
   </style>
   <div id="root" data-composition-id="s2" data-width="1920" data-height="1080">
-    <div id="s2-ui"></div><div class="big" id="s2-l0"><i></i>Too many screens.</div><div class="big" id="s2-l1"><i></i>Too many steps.</div><div class="big" id="s2-l2"><i></i>Too much training.</div>
+    <div id="s2-lead">Most clinic software comes with…</div><div class="big" id="s2-l0"><i></i>Too many screens.</div><div class="big" id="s2-l1"><i></i>Too many steps.</div><div class="big" id="s2-l2"><i></i>Too much training.</div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s2-ui", { opacity:0.55, scale:1, filter:"blur(0px)" }, { opacity:0, scale:0.92, filter:"blur(12px)", duration:0.6, ease:"power2.in" }, 0);
-tl.fromTo("#s2-l0", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 2.82);
-tl.fromTo("#s2-l1", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 4.10);
-tl.fromTo("#s2-l2", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 5.37);
+    tl.fromTo("#s2-lead", { opacity:0, filter:"blur(8px)" }, { opacity:1, filter:"blur(0px)", duration:0.4, ease:"power2.out" }, 0.25);
+tl.fromTo("#s2-l0", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 2.23);
+tl.fromTo("#s2-l1", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 3.26);
+tl.fromTo("#s2-l2", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 4.30);
 
-    tl.to({}, { duration: 7.85 }, 0);
+    tl.to({}, { duration: 6.60 }, 0);
     window.__timelines["s2"] = tl;
   </script>
 </template>

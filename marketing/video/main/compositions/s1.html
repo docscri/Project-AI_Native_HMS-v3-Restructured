@@ -20,35 +20,27 @@
   .call i { width:12px; height:12px; border-radius:50%; background:#2F6B1E; box-shadow:0 0 0 5px #B6F36B88; }
 
     
-      #s1-ui { position:absolute; left:110px; top:60px; width:1700px; height:690px; border-radius:26px; background:#C9D2CD; overflow:hidden;
-        box-shadow:0 40px 90px -30px #000; }
-      #s1-ui .tabs { display:flex; gap:6px; padding:16px 18px 0; }
-      #s1-ui .tabs s { text-decoration:none; padding:10px 14px; border-radius:10px 10px 0 0; background:#B5C0BA; color:#41504a; font-size:15px; font-weight:700; }
-      #s1-ui .btns { display:flex; flex-wrap:wrap; gap:8px; padding:18px; background:#DDE4E0; height:100%; align-content:flex-start; }
-      #s1-ui .btns u { text-decoration:none; padding:9px 14px; border-radius:8px; background:#F1F4F2; box-shadow:inset 0 0 0 1px #0B141122; color:#33413b; font-size:17px; font-weight:600; }
-      .alert { position:absolute; display:flex; align-items:center; gap:12px; padding:16px 22px; border-radius:16px; color:#0B1411; font-size:24px; font-weight:800;
-        box-shadow:0 20px 40px -14px #000a; }
-      .alert i { width:14px; height:14px; border-radius:50%; background:#0B1411; }
-      .alert.red { background:#FF7A59; } .alert.amber { background:#FFB04D; }
-      #s1-line { position:absolute; left:0; right:0; top:800px; text-align:center; font-size:76px; font-weight:800; letter-spacing:-.02em; }
+      #s1-path { position:absolute; left:0; top:0; width:1920px; height:1080px; }
+      #s1-trail { position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 50%; }
+      #s1-plane { position:absolute; left:0; top:0; width:210px; height:105px; }
+      #s1-kicker { position:absolute; left:0; right:0; top:330px; text-align:center; }
+      #s1-kicker span { display:inline-block; padding:10px 22px; border-radius:999px; background:#E8F1EC; color:#0B1411; font-size:24px; font-weight:800; letter-spacing:.02em; }
+      #s1-line { position:absolute; left:0; right:0; top:430px; text-align:center; font-size:96px; line-height:1.12; font-weight:800; letter-spacing:-.03em; }
       #s1-line .hi { color:var(--lime); }
     
   </style>
   <div id="root" data-composition-id="s1" data-width="1920" data-height="1080">
-    <div id="s1-ui"><div class="tabs"><s>Home</s><s>Masters</s><s>Transactions</s><s>Reports</s><s>Utilities</s><s>Admin</s><s>Setup</s><s>Tools</s><s>Help</s><s>Window</s></div><div class="btns"><u>Masters</u><u>Config</u><u>Approvals</u><u>Sync</u><u>Ledger</u><u>Mapping</u><u>Setup</u><u>Rules</u><u>Modules</u><u>Batch</u><u>Override</u><u>Workflow</u><u>Reports</u><u>Templates</u><u>Billing</u><u>Codes</u><u>Roles</u><u>Rights</u><u>Audit</u><u>Export</u><u>Import</u><u>Queue</u><u>Status</u><u>Forms</u><u>Fields</u><u>Users</u><u>Groups</u><u>Sessions</u><u>Backup</u><u>Restore</u><u>Licences</u><u>Updates</u><u>Integrations</u><u>Alerts</u><u>Tasks</u><u>Workflows</u><u>Policies</u><u>Defaults</u><u>Mandatory</u><u>Validate</u><u>Post</u><u>Unpost</u><u>Reconcile</u><u>Archive</u><u>Purge</u><u>Lock</u><u>Unlock</u><u>Refresh</u><u>Rebuild</u></div></div><div class="alert red" id="s1-a0" style="left:120px;top:150px"><i></i>Mandatory field missing</div><div class="alert amber" id="s1-a1" style="left:1010px;top:120px"><i></i>Session expired. Log in again.</div><div class="alert amber" id="s1-a2" style="left:260px;top:470px"><i></i>Approval pending (14)</div><div class="alert red" id="s1-a3" style="left:980px;top:430px"><i></i>Select a module first</div><div class="alert red" id="s1-a4" style="left:600px;top:290px"><i></i>Sync failed. Retry?</div><h1 id="s1-line"><span class="w ">Running</span> <span class="w ">a</span> <span class="w ">clinic</span> <span class="w ">shouldn’t</span> <span class="w ">feel</span> <span class="w ">like</span> <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></h1>
+    <svg id="s1-trail" viewBox="0 0 1920 1080"><path d="M-40 300 C 420 220, 900 180, 1320 210 S 1900 260, 2000 230" fill="none" stroke="#B6F36B" stroke-opacity=".45" stroke-width="3" stroke-dasharray="2 18" stroke-linecap="round"/></svg><div id="s1-plane"><svg viewBox="0 0 120 60" width="210" height="105" fill="none" stroke="#B6F36B" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M6 34 C 20 30, 70 28, 104 27 C 114 27, 118 31, 112 35 C 100 40, 40 42, 14 40 Z"/><path d="M50 30 L 34 10 L 44 10 L 70 29"/><path d="M52 39 L 40 54 L 49 54 L 70 39"/><path d="M10 33 L 4 20 L 12 20 L 22 31"/><circle cx="96" cy="30" r="1.6" fill="#B6F36B"/><circle cx="88" cy="30" r="1.6" fill="#B6F36B"/><circle cx="80" cy="30" r="1.6" fill="#B6F36B"/></svg></div><div id="s1-kicker"><span>For clinics and solo doctors</span></div><h1 id="s1-line"><span id="s1-l1"><span class="w ">Running</span> <span class="w ">a</span> <span class="w ">clinic</span> <span class="w ">shouldn’t</span> <span class="w ">feel</span></span><br><span id="s1-l2"><span class="w ">like</span> <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></span></h1>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s1-ui", { scale:1.04 }, { scale:1, duration:5.40, ease:"power1.out" }, 0);
-tl.fromTo("#s1-ui .btns u", { opacity:0.35 }, { opacity:1, duration:0.1, stagger:{ each:0.012, from:"random" } }, 0);
-tl.fromTo("#s1-a0", { opacity:0, scale:0.7, y:20 }, { opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }, 0.25);
-tl.fromTo("#s1-a1", { opacity:0, scale:0.7, y:20 }, { opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }, 0.57);
-tl.fromTo("#s1-a2", { opacity:0, scale:0.7, y:20 }, { opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }, 0.89);
-tl.fromTo("#s1-a3", { opacity:0, scale:0.7, y:20 }, { opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }, 1.21);
-tl.fromTo("#s1-a4", { opacity:0, scale:0.7, y:20 }, { opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }, 1.53);
-tl.fromTo("#s1-line .w", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", stagger:0.11 }, 0.35);
+    tl.fromTo("#s1-trail", { scaleX:0.08 }, { scaleX:1, duration:4.06, ease:"none" }, 0);
+tl.fromTo("#s1-plane", { x:60, y:220, rotation:-6 }, { x:1960, y:150, rotation:2, duration:4.29, ease:"none" }, 0);
+tl.fromTo("#s1-kicker span", { opacity:1 }, { opacity:1, duration:0.1 }, 0);
+tl.fromTo("#s1-l1 .w", { opacity:1 }, { opacity:1, duration:0.1 }, 0);
+tl.fromTo("#s1-l2 .w", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", stagger:0.14 }, 1.35);
 
-    tl.to({}, { duration: 5.40 }, 0);
+    tl.to({}, { duration: 4.51 }, 0);
     window.__timelines["s1"] = tl;
   </script>
 </template>

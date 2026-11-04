@@ -1,178 +1,178 @@
 {
- "total": 85.75,
+ "total": 80.57,
  "scenes": {
   "s1": 0.0,
-  "s2": 5.4,
-  "s3": 13.25,
-  "s4": 21.51,
-  "s5": 33.2,
-  "s6": 45.0,
-  "s7": 55.38,
-  "s8": 64.24,
-  "s9": 70.12,
-  "s10": 75.24,
-  "s11": 79.75
+  "s2": 4.51,
+  "s3": 11.12,
+  "s4": 19.35,
+  "s5": 29.6,
+  "s6": 41.02,
+  "s7": 52.29,
+  "s8": 60.47,
+  "s9": 64.46,
+  "s10": 69.6,
+  "s11": 73.87
  },
  "captions": [
   [
    "Yet most clinic software comes with",
-   5.8,
-   8.4
+   4.91,
+   7.01
   ],
   [
    "too many screens,",
-   8.4,
-   9.66
+   7.01,
+   8.04
   ],
   [
    "too many steps and too much training.",
-   9.66,
-   12.4
+   8.04,
+   10.26
   ],
   [
    "Dictate is different.",
-   13.65,
-   15.05
+   11.52,
+   12.92
   ],
   [
    "It's one simple place to run",
-   15.05,
-   16.92
+   12.92,
+   14.78
   ],
   [
    "your whole clinic,",
-   16.92,
-   18.12
+   14.78,
+   15.98
   ],
   [
    "whether you work alone or with a team.",
-   18.12,
-   20.66
+   15.98,
+   18.5
   ],
   [
    "At the front desk,",
-   21.91,
-   23.24
+   19.75,
+   20.9
   ],
   [
    "register a patient,",
-   23.24,
-   24.65
+   20.9,
+   22.11
   ],
   [
    "give a token and take payment",
-   24.65,
-   26.8
+   22.11,
+   23.96
   ],
   [
    "in a few taps.",
-   26.8,
-   27.83
+   23.96,
+   24.86
   ],
   [
    "Bookings, walk-ins and the day's queue",
-   27.83,
-   30.65
+   24.86,
+   27.28
   ],
   [
    "stay clear at a glance.",
-   30.65,
-   32.35
+   27.28,
+   28.75
   ],
   [
    "Every patient's history is in one",
-   33.6,
-   35.8
+   30.0,
+   32.11
   ],
   [
    "place: past visits,",
-   35.8,
-   37.07
+   32.11,
+   33.32
   ],
   [
    "prescriptions and reports,",
-   37.07,
-   38.81
+   33.32,
+   34.99
   ],
   [
    "with trends charted over time,",
-   38.81,
-   40.82
+   34.99,
+   36.91
   ],
   [
    "ready before they walk in.",
-   40.82,
-   42.55
+   36.91,
+   38.57
   ],
   [
    "And the consultation is AI-native.",
-   45.4,
-   47.66
+   41.42,
+   43.94
   ],
   [
    "After seeing your patient,",
-   47.66,
-   49.38
+   43.94,
+   45.87
   ],
   [
    "tap the mic and dictate.",
-   49.38,
-   50.97
+   45.87,
+   47.64
   ],
   [
    "Your words appear as you speak.",
-   50.97,
-   53.03
+   47.64,
+   49.94
   ],
   [
    "Then press Generate note.",
-   55.78,
-   57.39
+   52.69,
+   54.16
   ],
   [
    "The note comes ready in your",
-   57.39,
-   59.2
+   54.16,
+   55.81
   ],
   [
    "department's format, with every line linked",
-   59.2,
-   61.97
+   55.81,
+   58.33
   ],
   [
    "to where it came from.",
-   61.97,
-   63.39
+   58.33,
+   59.63
   ],
   [
    "Review it, sign it,",
-   64.64,
-   66.55
+   60.87,
+   62.0
   ],
   [
    "and print the prescription.",
-   66.55,
-   69.27
+   62.0,
+   63.61
   ],
   [
    "Collections, staff attendance and leave are",
-   70.52,
-   73.12
+   64.86,
+   67.47
   ],
   [
    "all in one place too.",
-   73.12,
-   74.38
+   67.47,
+   68.75
   ],
   [
    "It works the same on a",
-   75.64,
-   77.08
+   70.0,
+   71.33
   ],
   [
    "laptop, a tablet or a phone.",
-   77.08,
-   78.9
+   71.33,
+   73.02
   ]
  ]
 }

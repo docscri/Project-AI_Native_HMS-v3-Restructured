@@ -113,7 +113,7 @@ function citations(v) {
     if (bs?.kind === "document") return `<div class="src-doc${on}" id="src-${id}"><small>${no}REPORT · ${longDate(bs.date).toUpperCase()}</small><b>${esc(bs.label)}</b>${bs.failed ? `<span>Couldn't be read.</span>` : ""}
       <span class="actions" style="gap:6px"><button class="btn small" data-a="open-doc" data-v="${bs.doc_id}">Open file</button>${bs.failed ? `<button class="btn small dark" data-a="doc-retry" data-v="${bs.doc_id}">Try again</button>` : ""}</span></div>`;
     if (bs?.kind === "note") return `<button class="${on.trim()}" id="src-${id}" data-a="note-view" data-v="${bs.visit_id}"><small>${no}NOTE · ${longDate(bs.date).toUpperCase()} · ${bs.section.toUpperCase()}</small>Signed note<em>${esc(bs.doctor)}</em></button>`;
-    const src = sourceOf(v, id); return src ? `<button data-a="cite" data-v="${id}"><small>${src.kind.toUpperCase()} · ${id}</small>${esc(src.text)}</button>` : "";
+    const src = sourceOf(v, id); return src ? `<button class="${on.trim()}" id="src-${id}" data-a="${id.startsWith("T") ? "cite-go" : "cite"}" data-v="${id}" title="${id.startsWith("T") ? "Show in Consult" : ""}"><small>${src.kind.toUpperCase()} · ${id}</small>${esc(src.text)}</button>` : "";
   };
   return `<div class="cite-list">${groups.map(([k, ids]) => `<div class="cite-item"><b>${k}</b><div class="cite-src">${ids.map(card).join("")}</div></div>`).join("")}</div>`;
 }

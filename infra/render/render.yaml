@@ -7,13 +7,15 @@ services:
     plan: free
     region: singapore
     buildCommand: pip install -r backend/requirements.txt
-    startCommand: uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT
+    startCommand: python scripts/seed_demo.py && uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.7
       - key: CLINIC_TZ
         value: Asia/Kolkata
+      - key: SEED_DEMO             # 1: load the psychiatry demo clinic (invented people) on start; 0: start empty
+        value: "1"
       - key: DEEPGRAM_API_KEY      # optional: live dictation
         sync: false
       - key: GEMINI_API_KEY        # optional: AI notes

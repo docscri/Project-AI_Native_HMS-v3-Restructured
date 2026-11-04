@@ -167,11 +167,14 @@ document.addEventListener("click", e => {
       case "cs-allev": S.allEvents = !S.allEvents; renderConsult(); break;
       case "chart-open": openChart(D.cur.brief.charts[Number(v)]); break;
       case "cs-left": S.cleft = v; refreshConsult(); break;
-      case "cs-patient": go(`#/consult?doctor=${D.doctorId}&patient=${v}`); break;
+      case "pt-close": go("#/patients"); break;
+      case "cs-patient": S.cxL = false; go(`#/consult?doctor=${D.doctorId}&patient=${v}`); break;
       case "cs-draft-go": if (!(await flushText(Number(v)))) break; await api(`/visits/${v}/note/draft`, { body: {} }); S.ctab = "note"; toast("Draft ready."); refreshConsult(); break;
       case "note-sign-ro": await api(`/notes/${v}`, { method: "PUT", body: D.cur.note.content }); await api(`/notes/${v}/sign`, { body: {} }); toast("Signed. Visit complete."); refreshConsult(); break;
       case "cs-next-mic": { const r = await api(`/consultation/next?doctor_id=${v}`, { body: {} }); S.ctab = "dictate"; await new Promise(res => { const once = () => { window.removeEventListener("hashchange", once); setTimeout(res, 300); }; window.addEventListener("hashchange", once); go(`#/consult/${r.id}?doctor=${v}`); }); startMic(r.id); break; }
-      case "cs-collapse": S.rightCollapsed = !S.rightCollapsed; renderConsult(); break;
+      case "cs-collapse": if (small()) S.cxR = false; else S.rightCollapsed = !S.rightCollapsed; renderConsult(); break;
+      case "cx-drawer": S.cxL = v === "left"; S.cxR = v === "right"; renderConsult(); break;
+      case "cx-drawer-close": S.cxL = S.cxR = false; renderConsult(); break;
       case "mic-pause": pauseMic(); break;
       case "mic-resume": resumeMic(); break;
       case "mic-stop": await stopMic(); break;
@@ -193,7 +196,7 @@ document.addEventListener("click", e => {
         if (S.ctab === "brief") S.ctab = "dictate";
         await S.reloadConsult(); startMic(cur.id); break; }
       case "cs-next": { const r = await api(`/consultation/next?doctor_id=${v}`, { body: {} }); S.ctab = "brief"; go(`#/consult/${r.id}?doctor=${v}`); break; }
-      case "cs-open": go(`#/consult/${v}?doctor=${D.doctorId}`); break;
+      case "cs-open": S.cxL = false; go(`#/consult/${v}?doctor=${D.doctorId}`); break;
       case "cs-start": await api(`/visits/${v}/start`, { body: {} }); refreshConsult(); break;
       case "cs-brief": await api(`/visits/${v}/brief`, { body: {} }); toast("Brief updated"); refreshConsult(); break;
       case "cs-redraft":   // asks first only when the doctor changed the draft by hand
@@ -218,7 +221,7 @@ document.addEventListener("click", e => {
         if (S.ctab !== "dictate") { S.ctab = "dictate"; renderConsult(); }
         const ta = $("#free-text"), at = ta.value.indexOf(src.text); ta.focus(); if (at >= 0) ta.setSelectionRange(at, at + src.text.length); break; }
       if (M?.kind === "chart") closeModal();
-      S.cside = "citations"; S.rightCollapsed = false; S.focusSrc = v; renderConsult();
+      S.cside = "citations"; S.rightCollapsed = false; S.cxR = small(); S.focusSrc = v; renderConsult();
       { const el = document.getElementById("src-" + v); el?.scrollIntoView({ behavior: "smooth", block: "nearest" }); setTimeout(() => { if (S.focusSrc === v) { S.focusSrc = null; document.getElementById("src-" + v)?.classList.remove("hl"); } }, 1800); }
     }
   });
@@ -266,4 +269,5 @@ document.addEventListener("change", e => {
 });
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && M) { closeModal(); if (M === null) refresh(); }
+  else if (e.key === "Escape" && (S.cxL || S.cxR) && $(".cx")) { S.cxL = S.cxR = false; renderConsult(); }
 });

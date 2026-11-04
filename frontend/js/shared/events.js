@@ -217,9 +217,11 @@ document.addEventListener("click", e => {
       case "print": openPrint(`/notes/${v}/print`); break;
       case "doc-retry": await api(`/documents/${v}/retry`, { body: {} }); toast("Reading the document again…"); location.hash.startsWith("#/consult") ? refreshConsult() : route(); break;
       case "open-doc": await openDocViewer(Number(v)); break;
-      case "cite": if (v.startsWith("T")) { const src = sourceOf(D.cur, v); if (!src) break;
+      // A citation opens its source in the Sources panel; the source itself (cite-go) jumps to the highlighted words in Consult.
+      case "cite-go": { const src = sourceOf(D.cur, v); if (!src) break; S.cxR = false;
         if (S.ctab !== "dictate") { S.ctab = "dictate"; renderConsult(); }
         const ta = $("#free-text"), at = ta.value.indexOf(src.text); ta.focus(); if (at >= 0) ta.setSelectionRange(at, at + src.text.length); break; }
+      case "cite":
       if (M?.kind === "chart") closeModal();
       S.cside = "citations"; S.rightCollapsed = false; S.cxR = small(); S.focusSrc = v; renderConsult();
       { const el = document.getElementById("src-" + v); el?.scrollIntoView({ behavior: "smooth", block: "nearest" }); setTimeout(() => { if (S.focusSrc === v) { S.focusSrc = null; document.getElementById("src-" + v)?.classList.remove("hl"); } }, 1800); }

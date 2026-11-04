@@ -1,0 +1,10 @@
+1|Running a clinic shouldn't feel like flying a plane.
+2|Yet most clinic software comes with too many screens, too many steps and too much training.
+3|Dictate is different. It's one simple place to run your whole clinic, whether you work alone or with a team.
+4|At the front desk, register a patient, give a token and take payment in a few taps. Bookings, walk-ins and the day's queue stay clear at a glance.
+5|Every patient's history is in one place: past visits, prescriptions and reports, ready before they walk in.
+6|And the consultation is AI-native. Just talk with your patient, and the note comes ready in your department's format, with every line linked to where it came from.
+7|Review it, sign it, and print the prescription.
+8|Collections, staff attendance and leave are all in one place too.
+9|It works the same on a laptop, a tablet or a phone.
+10|Dictate. Your whole clinic, made simple.

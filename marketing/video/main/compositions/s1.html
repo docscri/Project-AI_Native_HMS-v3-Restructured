@@ -1,0 +1,40 @@
+<template>
+  <style>
+    @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
+    
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:var(--ground); font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.win { position:absolute; left:160px; top:34px; width:1600px; height:900px; border-radius:26px; overflow:hidden;
+  box-shadow:0 40px 90px -30px #000, 0 0 0 1px #ffffff14; background:#0B1411; }
+.cam { position:absolute; left:0; top:0; width:1600px; height:900px; transform-origin:0 0; }
+.shot { position:absolute; left:0; top:0; width:1600px; height:900px; }
+.w { display:inline-block; }
+.cursor { position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }
+
+    
+      .panel { position:absolute; inset:60px 120px 230px; display:grid; grid-template-columns:repeat(16,1fr); gap:14px; opacity:.9; }
+      .cell { border-radius:12px; background:var(--ground-2); box-shadow:inset 0 0 0 1px #ffffff10; position:relative; height:84px; }
+      .cell i { position:absolute; inset:0; margin:auto; display:block; }
+      .led i { width:16px; height:16px; border-radius:50%; background:#2a3a33; }
+      .knob i { width:44px; height:44px; border-radius:50%; background:radial-gradient(circle at 35% 35%, #3b4d45, #16211d); box-shadow:0 0 0 2px #ffffff14; }
+      .toggle i { width:18px; height:46px; border-radius:9px; background:#26332e; box-shadow:inset 0 -18px 0 #8FA39A; }
+      .gauge i { width:52px; height:30px; border-radius:52px 52px 0 0; border:3px solid #33433d; border-bottom:0; }
+      .lit i { background:var(--lime) !important; box-shadow:0 0 14px var(--lime); }
+      .warn i { background:var(--amber) !important; box-shadow:0 0 14px var(--amber); }
+      #s1-line { position:absolute; left:0; right:0; bottom:120px; text-align:center; font-size:74px; font-weight:800; letter-spacing:-.02em; }
+      #s1-line .hi { color:var(--lime); }
+      #s1-shade { position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, #0B1411 82%); }
+    
+  </style>
+  <div id="root" data-composition-id="s1" data-width="1920" data-height="1080">
+    <div class="panel" id="s1-panel"><div class="cell led warn"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led warn"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led lit"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led lit"><i></i></div></div><div id="s1-shade"></div><h1 id="s1-line"><span class="w ">Running</span> <span class="w ">a</span> <span class="w ">clinic</span> <span class="w ">shouldn’t</span> <span class="w ">feel</span> <span class="w ">like</span> <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></h1>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s1-panel .lit i, #s1-panel .warn i", { opacity:0.15 }, { opacity:1, duration:0.12, ease:"power2.out", stagger:{ each:0.05, from:"random" } }, 0.1);
+tl.fromTo("#s1-panel", { scale:1.08 }, { scale:1, duration:3.8, ease:"power1.out" }, 0);
+tl.fromTo("#s1-line .w", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", stagger:0.11 }, 0.35);
+
+    tl.to({}, { duration: 4.20 }, 0);
+    window.__timelines["s1"] = tl;
+  </script>
+</template>

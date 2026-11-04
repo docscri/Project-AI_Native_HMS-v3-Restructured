@@ -135,7 +135,7 @@ async function route() {
   if (parts[0] === "reset") return viewReset(parts[1]);
   if (parts[0] === "forgot" && !S.me) return viewForgot();
   if (!S.token || !S.me) return parts[0] === "signup" ? viewOnboarding(1) : viewLogin();
-  if (!S.clinic.onboarded) return viewOnboarding(2);
+  if (!S.clinic.onboarded) return viewOnboarding(OB.step >= 2 ? OB.step : 2);   // a refresh (e.g. closing a pop-up) stays on the step you were on
   const allowed = SCREENS.filter(s => S.me.screens.includes(s[0]));
   const map = { ops: "operations", patients: "patients", consult: "consultation", admin: "administration" };
   if (!parts[0] || !map[parts[0]] || !S.me.screens.includes(map[parts[0]])) return go(allowed[0]?.[1] || "#/patients");

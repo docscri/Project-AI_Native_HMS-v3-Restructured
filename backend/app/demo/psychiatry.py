@@ -500,8 +500,8 @@ def seed(client: TestClient | None = None) -> bool:
         call("POST", "/waitlist", tokens["divya"], json={"patient_id": patients["lakshmi"], "doctor_id": ids["joseph"], "date": next_open(today, 2).isoformat()})
 
         # ---------------------------------------------------------------- team: attendance and leave
-        for who in ("divya", "sneha", "joseph"):
-            call("POST", "/attendance/check-in", tokens[who])
+        for who, at in (("anitha", "08:50"), ("divya", "08:45"), ("sneha", "09:02"), ("joseph", "09:10")):   # a normal morning, whatever the hour of loading
+            call("PUT", f"/attendance/{ids[who]}/{today.isoformat()}", owner, json={"status": "present", "check_in": at})
         for back in range(1, 15):
             d = today - timedelta(days=back)
             if d.weekday() == 6:

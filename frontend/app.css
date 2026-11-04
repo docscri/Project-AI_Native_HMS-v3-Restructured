@@ -988,7 +988,7 @@ button.nb:hover, button.nb:focus-visible { background: var(--lime); color: var(-
 
 /* Tablet portrait and phone: the patient's card gets the whole screen. The queue (with search and the other screens)
    slides in from the left behind the menu button; profile and sources slide in from the right behind the (i) button. */
-.cx-menu, .cx-info, .cx-scrim, .cx-drawer-links { display: none; }
+.cx-menu, .cx-info, .cx-scrim, .cx-drawer-links, .cx-status-sm { display: none !important; }
 @media (min-width: 1024px) { .cx-body.wide > .cx-right { display: none; } }
 @media (max-width: 1023px) {
   .cx-top { flex-wrap: nowrap; padding: 10px 14px; gap: 10px; position: sticky; top: 0; z-index: 30; background: var(--frame); }
@@ -1059,7 +1059,6 @@ button.nb:hover, button.nb:focus-visible { background: var(--lime); color: var(-
   table.t, .doc-table { display: block; overflow-x: auto; scrollbar-width: thin; }
   .rule-row { flex-wrap: wrap; } .rule-hint { white-space: normal; }
   .rule-row .field { flex: 1 1 160px; }
-  .toast { bottom: 88px; }
 }
 
 /* Phone */
@@ -1194,4 +1193,42 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
   .head h1 { font-size: 24px; }
   /* Patients list: name, age and phone (UHID is shown in the sheet) */
   table.t th:first-child.uhid-col, table.t td:first-child.uhid-col { display: none; }
+}
+
+/* Tablet and phone, inside the consultation card: one job per line, each with its own look */
+@media (max-width: 1023px) {
+  .cx-card { gap: 14px; padding: 20px 18px 116px; }
+  .cx-head { gap: 14px 10px; }
+  .cx-head > div:first-child { display: flex; align-items: center; gap: 10px; }
+  .cx-head .cx-status-sm { display: inline-flex !important; height: 26px; padding: 4px 10px; font-size: 11px; flex: none; }
+  .cx-head .cx-top-right > .cx-status { display: none; }
+  .cx-head .cx-top-right { gap: 8px; }
+  .cx-head .cx-top-right .cx-pill-btn { min-height: 38px; padding: 0 16px; }
+  /* main tabs: one segmented control across the card */
+  .cx-tabrow { flex-direction: column !important; align-items: stretch !important; overflow: visible; gap: 6px; }
+  .cx-tabrow > .cx-tabs:first-child { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 4px; border-radius: 999px; background: var(--tile); width: 100%; }
+  .cx-tabrow > .cx-tabs:first-child button { width: 100%; justify-content: center; min-height: 38px; background: transparent; border: 0; }
+  .cx-tabrow > .cx-tabs:first-child button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+  /* brief sub-tabs: light text tabs under it */
+  .cx-subtabs { display: flex; gap: 18px; padding: 2px 4px 0; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+  .cx-subtabs button { background: transparent !important; border: 0 !important; border-radius: 0 !important; min-height: 36px; padding: 0 2px !important;
+    color: var(--muted); font-weight: 600; border-bottom: 2px solid transparent !important; margin-bottom: -1px; }
+  .cx-subtabs button[aria-pressed="true"] { color: var(--ink) !important; border-bottom-color: var(--ink) !important; }
+  .cx-pane { padding-top: 4px; }
+  .soap-read { gap: 22px; }
+}
+
+/* Tablet and phone: messages are a small card at the top, sized to their text (the top and bottom pins used to
+   stretch it down the whole screen); long messages wrap instead of being cut off. */
+@media (max-width: 1023px) {
+  .toast, .toast.err { top: calc(12px + env(safe-area-inset-top)); bottom: auto; width: max-content; height: auto;
+    max-width: calc(100% - 24px); white-space: normal; overflow-wrap: anywhere; text-align: center; padding: 12px 18px; font-size: 14px; line-height: 1.4; }
+  .cx-subtabs { width: 100%; }
+  .doctors { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+}
+@media (max-width: 620px) {
+  /* Doctors on today: cards side by side and swiped (the next one peeks in), instead of a tall stack */
+  .doctors { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; gap: 10px; padding-bottom: 2px; }
+  .doctors::-webkit-scrollbar { display: none; }
+  .doctors > * { flex: 0 0 82%; scroll-snap-align: start; }
 }

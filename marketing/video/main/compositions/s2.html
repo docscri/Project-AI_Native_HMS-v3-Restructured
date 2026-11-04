@@ -2,42 +2,41 @@
   <style>
     @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
     
-#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:var(--ground); font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
-.win { position:absolute; left:160px; top:34px; width:1600px; height:900px; border-radius:26px; overflow:hidden;
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:transparent; font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.win { position:absolute; left:200px; top:112px; width:1520px; height:855px; border-radius:26px; overflow:hidden;
   box-shadow:0 40px 90px -30px #000, 0 0 0 1px #ffffff14; background:#0B1411; }
-.cam { position:absolute; left:0; top:0; width:1600px; height:900px; transform-origin:0 0; }
-.shot { position:absolute; left:0; top:0; width:1600px; height:900px; }
+.cam { position:absolute; left:0; top:0; width:1520px; height:855px; transform-origin:0 0; }
+.shot { position:absolute; left:0; top:0; width:1520px; height:855px; }
 .w { display:inline-block; }
+
 .cursor { position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }
 
     
-      .old { position:absolute; width:760px; height:470px; border-radius:14px; background:#1B2622; box-shadow:0 30px 60px -20px #000, inset 0 0 0 1px #ffffff12; overflow:hidden; }
-      .old .bar { height:44px; background:#22302B; display:flex; gap:10px; padding:12px 16px; }
-      .old .bar u { width:84px; border-radius:6px; background:#33433d; }
-      .old .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; padding:22px; }
-      .old .grid b { height:38px; border-radius:6px; background:#26332e; box-shadow:inset 0 0 0 1px #ffffff0d; }
-      #s2-o0 { left:120px; top:90px; } #s2-o1 { left:560px; top:150px; } #s2-o2 { left:1030px; top:70px; }
-      #s2-o3 { left:260px; top:420px; } #s2-o4 { left:760px; top:470px; } #s2-o5 { left:1150px; top:380px; }
-      .chips { position:absolute; left:0; right:0; bottom:120px; display:flex; justify-content:center; gap:22px; }
-      .chip { padding:18px 32px; border-radius:999px; background:var(--amber); color:#0B1411; font-size:40px; font-weight:800; }
+  .chap { position:absolute; left:200px; top:34px; display:flex; align-items:center; gap:16px; }
+  .chap b { width:44px; height:44px; border-radius:12px; background:var(--lime); color:#0B1411; display:grid; place-items:center; font-size:22px; font-weight:800; }
+  .chap span { font-size:34px; font-weight:800; letter-spacing:-.01em; }
+  .call { position:absolute; right:200px; top:38px; display:flex; align-items:center; gap:12px; padding:10px 20px 10px 14px; border-radius:999px;
+    background:#E8F1EC; color:#0B1411; font-size:24px; font-weight:700; opacity:0; }
+  .call i { width:12px; height:12px; border-radius:50%; background:#2F6B1E; box-shadow:0 0 0 5px #B6F36B88; }
+
+    
+      #s2-ui { position:absolute; left:110px; top:60px; width:1700px; height:690px; border-radius:26px; background:#C9D2CD; }
+      .big { position:absolute; left:260px; font-size:108px; font-weight:800; letter-spacing:-.03em; display:flex; align-items:center; gap:34px; }
+      .big i { width:30px; height:30px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 12px #FFB04D33; }
+      #s2-l0 { top:250px; } #s2-l1 { top:420px; } #s2-l2 { top:590px; }
     
   </style>
   <div id="root" data-composition-id="s2" data-width="1920" data-height="1080">
-    <div class="old" id="s2-o0"><div class="bar"><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div><div class="grid"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div></div><div class="old" id="s2-o1"><div class="bar"><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div><div class="grid"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div></div><div class="old" id="s2-o2"><div class="bar"><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div><div class="grid"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div></div><div class="old" id="s2-o3"><div class="bar"><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div><div class="grid"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div></div><div class="old" id="s2-o4"><div class="bar"><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div><div class="grid"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div></div><div class="old" id="s2-o5"><div class="bar"><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div><div class="grid"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div></div><div class="chips"><span class="chip" id="s2-c0">Too many screens</span><span class="chip" id="s2-c1">Too many steps</span><span class="chip" id="s2-c2">Too much training</span></div>
+    <div id="s2-ui"></div><div class="big" id="s2-l0"><i></i>Too many screens.</div><div class="big" id="s2-l1"><i></i>Too many steps.</div><div class="big" id="s2-l2"><i></i>Too much training.</div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s2-o0", { y:90, opacity:0, scale:0.94 }, { y:0, opacity:1, scale:1, duration:0.5, ease:"expo.out" }, 0.00);
-tl.fromTo("#s2-o1", { y:90, opacity:0, scale:0.94 }, { y:0, opacity:1, scale:1, duration:0.5, ease:"expo.out" }, 0.30);
-tl.fromTo("#s2-o2", { y:90, opacity:0, scale:0.94 }, { y:0, opacity:1, scale:1, duration:0.5, ease:"expo.out" }, 0.60);
-tl.fromTo("#s2-o3", { y:90, opacity:0, scale:0.94 }, { y:0, opacity:1, scale:1, duration:0.5, ease:"expo.out" }, 0.90);
-tl.fromTo("#s2-o4", { y:90, opacity:0, scale:0.94 }, { y:0, opacity:1, scale:1, duration:0.5, ease:"expo.out" }, 1.20);
-tl.fromTo("#s2-o5", { y:90, opacity:0, scale:0.94 }, { y:0, opacity:1, scale:1, duration:0.5, ease:"expo.out" }, 1.50);
-tl.fromTo("#s2-c0", { scale:0.6, opacity:0 }, { scale:1, opacity:1, duration:0.35, ease:"back.out(1.6)" }, 2.55);
-tl.fromTo("#s2-c1", { scale:0.6, opacity:0 }, { scale:1, opacity:1, duration:0.35, ease:"back.out(1.6)" }, 3.55);
-tl.fromTo("#s2-c2", { scale:0.6, opacity:0 }, { scale:1, opacity:1, duration:0.35, ease:"back.out(1.6)" }, 4.55);
+    tl.fromTo("#s2-ui", { opacity:0.55, scale:1, filter:"blur(0px)" }, { opacity:0, scale:0.92, filter:"blur(12px)", duration:0.6, ease:"power2.in" }, 0);
+tl.fromTo("#s2-l0", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 2.82);
+tl.fromTo("#s2-l1", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 4.10);
+tl.fromTo("#s2-l2", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 5.37);
 
-    tl.to({}, { duration: 6.46 }, 0);
+    tl.to({}, { duration: 7.85 }, 0);
     window.__timelines["s2"] = tl;
   </script>
 </template>

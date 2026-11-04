@@ -2,39 +2,53 @@
   <style>
     @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
     
-#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:var(--ground); font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
-.win { position:absolute; left:160px; top:34px; width:1600px; height:900px; border-radius:26px; overflow:hidden;
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:transparent; font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.win { position:absolute; left:200px; top:112px; width:1520px; height:855px; border-radius:26px; overflow:hidden;
   box-shadow:0 40px 90px -30px #000, 0 0 0 1px #ffffff14; background:#0B1411; }
-.cam { position:absolute; left:0; top:0; width:1600px; height:900px; transform-origin:0 0; }
-.shot { position:absolute; left:0; top:0; width:1600px; height:900px; }
+.cam { position:absolute; left:0; top:0; width:1520px; height:855px; transform-origin:0 0; }
+.shot { position:absolute; left:0; top:0; width:1520px; height:855px; }
 .w { display:inline-block; }
+
 .cursor { position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }
 
     
-      .panel { position:absolute; inset:60px 120px 230px; display:grid; grid-template-columns:repeat(16,1fr); gap:14px; opacity:.9; }
-      .cell { border-radius:12px; background:var(--ground-2); box-shadow:inset 0 0 0 1px #ffffff10; position:relative; height:84px; }
-      .cell i { position:absolute; inset:0; margin:auto; display:block; }
-      .led i { width:16px; height:16px; border-radius:50%; background:#2a3a33; }
-      .knob i { width:44px; height:44px; border-radius:50%; background:radial-gradient(circle at 35% 35%, #3b4d45, #16211d); box-shadow:0 0 0 2px #ffffff14; }
-      .toggle i { width:18px; height:46px; border-radius:9px; background:#26332e; box-shadow:inset 0 -18px 0 #8FA39A; }
-      .gauge i { width:52px; height:30px; border-radius:52px 52px 0 0; border:3px solid #33433d; border-bottom:0; }
-      .lit i { background:var(--lime) !important; box-shadow:0 0 14px var(--lime); }
-      .warn i { background:var(--amber) !important; box-shadow:0 0 14px var(--amber); }
-      #s1-line { position:absolute; left:0; right:0; bottom:120px; text-align:center; font-size:74px; font-weight:800; letter-spacing:-.02em; }
+  .chap { position:absolute; left:200px; top:34px; display:flex; align-items:center; gap:16px; }
+  .chap b { width:44px; height:44px; border-radius:12px; background:var(--lime); color:#0B1411; display:grid; place-items:center; font-size:22px; font-weight:800; }
+  .chap span { font-size:34px; font-weight:800; letter-spacing:-.01em; }
+  .call { position:absolute; right:200px; top:38px; display:flex; align-items:center; gap:12px; padding:10px 20px 10px 14px; border-radius:999px;
+    background:#E8F1EC; color:#0B1411; font-size:24px; font-weight:700; opacity:0; }
+  .call i { width:12px; height:12px; border-radius:50%; background:#2F6B1E; box-shadow:0 0 0 5px #B6F36B88; }
+
+    
+      #s1-ui { position:absolute; left:110px; top:60px; width:1700px; height:690px; border-radius:26px; background:#C9D2CD; overflow:hidden;
+        box-shadow:0 40px 90px -30px #000; }
+      #s1-ui .tabs { display:flex; gap:6px; padding:16px 18px 0; }
+      #s1-ui .tabs s { text-decoration:none; padding:10px 14px; border-radius:10px 10px 0 0; background:#B5C0BA; color:#41504a; font-size:15px; font-weight:700; }
+      #s1-ui .btns { display:flex; flex-wrap:wrap; gap:8px; padding:18px; background:#DDE4E0; height:100%; align-content:flex-start; }
+      #s1-ui .btns u { text-decoration:none; padding:9px 14px; border-radius:8px; background:#F1F4F2; box-shadow:inset 0 0 0 1px #0B141122; color:#33413b; font-size:17px; font-weight:600; }
+      .alert { position:absolute; display:flex; align-items:center; gap:12px; padding:16px 22px; border-radius:16px; color:#0B1411; font-size:24px; font-weight:800;
+        box-shadow:0 20px 40px -14px #000a; }
+      .alert i { width:14px; height:14px; border-radius:50%; background:#0B1411; }
+      .alert.red { background:#FF7A59; } .alert.amber { background:#FFB04D; }
+      #s1-line { position:absolute; left:0; right:0; top:800px; text-align:center; font-size:76px; font-weight:800; letter-spacing:-.02em; }
       #s1-line .hi { color:var(--lime); }
-      #s1-shade { position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, #0B1411 82%); }
     
   </style>
   <div id="root" data-composition-id="s1" data-width="1920" data-height="1080">
-    <div class="panel" id="s1-panel"><div class="cell led warn"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led warn"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led lit"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led"><i></i></div><div class="cell gauge"><i></i></div><div class="cell toggle"><i></i></div><div class="cell knob"><i></i></div><div class="cell led lit"><i></i></div></div><div id="s1-shade"></div><h1 id="s1-line"><span class="w ">Running</span> <span class="w ">a</span> <span class="w ">clinic</span> <span class="w ">shouldn’t</span> <span class="w ">feel</span> <span class="w ">like</span> <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></h1>
+    <div id="s1-ui"><div class="tabs"><s>Home</s><s>Masters</s><s>Transactions</s><s>Reports</s><s>Utilities</s><s>Admin</s><s>Setup</s><s>Tools</s><s>Help</s><s>Window</s></div><div class="btns"><u>Masters</u><u>Config</u><u>Approvals</u><u>Sync</u><u>Ledger</u><u>Mapping</u><u>Setup</u><u>Rules</u><u>Modules</u><u>Batch</u><u>Override</u><u>Workflow</u><u>Reports</u><u>Templates</u><u>Billing</u><u>Codes</u><u>Roles</u><u>Rights</u><u>Audit</u><u>Export</u><u>Import</u><u>Queue</u><u>Status</u><u>Forms</u><u>Fields</u><u>Users</u><u>Groups</u><u>Sessions</u><u>Backup</u><u>Restore</u><u>Licences</u><u>Updates</u><u>Integrations</u><u>Alerts</u><u>Tasks</u><u>Workflows</u><u>Policies</u><u>Defaults</u><u>Mandatory</u><u>Validate</u><u>Post</u><u>Unpost</u><u>Reconcile</u><u>Archive</u><u>Purge</u><u>Lock</u><u>Unlock</u><u>Refresh</u><u>Rebuild</u></div></div><div class="alert red" id="s1-a0" style="left:120px;top:150px"><i></i>Mandatory field missing</div><div class="alert amber" id="s1-a1" style="left:1010px;top:120px"><i></i>Session expired. Log in again.</div><div class="alert amber" id="s1-a2" style="left:260px;top:470px"><i></i>Approval pending (14)</div><div class="alert red" id="s1-a3" style="left:980px;top:430px"><i></i>Select a module first</div><div class="alert red" id="s1-a4" style="left:600px;top:290px"><i></i>Sync failed. Retry?</div><h1 id="s1-line"><span class="w ">Running</span> <span class="w ">a</span> <span class="w ">clinic</span> <span class="w ">shouldn’t</span> <span class="w ">feel</span> <span class="w ">like</span> <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></h1>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s1-panel .lit i, #s1-panel .warn i", { opacity:0.15 }, { opacity:1, duration:0.12, ease:"power2.out", stagger:{ each:0.05, from:"random" } }, 0.1);
-tl.fromTo("#s1-panel", { scale:1.08 }, { scale:1, duration:3.8, ease:"power1.out" }, 0);
+    tl.fromTo("#s1-ui", { scale:1.04 }, { scale:1, duration:5.40, ease:"power1.out" }, 0);
+tl.fromTo("#s1-ui .btns u", { opacity:0.35 }, { opacity:1, duration:0.1, stagger:{ each:0.012, from:"random" } }, 0);
+tl.fromTo("#s1-a0", { opacity:0, scale:0.7, y:20 }, { opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }, 0.25);
+tl.fromTo("#s1-a1", { opacity:0, scale:0.7, y:20 }, { opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }, 0.57);
+tl.fromTo("#s1-a2", { opacity:0, scale:0.7, y:20 }, { opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }, 0.89);
+tl.fromTo("#s1-a3", { opacity:0, scale:0.7, y:20 }, { opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }, 1.21);
+tl.fromTo("#s1-a4", { opacity:0, scale:0.7, y:20 }, { opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }, 1.53);
 tl.fromTo("#s1-line .w", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", stagger:0.11 }, 0.35);
 
-    tl.to({}, { duration: 4.20 }, 0);
+    tl.to({}, { duration: 5.40 }, 0);
     window.__timelines["s1"] = tl;
   </script>
 </template>

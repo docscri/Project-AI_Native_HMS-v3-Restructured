@@ -2,35 +2,48 @@
   <style>
     @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
     
-#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:var(--ground); font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
-.win { position:absolute; left:160px; top:34px; width:1600px; height:900px; border-radius:26px; overflow:hidden;
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:transparent; font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.win { position:absolute; left:200px; top:112px; width:1520px; height:855px; border-radius:26px; overflow:hidden;
   box-shadow:0 40px 90px -30px #000, 0 0 0 1px #ffffff14; background:#0B1411; }
-.cam { position:absolute; left:0; top:0; width:1600px; height:900px; transform-origin:0 0; }
-.shot { position:absolute; left:0; top:0; width:1600px; height:900px; }
+.cam { position:absolute; left:0; top:0; width:1520px; height:855px; transform-origin:0 0; }
+.shot { position:absolute; left:0; top:0; width:1520px; height:855px; }
 .w { display:inline-block; }
+
 .cursor { position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }
+
+    
+  .chap { position:absolute; left:200px; top:34px; display:flex; align-items:center; gap:16px; }
+  .chap b { width:44px; height:44px; border-radius:12px; background:var(--lime); color:#0B1411; display:grid; place-items:center; font-size:22px; font-weight:800; }
+  .chap span { font-size:34px; font-weight:800; letter-spacing:-.01em; }
+  .call { position:absolute; right:200px; top:38px; display:flex; align-items:center; gap:12px; padding:10px 20px 10px 14px; border-radius:999px;
+    background:#E8F1EC; color:#0B1411; font-size:24px; font-weight:700; opacity:0; }
+  .call i { width:12px; height:12px; border-radius:50%; background:#2F6B1E; box-shadow:0 0 0 5px #B6F36B88; }
 
     
   </style>
   <div id="root" data-composition-id="s4" data-width="1920" data-height="1080">
-    <div id="s4-win" class="win"><div id="s4-cam" class="cam"><img id="s4-a" class="shot" src="assets/shots/04a-ops.jpg" style="opacity:1"><img id="s4-b" class="shot" src="assets/shots/04b-walkin.jpg" style="opacity:0"></div></div><div id="s4-cursor" class="cursor" style="opacity:0"><svg viewBox="0 0 32 32" width="64" height="64"><path d="M6 3 L6 27 L12.5 21 L16.8 30 L21 28.2 L16.8 19.4 L25 19.4 Z" fill="#FFFFFF" stroke="#0B1411" stroke-width="2" stroke-linejoin="round"/></svg></div>
+    <div class="chap" id="s4-chap"><b>1</b><span>Front desk</span></div><div class="call" id="s4-call0"><i></i>Token and payment in one step</div><div class="call" id="s4-call1"><i></i>Today’s queue at a glance</div><div id="s4-win" class="win"><div id="s4-cam" class="cam"><img id="s4-a" class="shot" src="assets/shots/04a-ops.jpg" style="opacity:1"><img id="s4-b" class="shot" src="assets/shots/04b-walkin.jpg" style="opacity:0"></div></div><div id="s4-cursor" class="cursor" style="opacity:0"><svg viewBox="0 0 32 32" width="64" height="64"><path d="M6 3 L6 27 L12.5 21 L16.8 30 L21 28.2 L16.8 19.4 L25 19.4 Z" fill="#FFFFFF" stroke="#0B1411" stroke-width="2" stroke-linejoin="round"/></svg></div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s4-win", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.6, ease:"expo.out" }, 0.00);
-tl.fromTo("#s4-cursor", { x:2000, y:960, opacity:1 }, { x:540.4, y:275.7, opacity:1, duration:0.7, ease:"power3.out" }, 0.90);
-tl.to("#s4-cursor svg", { scale:0.82, duration:0.08, ease:"power2.in", transformOrigin:"20% 10%" }, 1.92);
-tl.to("#s4-cursor svg", { scale:1, duration:0.18, ease:"power2.out" }, 2.00);
-tl.to("#s4-a", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 2.00);
-tl.fromTo("#s4-b", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 2.00);
-tl.to("#s4-cursor", { opacity:0, duration:0.2 }, 2.3);
-tl.to("#s4-cam", { x:-360.0, y:0, scale:1.45, duration:0.6, ease:"power2.inOut" }, 2.20);
-tl.to("#s4-b", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 5.60);
-tl.fromTo("#s4-a", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 5.60);
-tl.to("#s4-cam", { x:0, y:0, scale:1, duration:0.5, ease:"power2.inOut" }, 5.50);
-tl.to("#s4-cam", { x:-360.2, y:-270.0, scale:1.3, duration:0.6, ease:"power2.inOut" }, 6.30);
+    tl.fromTo("#s4-chap", { opacity:0, x:-30 }, { opacity:1, x:0, duration:0.5, ease:"expo.out" }, 0.05);
+tl.fromTo("#s4-call0", { opacity:0, y:-14 }, { opacity:1, y:0, duration:0.35, ease:"expo.out", immediateRender:false }, 2.65);
+tl.to("#s4-call0", { opacity:0, y:-10, duration:0.2, ease:"power2.in" }, 7.36);
+tl.fromTo("#s4-call1", { opacity:0, y:-14 }, { opacity:1, y:0, duration:0.35, ease:"expo.out", immediateRender:false }, 7.58);
+tl.fromTo("#s4-win", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.6, ease:"expo.out" }, 0.00);
+tl.fromTo("#s4-cursor", { x:2000, y:960, opacity:1 }, { x:561.4, y:341.6, opacity:1, duration:0.7, ease:"power3.out" }, 1.08);
+tl.to("#s4-cursor svg", { scale:0.82, duration:0.08, ease:"power2.in", transformOrigin:"20% 10%" }, 2.33);
+tl.to("#s4-cursor svg", { scale:1, duration:0.18, ease:"power2.out" }, 2.41);
+tl.to("#s4-a", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 2.41);
+tl.fromTo("#s4-b", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 2.41);
+tl.to("#s4-cursor", { opacity:0, duration:0.2 }, 2.77);
+tl.to("#s4-cam", { x:-342.0, y:0, scale:1.45, duration:0.6, ease:"power2.inOut" }, 2.65);
+tl.to("#s4-b", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 6.74);
+tl.fromTo("#s4-a", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 6.74);
+tl.to("#s4-cam", { x:0, y:0, scale:1, duration:0.5, ease:"power2.inOut" }, 6.62);
+tl.to("#s4-cam", { x:-342.2, y:-256.5, scale:1.3, duration:0.6, ease:"power2.inOut" }, 7.58);
 
-    tl.to({}, { duration: 9.96 }, 0);
+    tl.to({}, { duration: 11.69 }, 0);
     window.__timelines["s4"] = tl;
   </script>
 </template>

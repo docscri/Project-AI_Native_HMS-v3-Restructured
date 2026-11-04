@@ -12,7 +12,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent / "main"
 W, H = 1920, 1080
-WIN = dict(x=160, y=34, w=1600, h=900)          # the app window on the canvas
+WIN = dict(x=200, y=112, w=1520, h=855)         # the app window on the canvas (the chapter row sits above it)
 S = WIN["w"] / 1920                             # screenshot -> window scale
 LEAD, HOLD, END_HOLD = 0.35, 0.9, 3.2           # voice starts LEAD into its scene; scene holds HOLD after it
 BOXES = {"ops.walkin": [410, 266, 93, 48], "ops.rows": [286, 734, 1570, 468], "walkin.modal": [650, 65, 620, 524],
@@ -65,12 +65,13 @@ def window(sid, shots):
 
 
 BASE_CSS = f"""
-#root {{ position:absolute; inset:0; {CSS_VARS}; background:var(--ground); font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }}
+#root {{ position:absolute; inset:0; {CSS_VARS}; background:transparent; font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }}
 .win {{ position:absolute; left:{WIN['x']}px; top:{WIN['y']}px; width:{WIN['w']}px; height:{WIN['h']}px; border-radius:26px; overflow:hidden;
   box-shadow:0 40px 90px -30px #000, 0 0 0 1px #ffffff14; background:#0B1411; }}
 .cam {{ position:absolute; left:0; top:0; width:{WIN['w']}px; height:{WIN['h']}px; transform-origin:0 0; }}
 .shot {{ position:absolute; left:0; top:0; width:{WIN['w']}px; height:{WIN['h']}px; }}
 .w {{ display:inline-block; }}
+
 .cursor {{ position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }}
 """
 
@@ -80,6 +81,7 @@ def scene(sid, dur_s, css, html, js):
   <style>
     @font-face {{ font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }}
     {BASE_CSS}
+    {CHROME_CSS}
     {css}
   </style>
   <div id="root" data-composition-id="{sid}" data-width="{W}" data-height="{H}">
@@ -132,99 +134,134 @@ def words(sid, text, cls=""):
 
 
 # ---------------------------------------------------------------- the scenes
+# Event times inside a scene were set against the first voice-over; REF holds those clip lengths, and kt() stretches
+# a time by how much longer or shorter the current clip is, so clicks stay on their words when the voice changes.
+REF = [2.92, 5.18, 6.38, 8.68, 8.35, 7.49, 6.82, 2.60, 3.84, 3.22, 2.41]
+ICONS = {
+    "ops": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+    "patients": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
+    "consult": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>',
+    "admin": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>',
+}   # the app's own navigation icons (frontend/js/shared/core.js)
+PILLARS = [("ops", "Front desk"), ("patients", "Patients"), ("consult", "Consultation"), ("admin", "Collections")]
+CHROME_CSS = """
+  .chap { position:absolute; left:200px; top:34px; display:flex; align-items:center; gap:16px; }
+  .chap b { width:44px; height:44px; border-radius:12px; background:var(--lime); color:#0B1411; display:grid; place-items:center; font-size:22px; font-weight:800; }
+  .chap span { font-size:34px; font-weight:800; letter-spacing:-.01em; }
+  .call { position:absolute; right:200px; top:38px; display:flex; align-items:center; gap:12px; padding:10px 20px 10px 14px; border-radius:999px;
+    background:#E8F1EC; color:#0B1411; font-size:24px; font-weight:700; opacity:0; }
+  .call i { width:12px; height:12px; border-radius:50%; background:#2F6B1E; box-shadow:0 0 0 5px #B6F36B88; }
+"""
+
+
+def chapter(sid, n, title, calls):
+    """The chapter title (numbered like the note's sections) and the callouts, shown one after another, top right."""
+    html = f'<div class="chap" id="{sid}-chap"><b>{n}</b><span>{title}</span></div>' + \
+        "".join(f'<div class="call" id="{sid}-call{i}"><i></i>{c}</div>' for i, (c, _) in enumerate(calls))
+    js = 'tl.fromTo("#%s-chap", { opacity:0, x:-30 }, { opacity:1, x:0, duration:0.5, ease:"expo.out" }, 0.05);\n' % sid
+    for i, (c, t) in enumerate(calls):
+        js += f'tl.fromTo("#{sid}-call{i}", {{ opacity:0, y:-14 }}, {{ opacity:1, y:0, duration:0.35, ease:"expo.out", immediateRender:false }}, {t:.2f});\n'
+        if i + 1 < len(calls):
+            js += f'tl.to("#{sid}-call{i}", {{ opacity:0, y:-10, duration:0.2, ease:"power2.in" }}, {calls[i + 1][1] - 0.22:.2f});\n'
+    return html, js
+
+
 def build_scenes(lines, vo):
+    kt = lambda i, x: round(x * vo[i] / REF[i], 2)
     durs = [vo[i] + LEAD + HOLD for i in range(len(vo))]
     durs[-1] = vo[-1] + LEAD + END_HOLD
     durs[4] += 1.6   # history: the brief, then its charts
     durs[5] += 1.5   # dictation: time for the words to appear at a speaking pace
     sc = []
 
-    # 1. hook: a cockpit of switches and lights, then the line
-    cells = []
-    for i in range(96):
-        kind = ("led", "knob", "toggle", "gauge")[(i * 7 + i // 12) % 4]
-        cells.append(f'<div class="cell {kind}"><i></i></div>')
+    # 1. hook: a screen drowning in buttons, menus and alerts, then the line
+    labels = ("Masters Config Approvals Sync Ledger Mapping Setup Rules Modules Batch Override Workflow Reports Templates Billing Codes "
+              "Roles Rights Audit Export Import Queue Status Forms Fields Users Groups Sessions Backup Restore Licences Updates Integrations "
+              "Alerts Tasks Workflows Policies Defaults Mandatory Validate Post Unpost Reconcile Archive Purge Lock Unlock Refresh Rebuild").split()
+    btns = "".join(f'<u>{l}</u>' for l in labels)
+    alerts = [("Mandatory field missing", "red", 120, 150), ("Session expired. Log in again.", "amber", 1010, 120),
+              ("Approval pending (14)", "amber", 260, 470), ("Select a module first", "red", 980, 430), ("Sync failed. Retry?", "red", 600, 290)]
     css1 = """
-      .panel { position:absolute; inset:60px 120px 230px; display:grid; grid-template-columns:repeat(16,1fr); gap:14px; opacity:.9; }
-      .cell { border-radius:12px; background:var(--ground-2); box-shadow:inset 0 0 0 1px #ffffff10; position:relative; height:84px; }
-      .cell i { position:absolute; inset:0; margin:auto; display:block; }
-      .led i { width:16px; height:16px; border-radius:50%; background:#2a3a33; }
-      .knob i { width:44px; height:44px; border-radius:50%; background:radial-gradient(circle at 35% 35%, #3b4d45, #16211d); box-shadow:0 0 0 2px #ffffff14; }
-      .toggle i { width:18px; height:46px; border-radius:9px; background:#26332e; box-shadow:inset 0 -18px 0 #8FA39A; }
-      .gauge i { width:52px; height:30px; border-radius:52px 52px 0 0; border:3px solid #33433d; border-bottom:0; }
-      .lit i { background:var(--lime) !important; box-shadow:0 0 14px var(--lime); }
-      .warn i { background:var(--amber) !important; box-shadow:0 0 14px var(--amber); }
-      #s1-line { position:absolute; left:0; right:0; bottom:120px; text-align:center; font-size:74px; font-weight:800; letter-spacing:-.02em; }
+      #s1-ui { position:absolute; left:110px; top:60px; width:1700px; height:690px; border-radius:26px; background:#C9D2CD; overflow:hidden;
+        box-shadow:0 40px 90px -30px #000; }
+      #s1-ui .tabs { display:flex; gap:6px; padding:16px 18px 0; }
+      #s1-ui .tabs s { text-decoration:none; padding:10px 14px; border-radius:10px 10px 0 0; background:#B5C0BA; color:#41504a; font-size:15px; font-weight:700; }
+      #s1-ui .btns { display:flex; flex-wrap:wrap; gap:8px; padding:18px; background:#DDE4E0; height:100%; align-content:flex-start; }
+      #s1-ui .btns u { text-decoration:none; padding:9px 14px; border-radius:8px; background:#F1F4F2; box-shadow:inset 0 0 0 1px #0B141122; color:#33413b; font-size:17px; font-weight:600; }
+      .alert { position:absolute; display:flex; align-items:center; gap:12px; padding:16px 22px; border-radius:16px; color:#0B1411; font-size:24px; font-weight:800;
+        box-shadow:0 20px 40px -14px #000a; }
+      .alert i { width:14px; height:14px; border-radius:50%; background:#0B1411; }
+      .alert.red { background:#FF7A59; } .alert.amber { background:#FFB04D; }
+      #s1-line { position:absolute; left:0; right:0; top:800px; text-align:center; font-size:76px; font-weight:800; letter-spacing:-.02em; }
       #s1-line .hi { color:var(--lime); }
-      #s1-shade { position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, #0B1411 82%); }
     """
-    for i in range(96):
-        if (i * 13) % 5 == 0:
-            cells[i] = cells[i].replace('class="cell led"', 'class="cell led lit"' if i % 3 else 'class="cell led warn"')
-    html1 = f'<div class="panel" id="s1-panel">{"".join(cells)}</div><div id="s1-shade"></div>' \
-            f'<h1 id="s1-line">{words("s1", "Running a clinic shouldn’t feel like")} <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></h1>'
-    js1 = ('tl.fromTo("#s1-panel .lit i, #s1-panel .warn i", { opacity:0.15 }, { opacity:1, duration:0.12, ease:"power2.out", stagger:{ each:0.05, from:"random" } }, 0.1);\n'
-           'tl.fromTo("#s1-panel", { scale:1.08 }, { scale:1, duration:3.8, ease:"power1.out" }, 0);\n'
-           + words_in("#s1-line .w", LEAD, 0.11))
+    tabs = "".join(f"<s>{t}</s>" for t in "Home Masters Transactions Reports Utilities Admin Setup Tools Help Window".split())
+    html1 = (f'<div id="s1-ui"><div class="tabs">{tabs}</div><div class="btns">{btns}</div></div>'
+             + "".join(f'<div class="alert {c}" id="s1-a{i}" style="left:{x}px;top:{y}px"><i></i>{t}</div>' for i, (t, c, x, y) in enumerate(alerts))
+             + f'<h1 id="s1-line">{words("s1", "Running a clinic shouldn’t feel like")} <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></h1>')
+    js1 = 'tl.fromTo("#s1-ui", { scale:1.04 }, { scale:1, duration:%.2f, ease:"power1.out" }, 0);\n' % durs[0]
+    js1 += 'tl.fromTo("#s1-ui .btns u", { opacity:0.35 }, { opacity:1, duration:0.1, stagger:{ each:0.012, from:"random" } }, 0);\n'
+    for i in range(len(alerts)):
+        js1 += f'tl.fromTo("#s1-a{i}", {{ opacity:0, scale:0.7, y:20 }}, {{ opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }}, {0.25 + i * 0.32:.2f});\n'
+    js1 += words_in("#s1-line .w", LEAD, 0.11)
     sc.append(("s1", durs[0], css1, html1, js1))
 
-    # 2. the problem: windows pile up, three chips
-    wins = []
-    for i in range(6):
-        fields = "".join('<b></b>' for _ in range(18))
-        wins.append(f'<div class="old" id="s2-o{i}"><div class="bar">{"".join("<u></u>" for _ in range(7))}</div><div class="grid">{fields}</div></div>')
+    # 2. the problem, said plainly in three lines
     css2 = """
-      .old { position:absolute; width:760px; height:470px; border-radius:14px; background:#1B2622; box-shadow:0 30px 60px -20px #000, inset 0 0 0 1px #ffffff12; overflow:hidden; }
-      .old .bar { height:44px; background:#22302B; display:flex; gap:10px; padding:12px 16px; }
-      .old .bar u { width:84px; border-radius:6px; background:#33433d; }
-      .old .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; padding:22px; }
-      .old .grid b { height:38px; border-radius:6px; background:#26332e; box-shadow:inset 0 0 0 1px #ffffff0d; }
-      #s2-o0 { left:120px; top:90px; } #s2-o1 { left:560px; top:150px; } #s2-o2 { left:1030px; top:70px; }
-      #s2-o3 { left:260px; top:420px; } #s2-o4 { left:760px; top:470px; } #s2-o5 { left:1150px; top:380px; }
-      .chips { position:absolute; left:0; right:0; bottom:120px; display:flex; justify-content:center; gap:22px; }
-      .chip { padding:18px 32px; border-radius:999px; background:var(--amber); color:#0B1411; font-size:40px; font-weight:800; }
+      #s2-ui { position:absolute; left:110px; top:60px; width:1700px; height:690px; border-radius:26px; background:#C9D2CD; }
+      .big { position:absolute; left:260px; font-size:108px; font-weight:800; letter-spacing:-.03em; display:flex; align-items:center; gap:34px; }
+      .big i { width:30px; height:30px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 12px #FFB04D33; }
+      #s2-l0 { top:250px; } #s2-l1 { top:420px; } #s2-l2 { top:590px; }
     """
-    html2 = "".join(wins) + '<div class="chips"><span class="chip" id="s2-c0">Too many screens</span><span class="chip" id="s2-c1">Too many steps</span><span class="chip" id="s2-c2">Too much training</span></div>'
-    js2 = ""
-    for i in range(6):
-        js2 += f'tl.fromTo("#s2-o{i}", {{ y:90, opacity:0, scale:0.94 }}, {{ y:0, opacity:1, scale:1, duration:0.5, ease:"expo.out" }}, {i * 0.3:.2f});\n'
-    for i, t in enumerate((LEAD + 2.2, LEAD + 3.2, LEAD + 4.2)):
-        js2 += f'tl.fromTo("#s2-c{i}", {{ scale:0.6, opacity:0 }}, {{ scale:1, opacity:1, duration:0.35, ease:"back.out(1.6)" }}, {t:.2f});\n'
+    html2 = '<div id="s2-ui"></div>' + "".join(f'<div class="big" id="s2-l{i}"><i></i>{t}</div>' for i, t in enumerate(("Too many screens.", "Too many steps.", "Too much training.")))
+    js2 = 'tl.fromTo("#s2-ui", { opacity:0.55, scale:1, filter:"blur(0px)" }, { opacity:0, scale:0.92, filter:"blur(12px)", duration:0.6, ease:"power2.in" }, 0);\n'
+    for i, t in enumerate((kt(1, LEAD + 2.1), kt(1, LEAD + 3.1), kt(1, LEAD + 4.1))):
+        js2 += f'tl.fromTo("#s2-l{i}", {{ opacity:0, x:-60, filter:"blur(10px)" }}, {{ opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }}, {t - 0.3:.2f});\n'
     sc.append(("s2", durs[1], css2, html2, js2))
 
-    # 3. Dictate: the wordmark, then the whole clinic in one clean window
+    # 3. Dictate: the wordmark and the four parts of the clinic, then the app itself
     css3 = """
-      #s3-mark { position:absolute; left:0; right:0; top:410px; text-align:center; font-size:150px; font-weight:800; letter-spacing:-.04em; }
+      #s3-mark { position:absolute; left:0; right:0; top:230px; text-align:center; font-size:150px; font-weight:800; letter-spacing:-.04em; }
       #s3-mark i { color:var(--lime); font-style:normal; }
-      #s3-sub { position:absolute; left:0; right:0; top:600px; text-align:center; font-size:40px; font-weight:600; color:var(--muted); }
+      .pills { position:absolute; left:0; right:0; top:500px; display:flex; justify-content:center; gap:26px; }
+      .pill { width:330px; padding:30px 28px; border-radius:26px; background:#E8F1EC; color:#0B1411; display:flex; flex-direction:column; gap:18px; }
+      .pill b { width:64px; height:64px; border-radius:16px; background:#0B1411; color:var(--lime); display:grid; place-items:center; }
+      .pill b svg { width:34px; height:34px; }
+      .pill span { font-size:34px; font-weight:800; letter-spacing:-.01em; }
     """
-    html3 = f'<div id="s3-mark" data-layout-allow-overflow>Dictate<i>.</i></div><div id="s3-sub">One simple place to run your whole clinic</div>' + window("s3", [("a", "03-home")])
-    js3 = ('tl.fromTo("#s3-mark", { opacity:0, scale:1.15, filter:"blur(14px)" }, { opacity:1, scale:1, filter:"blur(0px)", duration:0.6, ease:"expo.out" }, 0.1);\n'
-           'tl.fromTo("#s3-sub", { opacity:0, filter:"blur(8px)" }, { opacity:1, filter:"blur(0px)", duration:0.3, ease:"power2.out" }, 0.9);\n'
-           'tl.to(["#s3-mark", "#s3-sub"], { opacity:0, y:-80, filter:"blur(10px)", duration:0.35, ease:"power3.in" }, 3.5);\n'
-           'tl.fromTo("#s3-win", { y:300, opacity:0, scale:0.9 }, { y:0, opacity:1, scale:1, duration:0.8, ease:"expo.out" }, 3.65);\n')
+    pills = "".join(f'<div class="pill" id="s3-p{i}"><b>{ICONS[k]}</b><span>{t}</span></div>' for i, (k, t) in enumerate(PILLARS))
+    html3 = f'<div id="s3-mark" data-layout-allow-overflow>Dictate<i>.</i></div><div class="pills">{pills}</div>' + window("s3", [("a", "03-home")])
+    js3 = 'tl.fromTo("#s3-mark", { opacity:0, scale:1.15, filter:"blur(14px)" }, { opacity:1, scale:1, filter:"blur(0px)", duration:0.6, ease:"expo.out" }, 0.1);\n'
+    for i in range(4):
+        js3 += f'tl.fromTo("#s3-p{i}", {{ opacity:0, y:50 }}, {{ opacity:1, y:0, duration:0.5, ease:"expo.out" }}, {kt(2, 1.4) + i * 0.12:.2f});\n'
+    js3 += (f'tl.to(["#s3-mark", ".pills"], {{ opacity:0, y:-80, filter:"blur(10px)", duration:0.35, ease:"power3.in" }}, {kt(2, 4.4):.2f});\n'
+            f'tl.fromTo("#s3-win", {{ y:300, opacity:0, scale:0.9 }}, {{ y:0, opacity:1, scale:1, duration:0.8, ease:"expo.out" }}, {kt(2, 4.55):.2f});\n')
     sc.append(("s3", durs[2], css3, html3, js3))
 
     # 4. front desk: Walk-in -> token and payment -> the day's queue
+    k = lambda x: kt(3, x)
     c_modal, c_rows = cam("walkin.modal", 1.45), cam("ops.rows", 1.3)
     wx, wy = on_canvas("ops.walkin")
-    html4 = window("s4", [("a", "04a-ops"), ("b", "04b-walkin")]) + f'<div id="s4-cursor" class="cursor" style="opacity:0">{CURSOR}</div>'
-    js4 = (js_rise("#s4-win", 0.0, 0.6) + js_cursor("s4", [(wx, wy, 2.0, True)], 0.9) + js_swap("s4", "a", "b", 2.0)
-           + 'tl.to("#s4-cursor", { opacity:0, duration:0.2 }, 2.3);\n' + js_cam("s4", c_modal, 2.2, 0.6)
-           + js_swap("s4", "b", "a", 5.6) + js_cam("s4", (0, 0, 1), 5.5, 0.5) + js_cam("s4", c_rows, 6.3, 0.6))
+    ch, cj = chapter("s4", 1, "Front desk", [("Token and payment in one step", k(2.2)), ("Today’s queue at a glance", k(6.3))])
+    html4 = ch + window("s4", [("a", "04a-ops"), ("b", "04b-walkin")]) + f'<div id="s4-cursor" class="cursor" style="opacity:0">{CURSOR}</div>'
+    js4 = (cj + js_rise("#s4-win", 0.0, 0.6) + js_cursor("s4", [(wx, wy, k(2.0), True)], k(0.9)) + js_swap("s4", "a", "b", k(2.0))
+           + f'tl.to("#s4-cursor", {{ opacity:0, duration:0.2 }}, {k(2.3)});\n' + js_cam("s4", c_modal, k(2.2), 0.6)
+           + js_swap("s4", "b", "a", k(5.6)) + js_cam("s4", (0, 0, 1), k(5.5), 0.5) + js_cam("s4", c_rows, k(6.3), 0.6))
     sc.append(("s4", durs[3], "", html4, js4))
 
-    # 5. history: visit history, then the brief
+    # 5. history: visit history, the brief, its charts
+    k = lambda x: kt(4, x)
     chx, chy = on_canvas("brief.charts")
-    html5 = window("s5", [("a", "05a-patient"), ("b", "05b-brief"), ("c", "05d-charts")]) + f'<div id="s5-cursor" class="cursor" style="opacity:0">{CURSOR}</div>'
-    js5 = (js_rise("#s5-win", 0.0, 0.5) + js_cam("s5", cam("patient.timeline", 1.4), 0.5, 0.7)
-           + js_cam("s5", (0, 0, 1), 2.9, 0.45) + js_swap("s5", "a", "b", 3.2) + js_cam("s5", cam("brief.pane", 1.6), 3.4, 0.6)
-           + js_cam("s5", (0, 0, 1), 5.0, 0.45) + js_cursor("s5", [(chx, chy, 5.9, True)], 4.9) + js_swap("s5", "b", "c", 5.9)
-           + 'tl.to("#s5-cursor", { opacity:0, duration:0.2 }, 6.2);\n' + js_cam("s5", cam("charts.pane", 1.35), 6.2, 0.7))
+    ch, cj = chapter("s5", 2, "Patient history", [("Every visit, in order", 0.5), ("A brief before every visit", k(3.2)), ("Lithium, creatinine and TSH over time", k(5.9) + 0.4)])
+    html5 = ch + window("s5", [("a", "05a-patient"), ("b", "05b-brief"), ("c", "05d-charts")]) + f'<div id="s5-cursor" class="cursor" style="opacity:0">{CURSOR}</div>'
+    js5 = (cj + js_rise("#s5-win", 0.0, 0.5) + js_cam("s5", cam("patient.timeline", 1.4), 0.5, 0.7)
+           + js_cam("s5", (0, 0, 1), k(2.9), 0.45) + js_swap("s5", "a", "b", k(3.2)) + js_cam("s5", cam("brief.pane", 1.6), k(3.4), 0.6)
+           + js_cam("s5", (0, 0, 1), k(5.0), 0.45) + js_cursor("s5", [(chx, chy, k(5.9), True)], k(4.9)) + js_swap("s5", "b", "c", k(5.9))
+           + f'tl.to("#s5-cursor", {{ opacity:0, duration:0.2 }}, {k(6.2)});\n' + js_cam("s5", cam("charts.pane", 1.35), k(6.2), 0.7))
     sc.append(("s5", durs[4], "", html5, js5))
 
     # 6. dictation: tap the mic, the words appear as the doctor speaks, stop
-    T0, T1 = 4.1, 9.2                                   # recording: the mic tap on "tap the mic", then the stop tap
+    T0, T1 = kt(5, 4.1), kt(5, 4.1) + 5.1               # recording: the mic tap on "tap the mic", then the stop tap
     words_d = DICTATION.split()
     mx, my = on_canvas("mic")
     c_type = cam("text.top", 1.15)
@@ -244,17 +281,18 @@ def build_scenes(lines, vo):
     """
     live = (f'<div id="s6-live"><div id="s6-paper"></div><div id="s6-text">{" ".join(f"<span>{w}</span>" for w in words_d)}</div>'
             f'<div id="s6-wave">{bars}</div><div id="s6-clock">0:00</div></div>')
-    html6 = window("s6", [("a", "06e-mic"), ("b", "06f-rec"), ("c", "06a-consult")]).replace('</div></div>', live + '</div></div>', 1) + \
+    ch, cj = chapter("s6", 3, "Dictation", [("After the visit, tap the mic", T0 - 1.2), ("Your words appear as you speak", T0 + 0.6)])
+    html6 = ch + window("s6", [("a", "06e-mic"), ("b", "06f-rec"), ("c", "06a-consult")]).replace('</div></div>', live + '</div></div>', 1) + \
         f'<div id="s6-cursor" class="cursor" style="opacity:0">{CURSOR}</div>'
-    js6 = (js_rise("#s6-win", 0.0, 0.5) + js_cursor("s6", [(mx, my, T0, True)], 2.6) + js_swap("s6", "a", "b", T0)
+    js6 = (cj + js_rise("#s6-win", 0.0, 0.5) + js_cursor("s6", [(mx, my, T0, True)], T0 - 1.5) + js_swap("s6", "a", "b", T0)
            + f'tl.to("#s6-live", {{ opacity:1, duration:0.12 }}, {T0:.2f});\n'
            + f'tl.to("#s6-cursor", {{ opacity:0, duration:0.2 }}, {T0 + 0.3:.2f});\n'
            + js_cam("s6", c_type, T0 + 0.2, 0.6)
            + f'tl.to("#s6-paper", {{ opacity:1, duration:0.05 }}, {T0 + 0.5:.2f});\n'
            + f'tl.to("#s6-text span", {{ opacity:1, duration:0.06, stagger:{(T1 - T0 - 1.3) / len(words_d):.3f} }}, {T0 + 0.5:.2f});\n')
-    for k in range(int((T1 - T0) / 0.3)):           # the waveform: deterministic heights, a new set every 0.3 s
-        t = T0 + k * 0.3
-        hs = [0.25 + ((i * 7 + k * 13) % 10) / 11 for i in range(20)]
+    for kk in range(int((T1 - T0) / 0.3)):           # the waveform: deterministic heights, a new set every 0.3 s
+        t = T0 + kk * 0.3
+        hs = [0.25 + ((i * 7 + kk * 13) % 10) / 11 for i in range(20)]
         js6 += "".join(f'tl.to("#s6-b{i}", {{ scaleY:{h:.2f}, duration:0.25, ease:"sine.inOut" }}, {t:.2f});\n' for i, h in enumerate(hs))
     for sec in range(1, int(T1 - T0) + 1):
         js6 += f'tl.set("#s6-clock", {{ textContent:"0:{sec:02d}" }}, {T0 + sec:.2f});\n'
@@ -264,61 +302,77 @@ def build_scenes(lines, vo):
             + f'tl.to("#s6-cursor svg", {{ scale:1, duration:0.18, ease:"power2.out" }}, {T1:.2f});\n'
             + js_swap("s6", "b", "c", T1) + f'tl.to("#s6-live", {{ opacity:0, duration:0.16 }}, {T1:.2f});\n'
             + f'tl.to("#s6-cursor", {{ opacity:0, duration:0.2 }}, {T1 + 0.5:.2f});\n')
-    sc.append(("s6", durs[5], css6, html6, js6))
+    sc.append(("s6", max(durs[5], T1 + 1.0), css6, html6, js6))
+    durs[5] = max(durs[5], T1 + 1.0)
 
     # 7. Generate note -> the note -> a citation -> its source -> the exact words
+    k = lambda x: kt(6, x)
     c_text = cam("consult.text", 1.3)
     gx, gy = on_canvas("gen")
     cx_, cy_ = on_canvas("note.cite")
     sx, sy = on_canvas("sources.item")
-    html7 = window("s7", [("a", "06a-consult"), ("b", "06b-note"), ("c", "06c-sources"), ("d", "06d-highlight")]) + \
+    ch, cj = chapter("s7", 4, "AI note", [("Written in the psychiatry case-sheet format", k(1.0) + 0.3), ("Tap a line to see its source", k(4.6)), ("Back to the exact words", k(6.3))])
+    html7 = ch + window("s7", [("a", "06a-consult"), ("b", "06b-note"), ("c", "06c-sources"), ("d", "06d-highlight")]) + \
         f'<div id="s7-cursor" class="cursor" style="opacity:0">{CURSOR}</div>'
-    js7 = (js_cursor("s7", [(gx, gy, 1.0, True), (cx_, cy_, 4.6, True), (sx, sy, 6.3, True)], 0.1)
-           + js_swap("s7", "a", "b", 1.0) + js_swap("s7", "b", "c", 4.6) + js_swap("s7", "c", "d", 6.3)
-           + js_cam("s7", c_text, 6.6, 0.6) + 'tl.to("#s7-cursor", { opacity:0, duration:0.2 }, 6.6);\n')
+    js7 = (cj + js_cursor("s7", [(gx, gy, k(1.0), True), (cx_, cy_, k(4.6), True), (sx, sy, k(6.3), True)], 0.1)
+           + js_swap("s7", "a", "b", k(1.0)) + js_swap("s7", "b", "c", k(4.6)) + js_swap("s7", "c", "d", k(6.3))
+           + js_cam("s7", c_text, k(6.6), 0.6) + f'tl.to("#s7-cursor", {{ opacity:0, duration:0.2 }}, {k(6.6)});\n')
     sc.append(("s7", durs[6], "", html7, js7))
 
     # 8. sign and print
+    k = lambda x: kt(7, x)
     css8 = """
-      #s8-paper { position:absolute; left:460px; top:70px; width:1000px; height:940px; border-radius:20px; overflow:hidden; box-shadow:0 40px 90px -20px #000; }
-      #s8-paper img { position:absolute; left:-460px; top:-30px; width:1920px; height:1080px; }
+      #s8-paper { position:absolute; left:500px; top:120px; width:920px; height:860px; border-radius:20px; overflow:hidden; box-shadow:0 40px 90px -20px #000; }
+      #s8-paper img { position:absolute; left:-500px; top:-30px; width:1920px; height:1080px; }
     """
-    html7 = window("s8", [("a", "07a-signed")]) + '<div id="s8-paper"><img src="assets/shots/07b-print.jpg"></div>'
-    js8 = (js_rise("#s8-win", 0.0, 0.4) + js_cam("s8", cam("signed.dock", 1.5), 0.2, 0.5)
-           + 'tl.fromTo("#s8-paper", { y:1100 }, { y:0, duration:0.6, ease:"expo.out" }, 1.5);\n')
-    sc.append(("s8", durs[7], css8, html7, js8))
+    ch, cj = chapter("s8", 5, "Sign and print", [("Signed, dated, ready to print", 0.3)])
+    html8 = ch + window("s8", [("a", "07a-signed")]) + '<div id="s8-paper"><img src="assets/shots/07b-print.jpg"></div>'
+    js8 = (cj + js_rise("#s8-win", 0.0, 0.4) + js_cam("s8", cam("signed.dock", 1.5), 0.2, 0.5)
+           + f'tl.fromTo("#s8-paper", {{ y:1100 }}, {{ y:0, duration:0.6, ease:"expo.out" }}, {k(1.5)});\n')
+    sc.append(("s8", durs[7], css8, html8, js8))
 
     # 9. collections, then the team
-    html8 = window("s9", [("a", "08a-collections"), ("b", "08b-team")])
-    js9 = (js_rise("#s9-win", 0.0, 0.5) + js_cam("s9", cam("money.panel1", 1.35), 0.3, 0.6)
-           + js_cam("s9", (0, 0, 1), 2.1, 0.4) + js_swap("s9", "a", "b", 2.3) + js_cam("s9", cam("team.list", 1.25), 2.6, 0.6))
-    sc.append(("s9", durs[8], "", html8, js9))
+    k = lambda x: kt(8, x)
+    ch, cj = chapter("s9", 6, "Clinic admin", [("Collections by cash, UPI and card", 0.3), ("Staff attendance and leave", k(2.3))])
+    html9 = ch + window("s9", [("a", "08a-collections"), ("b", "08b-team")])
+    js9 = (cj + js_rise("#s9-win", 0.0, 0.5) + js_cam("s9", cam("money.panel1", 1.35), 0.3, 0.6)
+           + js_cam("s9", (0, 0, 1), k(2.1), 0.4) + js_swap("s9", "a", "b", k(2.3)) + js_cam("s9", cam("team.list", 1.25), k(2.6), 0.6))
+    sc.append(("s9", durs[8], "", html9, js9))
 
     # 10. laptop, tablet and phone
     css10 = """
       .dev { position:absolute; overflow:hidden; background:#000; box-shadow:0 40px 80px -20px #000, 0 0 0 1px #ffffff1a; }
       .dev img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
-      #s10-lap { left:110px; top:190px; width:1100px; height:619px; border-radius:22px; border:10px solid #1d2925; }
-      #s10-tab { left:1150px; top:150px; width:470px; height:676px; border-radius:30px; border:12px solid #1d2925; }
-      #s10-pho { left:1540px; top:300px; width:280px; height:606px; border-radius:40px; border:10px solid #1d2925; }
+      #s10-lap { left:150px; top:210px; width:1060px; height:596px; border-radius:22px; border:10px solid #1d2925; }
+      #s10-tab { left:1150px; top:170px; width:450px; height:648px; border-radius:30px; border:12px solid #1d2925; }
+      #s10-pho { left:1530px; top:320px; width:270px; height:584px; border-radius:40px; border:10px solid #1d2925; }
     """
-    html9 = ('<div class="dev" id="s10-lap"><img src="assets/shots/03-home.jpg"></div>'
-             '<div class="dev" id="s10-tab"><img src="assets/shots/09c-tablet-brief.jpg"></div>'
-             '<div class="dev" id="s10-pho"><img src="assets/shots/09a-phone-note.jpg"></div>')
-    js10 = js_rise("#s10-lap", 0.2) + js_rise("#s10-tab", 0.7) + js_rise("#s10-pho", 1.2)
-    sc.append(("s10", durs[9], css10, html9, js10))
+    ch, cj = chapter("s10", 7, "Any device", [("Laptop · tablet · phone", 0.6)])
+    html10 = ch + ('<div class="dev" id="s10-lap"><img src="assets/shots/03-home.jpg"></div>'
+                   '<div class="dev" id="s10-tab"><img src="assets/shots/09c-tablet-brief.jpg"></div>'
+                   '<div class="dev" id="s10-pho"><img src="assets/shots/09a-phone-note.jpg"></div>')
+    js10 = cj + js_rise("#s10-lap", 0.2) + js_rise("#s10-tab", 0.6) + js_rise("#s10-pho", 1.0)
+    sc.append(("s10", durs[9], css10, html10, js10))
 
-    # 11. end card
+    # 11. end card: the mark, the line, the four parts, who it is for
     css11 = """
-      #s11-mark { position:absolute; left:0; right:0; top:380px; text-align:center; font-size:170px; font-weight:800; letter-spacing:-.04em; }
+      #s11-mark { position:absolute; left:0; right:0; top:250px; text-align:center; font-size:170px; font-weight:800; letter-spacing:-.04em; }
       #s11-mark i { color:var(--lime); font-style:normal; }
-      #s11-line { position:absolute; left:0; right:0; top:620px; text-align:center; font-size:56px; font-weight:700; }
+      #s11-line { position:absolute; left:0; right:0; top:490px; text-align:center; font-size:58px; font-weight:700; }
       #s11-line .hi { color:var(--lime); }
+      .row { position:absolute; left:0; right:0; top:640px; display:flex; justify-content:center; gap:18px; }
+      .chipx { display:flex; align-items:center; gap:12px; padding:14px 24px 14px 16px; border-radius:999px; background:#E8F1EC; color:#0B1411; font-size:26px; font-weight:800; }
+      .chipx svg { width:26px; height:26px; }
+      #s11-for { position:absolute; left:0; right:0; top:780px; text-align:center; font-size:30px; font-weight:600; color:var(--muted); }
     """
-    html10 = f'<div id="s11-mark">Dictate<i>.</i></div><div id="s11-line">{words("s11", "Your whole clinic,")} <span class="w hi">made</span> <span class="w hi">simple.</span></div>'
+    chips = "".join(f'<div class="chipx" id="s11-c{i}">{ICONS[k_]}{t}</div>' for i, (k_, t) in enumerate(PILLARS))
+    html11 = (f'<div id="s11-mark">Dictate<i>.</i></div><div id="s11-line">{words("s11", "Your whole clinic,")} <span class="w hi">made</span> <span class="w hi">simple.</span></div>'
+              f'<div class="row">{chips}</div><div id="s11-for">Built for clinics and solo doctors</div>')
     js11 = ('tl.fromTo("#s11-mark", { opacity:0, scale:1.12, filter:"blur(14px)" }, { opacity:1, scale:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 0.1);\n'
-            + words_in("#s11-line .w", LEAD + 0.5, 0.1))
-    sc.append(("s11", durs[10], css11, html10, js11))
+            + words_in("#s11-line .w", LEAD + 0.5, 0.1)
+            + 'tl.fromTo("#s11-c0, #s11-c1, #s11-c2, #s11-c3", { opacity:0, y:30 }, { opacity:1, y:0, duration:0.45, ease:"expo.out", stagger:0.1 }, %.2f);\n' % (LEAD + 1.4)
+            + 'tl.fromTo("#s11-for", { opacity:0 }, { opacity:1, duration:0.4 }, %.2f);\n' % (LEAD + 2.0))
+    sc.append(("s11", durs[10], css11, html11, js11))
     return sc, durs
 
 
@@ -349,6 +403,27 @@ def caption_groups(lines, starts, vo):
     return out
 
 
+MUSIC = HERE / "assets/audio/music.mp3"   # the chosen track (the person's own, from Pixabay)
+
+
+def mix(starts, vo, total, out):
+    """One audio file: the voice lines at their times, the music under them. The music ducks while the voice speaks
+    (sidechain) and rises in the gaps; the voice always sits on top. Loudness normalised for social (-16 LUFS)."""
+    inputs, labels = [], []
+    for i in range(len(vo)):
+        inputs += ["-i", str(HERE / f"assets/audio/vo-{i + 1}.mp3")]
+        ms = int((starts[i] + LEAD) * 1000)
+        labels.append(f"[{i}:a]aresample=48000,pan=stereo|c0=c0|c1=c0,adelay={ms}|{ms}[v{i}]")
+    n = len(vo)
+    graph = (";".join(labels) + ";" + "".join(f"[v{i}]" for i in range(n)) + f"amix=inputs={n}:normalize=0:duration=longest,apad=whole_dur={total}[voice];"
+             f"[voice]asplit=2[vmix][vkey];"
+             f"[{n}:a]aresample=48000,atrim=0:{total},volume=0.55,afade=t=in:d=1.5,afade=t=out:st={total - 3}:d=3[mus];"
+             f"[mus][vkey]sidechaincompress=threshold=0.02:ratio=5:attack=40:release=600:makeup=1[duck];"
+             f"[vmix][duck]amix=inputs=2:normalize=0:duration=first,loudnorm=I=-16:TP=-1.5:LRA=11[out]")
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", *inputs, "-i", str(MUSIC), "-filter_complex", graph, "-map", "[out]",
+                    "-ar", "48000", "-b:a", "192k", str(out)], check=True)
+
+
 def build():
     lines = [l.split("|", 1)[1].strip() for l in (HERE / "script.txt").read_text().splitlines() if l.strip()]
     vo = [dur(HERE / f"assets/audio/vo-{i + 1}.mp3") for i in range(len(lines))]
@@ -371,8 +446,8 @@ def build():
   <style>
     @font-face {{ font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }}
     #root {{ position:absolute; inset:0; font-family:'Manrope', sans-serif; }}
-    .cap {{ position:absolute; left:0; right:0; bottom:46px; text-align:center; opacity:0; }}
-    .cap span {{ display:inline-block; padding:10px 22px; border-radius:14px; background:#0B1411d9; color:#E8F1EC; font-size:40px; font-weight:700; letter-spacing:-.01em; }}
+    .cap {{ position:absolute; left:0; right:0; bottom:22px; text-align:center; opacity:0; }}
+    .cap span {{ display:inline-block; padding:8px 22px; border-radius:14px; background:#0B1411e6; color:#E8F1EC; font-size:36px; font-weight:700; letter-spacing:-.01em; }}
   </style>
   <div id="root" data-composition-id="captions" data-width="{W}" data-height="{H}">{cap_html}</div>
   <script>
@@ -388,8 +463,10 @@ def build():
         f'      <div id="{sid}" data-composition-id="{sid}" data-composition-src="compositions/{sid}.html" data-start="{starts[i]}" '
         f'data-duration="{durs[i]:.2f}" data-track-index="1" data-track-kind="graphics" data-width="{W}" data-height="{H}"></div>\n'
         for i, (sid, *_r) in enumerate(scenes))
-    voices = "".join(f'      <audio id="vo-{i + 1}" class="clip" src="assets/audio/vo-{i + 1}.mp3" data-start="{starts[i] + LEAD:.2f}" '
-                     f'data-duration="{vo[i]:.2f}" data-track-index="3" data-volume="1"></audio>\n' for i in range(len(vo)))
+    mix(starts, vo, total, HERE / "assets/audio/mix.mp3")
+    wave = "".join(f'<i style="left:{40 + i * 46}px"></i>' for i in range(40))
+    wave_js = "".join(f'tl.fromTo("#wave i:nth-child({i + 1})", {{ scaleY:{0.2 + (i * 7 % 10) / 14:.2f} }}, {{ scaleY:{0.2 + (i * 3 % 10) / 14:.2f}, duration:2.4, ease:"sine.inOut", yoyo:true, repeat:{int(total / 2.4)} }}, 0);'
+                      for i in range(40))
     (HERE / "index.html").write_text(f"""<!doctype html>
 <html lang="en">
   <head>
@@ -400,17 +477,23 @@ def build():
     <style>
       * {{ margin:0; padding:0; box-sizing:border-box; }}
       html, body {{ margin:0; width:{W}px; height:{H}px; overflow:hidden; background:#0B1411; }}
-      #bg {{ position:absolute; inset:0; background:#0B1411; }}
+      #bg {{ position:absolute; inset:0; background:radial-gradient(1200px 700px at 50% 55%, #16241e 0%, #0B1411 70%); overflow:hidden; }}
+      #glow {{ position:absolute; left:560px; top:240px; width:800px; height:600px; border-radius:50%; background:#B6F36B; opacity:.07; filter:blur(120px); }}
+      #wave {{ position:absolute; left:0; right:0; bottom:0; height:180px; opacity:.10; }}
+      #wave i {{ position:absolute; bottom:40px; width:10px; height:120px; border-radius:5px; background:#E8F1EC; transform-origin:50% 100%; }}
     </style>
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="{total}" data-width="{W}" data-height="{H}">
-      <div id="bg"></div>
+      <div id="bg"><div id="glow"></div><div id="wave">{wave}</div></div>
 {hosts}      <div id="captions" data-composition-id="captions" data-composition-src="compositions/captions.html" data-start="0" data-duration="{total}" data-track-index="2" data-track-kind="captions" data-width="{W}" data-height="{H}"></div>
-      <audio id="music" class="clip" src="assets/audio/music-pad.mp3" data-start="0" data-duration="{total}" data-track-index="4" data-volume="0.14" data-fade-in="1.5" data-fade-out="2.5"></audio>
-{voices}    </div>
+      <audio id="mix" class="clip" src="assets/audio/mix.mp3" data-start="0" data-duration="{total}" data-track-index="3" data-volume="1"></audio>
+    </div>
     <script>
       const tl = gsap.timeline({{ paused: true }});
+      // the background breathes slowly: the glow drifts and the waveform (the app's login motif) moves
+      tl.fromTo("#glow", {{ x:-160, y:-30 }}, {{ x:160, y:30, duration:{total / 2:.2f}, ease:"sine.inOut", yoyo:true, repeat:1 }}, 0);
+      {wave_js}
       window.__timelines["main"] = tl;
     </script>
   </body>

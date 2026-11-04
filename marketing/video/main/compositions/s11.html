@@ -1,0 +1,31 @@
+<template>
+  <style>
+    @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
+    
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:var(--ground); font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.win { position:absolute; left:160px; top:34px; width:1600px; height:900px; border-radius:26px; overflow:hidden;
+  box-shadow:0 40px 90px -30px #000, 0 0 0 1px #ffffff14; background:#0B1411; }
+.cam { position:absolute; left:0; top:0; width:1600px; height:900px; transform-origin:0 0; }
+.shot { position:absolute; left:0; top:0; width:1600px; height:900px; }
+.w { display:inline-block; }
+.cursor { position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }
+
+    
+      #s11-mark { position:absolute; left:0; right:0; top:380px; text-align:center; font-size:170px; font-weight:800; letter-spacing:-.04em; }
+      #s11-mark i { color:var(--lime); font-style:normal; }
+      #s11-line { position:absolute; left:0; right:0; top:620px; text-align:center; font-size:56px; font-weight:700; }
+      #s11-line .hi { color:var(--lime); }
+    
+  </style>
+  <div id="root" data-composition-id="s11" data-width="1920" data-height="1080">
+    <div id="s11-mark">Dictate<i>.</i></div><div id="s11-line"><span class="w ">Your</span> <span class="w ">whole</span> <span class="w ">clinic,</span> <span class="w hi">made</span> <span class="w hi">simple.</span></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s11-mark", { opacity:0, scale:1.12, filter:"blur(14px)" }, { opacity:1, scale:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 0.1);
+tl.fromTo("#s11-line .w", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", stagger:0.1 }, 0.85);
+
+    tl.to({}, { duration: 6.00 }, 0);
+    window.__timelines["s11"] = tl;
+  </script>
+</template>

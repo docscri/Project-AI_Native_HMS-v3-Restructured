@@ -11,20 +11,20 @@
 .cursor { position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }
 
     
+      #s8-paper { position:absolute; left:460px; top:70px; width:1000px; height:940px; border-radius:20px; overflow:hidden; box-shadow:0 40px 90px -20px #000; }
+      #s8-paper img { position:absolute; left:-460px; top:-30px; width:1920px; height:1080px; }
+    
   </style>
   <div id="root" data-composition-id="s8" data-width="1920" data-height="1080">
-    <div id="s8-win" class="win"><div id="s8-cam" class="cam"><img id="s8-a" class="shot" src="assets/shots/08a-collections.jpg" style="opacity:1"><img id="s8-b" class="shot" src="assets/shots/08b-team.jpg" style="opacity:0"></div></div>
+    <div id="s8-win" class="win"><div id="s8-cam" class="cam"><img id="s8-a" class="shot" src="assets/shots/07a-signed.jpg" style="opacity:1"></div></div><div id="s8-paper"><img src="assets/shots/07b-print.jpg"></div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s8-win", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.5, ease:"expo.out" }, 0.00);
-tl.to("#s8-cam", { x:-5.5, y:0, scale:1.35, duration:0.6, ease:"power2.inOut" }, 0.30);
-tl.to("#s8-cam", { x:0, y:0, scale:1, duration:0.4, ease:"power2.inOut" }, 2.10);
-tl.to("#s8-a", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 2.30);
-tl.fromTo("#s8-b", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 2.30);
-tl.to("#s8-cam", { x:0, y:0, scale:1.25, duration:0.6, ease:"power2.inOut" }, 2.60);
+    tl.fromTo("#s8-win", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.4, ease:"expo.out" }, 0.00);
+tl.to("#s8-cam", { x:-381.2, y:-450.0, scale:1.5, duration:0.5, ease:"power2.inOut" }, 0.20);
+tl.fromTo("#s8-paper", { y:1100 }, { y:0, duration:0.6, ease:"expo.out" }, 1.5);
 
-    tl.to({}, { duration: 5.11 }, 0);
+    tl.to({}, { duration: 3.89 }, 0);
     window.__timelines["s8"] = tl;
   </script>
 </template>

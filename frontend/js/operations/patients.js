@@ -9,16 +9,16 @@ async function viewPatients(id) {
     view(`<div class="head"><div><h1>Patients</h1></div><span class="grow"></span><button class="btn primary" data-a="register">New patient</button></div>
       <input class="input" id="pt-q" placeholder="Search name, phone or UHID" value="${esc(S.pq)}" data-a="pt-q" autocomplete="off" aria-label="Search patients">
       <div class="cols" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)">
-        <section class="panel scroll"><table class="t"><thead><tr><th>UHID</th><th>Name</th><th>Age</th><th>Phone</th></tr></thead><tbody>
-          ${list.map(x => `<tr class="click ${x.id === id ? "selected" : ""}" data-a="pt-open" data-v="${x.id}"><td class="mono">${esc(x.uhid)}</td><td><b>${esc(x.name)}</b></td><td>${ageOf(x.dob)} ${esc(x.sex || "")}</td><td>${esc(x.phone)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">—</td></tr>`}
+        <section class="panel scroll"><table class="t"><thead><tr><th class="uhid-col">UHID</th><th>Name</th><th>Age</th><th>Phone</th></tr></thead><tbody>
+          ${list.map(x => `<tr class="click ${x.id === id ? "selected" : ""}" data-a="pt-open" data-v="${x.id}"><td class="mono uhid-col">${esc(x.uhid)}</td><td><b>${esc(x.name)}</b></td><td>${ageOf(x.dob)} ${esc(x.sex || "")}</td><td>${esc(x.phone)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">—</td></tr>`}
         </tbody></table></section>
-        ${p ? profile(p) : `<section class="panel"><span class="muted">—</span></section>`}
-      </div>`);
+        ${p ? profile(p) : `<section class="panel pt-none"><span class="muted">—</span></section>`}
+      </div>${p ? `<div class="pt-scrim" data-a="pt-close"></div>` : ""}`);
   });
 }
 function profile(p) {
   const visits = p.visits.filter(v => ["done", "with_doctor", "waiting", "booked"].includes(v.status));
-  return `<section class="panel" style="gap:14px"><div class="actions" style="justify-content:space-between;align-items:flex-start"><div><h2>${esc(p.name)}</h2>
+  return `<section class="panel pt-sheet" style="gap:14px"><button class="pt-close icon-x" data-a="pt-close" aria-label="Close">×</button><div class="actions" style="justify-content:space-between;align-items:flex-start"><div><h2>${esc(p.name)}</h2>
       <div class="muted">${ageOf(p.dob)} ${esc(p.sex || "")} · <span class="mono">${esc(p.uhid)}</span> · ${esc(p.phone)}</div>${p.address ? `<div class="muted">${esc(p.address)}</div>` : ""}${p.consent_at ? `<div class="muted consent-line">✓ Consent ${longDate(p.consent_at)}</div>` : ""}</div><span class="actions" style="gap:6px"><button class="btn small" data-a="pt-edit" data-v="${p.id}">Profile</button><button class="btn small" data-a="pt-merge" data-v="${p.id}">Merge</button></span></div>
     <span class="label">Visit history</span>
     ${visits.length ? `<div class="timeline">${visits.map(v => `<div class="tl"><div class="tl-head"><b>${longDate(v.date)}</b><span>${esc(v.doctor)}</span>${pill(v.status)}</div>

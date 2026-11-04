@@ -34,8 +34,10 @@ function renderConsult() {
   if (!S.ft && v && S.drafts?.[v.id] && S.drafts[v.id].saved !== S.drafts[v.id].text) S.ft = S.drafts[v.id];   // restore unsaved text
   if (S.noteVisit !== v?.id) { S.noteVisit = v?.id; S.noteEdit = false; S.allEvents = false; }
   const floatMic = v && (["waiting", "with_doctor"].includes(v.status) || S.recState) && S.ctab !== "note";
-  $("#root").innerHTML = `<div class="cx">
+  const waitingN = D.today.visits.filter(x => x.status === "waiting").length;
+  $("#root").innerHTML = `<div class="cx ${S.cxL ? "dl-open" : ""} ${S.cxR ? "dr-open" : ""}">
     <header class="cx-top">
+      <button class="cx-menu" data-a="cx-drawer" data-v="left" aria-label="Queue and menu" title="Queue and menu"><i></i><i></i><i></i>${waitingN ? `<span class="cx-badge">${waitingN}</span>` : ""}</button>
       <b class="cx-logo">Dictate</b>
       <span class="cx-chip">${esc(S.clinic.name)} · OPD</span>
       <nav class="cx-links">${SCREENS.filter(s => m.screens.includes(s[0]) && s[0] !== "consultation").map(([, h, l]) => `<a href="${h}">${l}</a>`).join("")}</nav>
@@ -47,8 +49,9 @@ function renderConsult() {
     <div class="cx-body ${S.rightCollapsed ? "wide" : ""}">
       <aside class="cx-left">${leftCol()}</aside>
       <main class="cx-center" id="cx-center">${center()}${floatMic ? `<div class="cx-float">${dock(v)}</div>` : v && S.ctab === "note" ? `<div class="cx-float">${noteDock(v)}</div>` : ""}</main>
-      ${S.rightCollapsed ? "" : `<aside class="cx-right">${rightCol()}</aside>`}
+      ${S.rightCollapsed && !small() ? "" : `<aside class="cx-right" aria-label="Profile and sources">${rightCol()}</aside>`}
     </div>
+    <div class="cx-scrim" data-a="cx-drawer-close"></div>
   </div>`;
   if (again) { $(".cx")?.classList.add("re"); window.scrollTo(0, y); }
   restoreFree();
@@ -83,6 +86,9 @@ function genBtn(v) {
   if (v.status !== "with_doctor" || v.note?.status === "signed") return "";
   return `<button class="cx-pill-btn cx-gen" data-a="${v.note ? "cs-redraft" : "cs-draft"}" data-v="${v.id}">Generate note</button>`;
 }
+// Tablet and phone: the queue and the profile/sources panel slide in from the sides instead of taking the page.
+const small = () => matchMedia("(max-width: 1023px)").matches;
+const infoBtn = () => `<button class="cx-info" data-a="cx-drawer" data-v="right" aria-label="Profile and sources" title="Profile and sources"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/></svg></button>`;
 const sideBtn = () => !S.rightCollapsed ? "" : `<button class="cx-side-btn" data-a="cs-collapse" aria-label="${S.rightCollapsed ? "Show side panel" : "Hide side panel"}" title="${S.rightCollapsed ? "Show side panel" : "Hide side panel"}"><i></i><i></i></button>`;
 function micBtn(v, small) {
   return `<button class="mic-dot ${small ? "sm" : ""}" data-a="cs-mic" data-v="${v.id}" aria-label="Dictate">${icon.mic}</button>`;
@@ -100,7 +106,8 @@ function leftCol() {
       <span class="cx-state st-${v.status}">${label[v.status] || ""}</span></button>`).join("")}
     ${others.map(p => `<button data-a="cs-patient" data-v="${p.id}" aria-current="${!D.cur && p.id === D.pid}">
       <span class="cx-av">${esc(initials(p.name))}</span><span class="cx-who"><b>${esc(p.name)}${p.dob ? ", " + ageOf(p.dob) : ""}</b><small>${esc(p.uhid)} · ${esc(p.phone)}</small></span></button>`).join("")}
-    ${!visits.length && !others.length ? `<div class="cx-empty">—</div>` : ""}</div>`;
+    ${!visits.length && !others.length ? `<div class="cx-empty">—</div>` : ""}</div>
+    <nav class="cx-drawer-links">${SCREENS.filter(s => S.me.screens.includes(s[0]) && s[0] !== "consultation").map(([, h, l, ic]) => `<a href="${h}">${ic}<span>${l}</span></a>`).join("")}</nav>`;
 }
 function center() {
   const D = S.data, v = D.cur;
@@ -109,14 +116,14 @@ function center() {
     if (!p) return `<div class="cx-card cx-blank"></div>`;
     const past = p.visits.filter(x => x.status === "done");
     return `<div class="cx-card"><div class="cx-head"><div><h1>${esc(p.name)}${p.dob ? ", " + ageOf(p.dob) : ""}</h1>
-      <p class="muted">${{ M: "Male", F: "Female", O: "Other" }[p.sex] || ""} · ${esc(p.uhid)}</p></div><span class="cx-top-right">${sideBtn()}</span></div>
+      <p class="muted">${{ M: "Male", F: "Female", O: "Other" }[p.sex] || ""} · ${esc(p.uhid)}</p></div><span class="cx-top-right">${sideBtn()}</span>${infoBtn()}</div>
       <div class="cx-events">${past.map(x => `<div><span>•</span><span><b>${longDate(x.date)}</b> · ${esc(x.note?.soap?.A || x.doctor)}</span></div>`).join("") || `<span class="muted">—</span>`}</div></div>`;
   }
   const stateLabel = { waiting: "Waiting", with_doctor: "In visit", done: "Signed", booked: "Booked" }[v.status];
   return `<div class="cx-card">
     <div class="cx-head"><div><h1>${esc(v.patient_name)}${v.age != null ? ", " + v.age : ""}</h1>
 </div>
-      <span class="cx-top-right">${genBtn(v)}${["with_doctor", "done"].includes(v.status) ? `<button class="cx-pill-btn" data-a="fu-open" data-v="${v.id}">Follow-up</button>` : ""}<span class="cx-status st-${v.status}"><i></i>${stateLabel}</span>${sideBtn()}</span></div>
+      <span class="cx-top-right">${genBtn(v)}${["with_doctor", "done"].includes(v.status) ? `<button class="cx-pill-btn" data-a="fu-open" data-v="${v.id}">Follow-up</button>` : ""}<span class="cx-status st-${v.status}"><i></i>${stateLabel}</span>${sideBtn()}</span>${infoBtn()}</div>
     <div class="cx-tabrow"><div class="cx-tabs">${CTABS.map(([k, l]) => `<button data-a="cs-tab" data-v="${k}" aria-pressed="${S.ctab === k}">${l}</button>`).join("")}</div>
       ${S.ctab === "brief" ? `<div class="cx-tabs">${BTABS.map(([k, l]) => `<button data-a="cs-btab" data-v="${k}" aria-pressed="${(S.btab || "summary") === k}">${l}</button>`).join("")}</div>` : ""}</div>
     <div class="cx-pane">${({ brief: paneBrief, dictate: paneDictate, note: paneNote })[S.ctab](v)}</div>

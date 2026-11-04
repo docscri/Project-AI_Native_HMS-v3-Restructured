@@ -174,36 +174,32 @@ def build_scenes(lines, vo):
     durs[5] += 1.5   # dictation: time for the words to appear at a speaking pace
     sc = []
 
-    # 1. hook: a screen drowning in buttons, menus and alerts, then the line
-    labels = ("Masters Config Approvals Sync Ledger Mapping Setup Rules Modules Batch Override Workflow Reports Templates Billing Codes "
-              "Roles Rights Audit Export Import Queue Status Forms Fields Users Groups Sessions Backup Restore Licences Updates Integrations "
-              "Alerts Tasks Workflows Policies Defaults Mandatory Validate Post Unpost Reconcile Archive Purge Lock Unlock Refresh Rebuild").split()
-    btns = "".join(f'<u>{l}</u>' for l in labels)
-    alerts = [("Mandatory field missing", "red", 120, 150), ("Session expired. Log in again.", "amber", 1010, 120),
-              ("Approval pending (14)", "amber", 260, 470), ("Select a module first", "red", 980, 430), ("Sync failed. Retry?", "red", 600, 290)]
+    # 1. hook: a plane glides across on a dashed flight path while the line builds
+    PLANE = ('<svg viewBox="0 0 120 60" width="210" height="105" fill="none" stroke="#B6F36B" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">'
+             '<path d="M6 34 C 20 30, 70 28, 104 27 C 114 27, 118 31, 112 35 C 100 40, 40 42, 14 40 Z"/>'
+             '<path d="M50 30 L 34 10 L 44 10 L 70 29"/><path d="M52 39 L 40 54 L 49 54 L 70 39"/>'
+             '<path d="M10 33 L 4 20 L 12 20 L 22 31"/><circle cx="96" cy="30" r="1.6" fill="#B6F36B"/><circle cx="88" cy="30" r="1.6" fill="#B6F36B"/>'
+             '<circle cx="80" cy="30" r="1.6" fill="#B6F36B"/></svg>')
     css1 = """
-      #s1-ui { position:absolute; left:110px; top:60px; width:1700px; height:690px; border-radius:26px; background:#C9D2CD; overflow:hidden;
-        box-shadow:0 40px 90px -30px #000; }
-      #s1-ui .tabs { display:flex; gap:6px; padding:16px 18px 0; }
-      #s1-ui .tabs s { text-decoration:none; padding:10px 14px; border-radius:10px 10px 0 0; background:#B5C0BA; color:#41504a; font-size:15px; font-weight:700; }
-      #s1-ui .btns { display:flex; flex-wrap:wrap; gap:8px; padding:18px; background:#DDE4E0; height:100%; align-content:flex-start; }
-      #s1-ui .btns u { text-decoration:none; padding:9px 14px; border-radius:8px; background:#F1F4F2; box-shadow:inset 0 0 0 1px #0B141122; color:#33413b; font-size:17px; font-weight:600; }
-      .alert { position:absolute; display:flex; align-items:center; gap:12px; padding:16px 22px; border-radius:16px; color:#0B1411; font-size:24px; font-weight:800;
-        box-shadow:0 20px 40px -14px #000a; }
-      .alert i { width:14px; height:14px; border-radius:50%; background:#0B1411; }
-      .alert.red { background:#FF7A59; } .alert.amber { background:#FFB04D; }
-      #s1-line { position:absolute; left:0; right:0; top:800px; text-align:center; font-size:76px; font-weight:800; letter-spacing:-.02em; }
+      #s1-path { position:absolute; left:0; top:0; width:1920px; height:1080px; }
+      #s1-trail { position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 50%; }
+      #s1-plane { position:absolute; left:0; top:0; width:210px; height:105px; }
+      #s1-kicker { position:absolute; left:0; right:0; top:330px; text-align:center; }
+      #s1-kicker span { display:inline-block; padding:10px 22px; border-radius:999px; background:#E8F1EC; color:#0B1411; font-size:24px; font-weight:800; letter-spacing:.02em; }
+      #s1-line { position:absolute; left:0; right:0; top:430px; text-align:center; font-size:96px; line-height:1.12; font-weight:800; letter-spacing:-.03em; }
       #s1-line .hi { color:var(--lime); }
     """
-    tabs = "".join(f"<s>{t}</s>" for t in "Home Masters Transactions Reports Utilities Admin Setup Tools Help Window".split())
-    html1 = (f'<div id="s1-ui"><div class="tabs">{tabs}</div><div class="btns">{btns}</div></div>'
-             + "".join(f'<div class="alert {c}" id="s1-a{i}" style="left:{x}px;top:{y}px"><i></i>{t}</div>' for i, (t, c, x, y) in enumerate(alerts))
-             + f'<h1 id="s1-line">{words("s1", "Running a clinic shouldn’t feel like")} <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></h1>')
-    js1 = 'tl.fromTo("#s1-ui", { scale:1.04 }, { scale:1, duration:%.2f, ease:"power1.out" }, 0);\n' % durs[0]
-    js1 += 'tl.fromTo("#s1-ui .btns u", { opacity:0.35 }, { opacity:1, duration:0.1, stagger:{ each:0.012, from:"random" } }, 0);\n'
-    for i in range(len(alerts)):
-        js1 += f'tl.fromTo("#s1-a{i}", {{ opacity:0, scale:0.7, y:20 }}, {{ opacity:1, scale:1, y:0, duration:0.3, ease:"back.out(1.7)" }}, {0.25 + i * 0.32:.2f});\n'
-    js1 += words_in("#s1-line .w", LEAD, 0.11)
+    trail = ('<svg id="s1-trail" viewBox="0 0 1920 1080"><path d="M-40 300 C 420 220, 900 180, 1320 210 S 1900 260, 2000 230" fill="none" stroke="#B6F36B" '
+             'stroke-opacity=".45" stroke-width="3" stroke-dasharray="2 18" stroke-linecap="round"/></svg>')
+    html1 = (trail + f'<div id="s1-plane">{PLANE}</div><div id="s1-kicker"><span>For clinics and solo doctors</span></div>'
+             f'<h1 id="s1-line"><span id="s1-l1">{words("s1", "Running a clinic shouldn’t feel")}</span><br>'
+             f'<span id="s1-l2">{words("s1", "like")} <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></span></h1>')
+    d1 = durs[0]
+    js1 = ('tl.fromTo("#s1-trail", { scaleX:0.08 }, { scaleX:1, duration:%.2f, ease:"none" }, 0);\n' % (d1 * 0.9)
+           + 'tl.fromTo("#s1-plane", { x:60, y:220, rotation:-6 }, { x:1960, y:150, rotation:2, duration:%.2f, ease:"none" }, 0);\n' % (d1 * 0.95)
+           + 'tl.fromTo("#s1-kicker span", { opacity:1 }, { opacity:1, duration:0.1 }, 0);\n'
+           + 'tl.fromTo("#s1-l1 .w", { opacity:1 }, { opacity:1, duration:0.1 }, 0);\n'
+           + words_in("#s1-l2 .w", LEAD + 1.0, 0.14))
     sc.append(("s1", durs[0], css1, html1, js1))
 
     # 2. the problem, said plainly in three lines
@@ -211,10 +207,11 @@ def build_scenes(lines, vo):
       #s2-ui { position:absolute; left:110px; top:60px; width:1700px; height:690px; border-radius:26px; background:#C9D2CD; }
       .big { position:absolute; left:260px; font-size:108px; font-weight:800; letter-spacing:-.03em; display:flex; align-items:center; gap:34px; }
       .big i { width:30px; height:30px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 12px #FFB04D33; }
-      #s2-l0 { top:250px; } #s2-l1 { top:420px; } #s2-l2 { top:590px; }
+      #s2-l0 { top:300px; } #s2-l1 { top:460px; } #s2-l2 { top:620px; }
+      #s2-lead { position:absolute; left:264px; top:200px; font-size:40px; font-weight:600; color:var(--muted); }
     """
-    html2 = '<div id="s2-ui"></div>' + "".join(f'<div class="big" id="s2-l{i}"><i></i>{t}</div>' for i, t in enumerate(("Too many screens.", "Too many steps.", "Too much training.")))
-    js2 = 'tl.fromTo("#s2-ui", { opacity:0.55, scale:1, filter:"blur(0px)" }, { opacity:0, scale:0.92, filter:"blur(12px)", duration:0.6, ease:"power2.in" }, 0);\n'
+    html2 = '<div id="s2-lead">Most clinic software comes with…</div>' + "".join(f'<div class="big" id="s2-l{i}"><i></i>{t}</div>' for i, t in enumerate(("Too many screens.", "Too many steps.", "Too much training.")))
+    js2 = 'tl.fromTo("#s2-lead", { opacity:0, filter:"blur(8px)" }, { opacity:1, filter:"blur(0px)", duration:0.4, ease:"power2.out" }, 0.25);\n'
     for i, t in enumerate((kt(1, LEAD + 2.1), kt(1, LEAD + 3.1), kt(1, LEAD + 4.1))):
         js2 += f'tl.fromTo("#s2-l{i}", {{ opacity:0, x:-60, filter:"blur(10px)" }}, {{ opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }}, {t - 0.3:.2f});\n'
     sc.append(("s2", durs[1], css2, html2, js2))
@@ -408,7 +405,8 @@ MUSIC = HERE / "assets/audio/music.mp3"   # the chosen track (the person's own, 
 
 def mix(starts, vo, total, out):
     """One audio file: the voice lines at their times, the music under them. The music ducks while the voice speaks
-    (sidechain) and rises in the gaps; the voice always sits on top. Loudness normalised for social (-16 LUFS)."""
+    (sidechain, slow and gentle so it glides rather than pumps) and rises in the gaps; the voice always sits on top.
+    The track is a WhatsApp-compressed file, so a light high-pass and noise reduction take out its hiss. Loudness normalised for social (-16 LUFS)."""
     inputs, labels = [], []
     for i in range(len(vo)):
         inputs += ["-i", str(HERE / f"assets/audio/vo-{i + 1}.mp3")]
@@ -417,8 +415,8 @@ def mix(starts, vo, total, out):
     n = len(vo)
     graph = (";".join(labels) + ";" + "".join(f"[v{i}]" for i in range(n)) + f"amix=inputs={n}:normalize=0:duration=longest,apad=whole_dur={total}[voice];"
              f"[voice]asplit=2[vmix][vkey];"
-             f"[{n}:a]aresample=48000,atrim=0:{total},volume=0.55,afade=t=in:d=1.5,afade=t=out:st={total - 3}:d=3[mus];"
-             f"[mus][vkey]sidechaincompress=threshold=0.02:ratio=5:attack=40:release=600:makeup=1[duck];"
+             f"[{n}:a]aresample=48000,atrim=0:{total},highpass=f=35,afftdn=nf=-30,volume=0.5,afade=t=in:d=1.5,afade=t=out:st={total - 3}:d=3[mus];"
+             f"[mus][vkey]sidechaincompress=threshold=0.03:ratio=3:attack=150:release=1000:knee=6:makeup=1[duck];"
              f"[vmix][duck]amix=inputs=2:normalize=0:duration=first,loudnorm=I=-16:TP=-1.5:LRA=11[out]")
     subprocess.run(["ffmpeg", "-loglevel", "error", "-y", *inputs, "-i", str(MUSIC), "-filter_complex", graph, "-map", "[out]",
                     "-ar", "48000", "-b:a", "192k", str(out)], check=True)

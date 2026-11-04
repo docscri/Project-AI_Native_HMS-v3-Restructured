@@ -1,0 +1,33 @@
+<template>
+  <style>
+    @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
+    
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:var(--ground); font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.win { position:absolute; left:160px; top:34px; width:1600px; height:900px; border-radius:26px; overflow:hidden;
+  box-shadow:0 40px 90px -30px #000, 0 0 0 1px #ffffff14; background:#0B1411; }
+.cam { position:absolute; left:0; top:0; width:1600px; height:900px; transform-origin:0 0; }
+.shot { position:absolute; left:0; top:0; width:1600px; height:900px; }
+.w { display:inline-block; }
+.cursor { position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }
+
+    
+      .dev { position:absolute; overflow:hidden; background:#000; box-shadow:0 40px 80px -20px #000, 0 0 0 1px #ffffff1a; }
+      .dev img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
+      #s9-lap { left:110px; top:190px; width:1100px; height:619px; border-radius:22px; border:10px solid #1d2925; }
+      #s9-tab { left:1150px; top:150px; width:470px; height:676px; border-radius:30px; border:12px solid #1d2925; }
+      #s9-pho { left:1540px; top:300px; width:280px; height:606px; border-radius:40px; border:10px solid #1d2925; }
+    
+  </style>
+  <div id="root" data-composition-id="s9" data-width="1920" data-height="1080">
+    <div class="dev" id="s9-lap"><img src="assets/shots/03-home.jpg"></div><div class="dev" id="s9-tab"><img src="assets/shots/09c-tablet-brief.jpg"></div><div class="dev" id="s9-pho"><img src="assets/shots/09a-phone-note.jpg"></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s9-lap", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 0.20);
+tl.fromTo("#s9-tab", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 0.70);
+tl.fromTo("#s9-pho", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 1.20);
+
+    tl.to({}, { duration: 4.51 }, 0);
+    window.__timelines["s9"] = tl;
+  </script>
+</template>

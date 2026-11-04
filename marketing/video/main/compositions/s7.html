@@ -1,0 +1,30 @@
+<template>
+  <style>
+    @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
+    
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:var(--ground); font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.win { position:absolute; left:160px; top:34px; width:1600px; height:900px; border-radius:26px; overflow:hidden;
+  box-shadow:0 40px 90px -30px #000, 0 0 0 1px #ffffff14; background:#0B1411; }
+.cam { position:absolute; left:0; top:0; width:1600px; height:900px; transform-origin:0 0; }
+.shot { position:absolute; left:0; top:0; width:1600px; height:900px; }
+.w { display:inline-block; }
+.cursor { position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }
+
+    
+      #s7-paper { position:absolute; left:460px; top:70px; width:1000px; height:940px; border-radius:20px; overflow:hidden; box-shadow:0 40px 90px -20px #000; }
+      #s7-paper img { position:absolute; left:-460px; top:-30px; width:1920px; height:1080px; }
+    
+  </style>
+  <div id="root" data-composition-id="s7" data-width="1920" data-height="1080">
+    <div id="s7-win" class="win"><div id="s7-cam" class="cam"><img id="s7-a" class="shot" src="assets/shots/07a-signed.jpg" style="opacity:1"></div></div><div id="s7-paper"><img src="assets/shots/07b-print.jpg"></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s7-win", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.4, ease:"expo.out" }, 0.00);
+tl.to("#s7-cam", { x:-381.2, y:-450.0, scale:1.5, duration:0.5, ease:"power2.inOut" }, 0.20);
+tl.fromTo("#s7-paper", { y:1100 }, { y:0, duration:0.6, ease:"expo.out" }, 1.5);
+
+    tl.to({}, { duration: 3.89 }, 0);
+    window.__timelines["s7"] = tl;
+  </script>
+</template>

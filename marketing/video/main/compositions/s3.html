@@ -1,0 +1,32 @@
+<template>
+  <style>
+    @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
+    
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:var(--ground); font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.win { position:absolute; left:160px; top:34px; width:1600px; height:900px; border-radius:26px; overflow:hidden;
+  box-shadow:0 40px 90px -30px #000, 0 0 0 1px #ffffff14; background:#0B1411; }
+.cam { position:absolute; left:0; top:0; width:1600px; height:900px; transform-origin:0 0; }
+.shot { position:absolute; left:0; top:0; width:1600px; height:900px; }
+.w { display:inline-block; }
+.cursor { position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }
+
+    
+      #s3-mark { position:absolute; left:0; right:0; top:410px; text-align:center; font-size:150px; font-weight:800; letter-spacing:-.04em; }
+      #s3-mark i { color:var(--lime); font-style:normal; }
+      #s3-sub { position:absolute; left:0; right:0; top:600px; text-align:center; font-size:40px; font-weight:600; color:var(--muted); }
+    
+  </style>
+  <div id="root" data-composition-id="s3" data-width="1920" data-height="1080">
+    <div id="s3-mark" data-layout-allow-overflow>Dictate<i>.</i></div><div id="s3-sub">One simple place to run your whole clinic</div><div id="s3-win" class="win"><div id="s3-cam" class="cam"><img id="s3-a" class="shot" src="assets/shots/03-home.jpg" style="opacity:1"></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s3-mark", { opacity:0, scale:1.15, filter:"blur(14px)" }, { opacity:1, scale:1, filter:"blur(0px)", duration:0.6, ease:"expo.out" }, 0.1);
+tl.fromTo("#s3-sub", { opacity:0, filter:"blur(8px)" }, { opacity:1, filter:"blur(0px)", duration:0.3, ease:"power2.out" }, 0.9);
+tl.to(["#s3-mark", "#s3-sub"], { opacity:0, y:-80, filter:"blur(10px)", duration:0.35, ease:"power3.in" }, 3.5);
+tl.fromTo("#s3-win", { y:300, opacity:0, scale:0.9 }, { y:0, opacity:1, scale:1, duration:0.8, ease:"expo.out" }, 3.65);
+
+    tl.to({}, { duration: 7.66 }, 0);
+    window.__timelines["s3"] = tl;
+  </script>
+</template>

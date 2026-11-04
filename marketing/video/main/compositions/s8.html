@@ -1,0 +1,30 @@
+<template>
+  <style>
+    @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
+    
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:var(--ground); font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.win { position:absolute; left:160px; top:34px; width:1600px; height:900px; border-radius:26px; overflow:hidden;
+  box-shadow:0 40px 90px -30px #000, 0 0 0 1px #ffffff14; background:#0B1411; }
+.cam { position:absolute; left:0; top:0; width:1600px; height:900px; transform-origin:0 0; }
+.shot { position:absolute; left:0; top:0; width:1600px; height:900px; }
+.w { display:inline-block; }
+.cursor { position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }
+
+    
+  </style>
+  <div id="root" data-composition-id="s8" data-width="1920" data-height="1080">
+    <div id="s8-win" class="win"><div id="s8-cam" class="cam"><img id="s8-a" class="shot" src="assets/shots/08a-collections.jpg" style="opacity:1"><img id="s8-b" class="shot" src="assets/shots/08b-team.jpg" style="opacity:0"></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s8-win", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.5, ease:"expo.out" }, 0.00);
+tl.to("#s8-cam", { x:-5.5, y:0, scale:1.35, duration:0.6, ease:"power2.inOut" }, 0.30);
+tl.to("#s8-cam", { x:0, y:0, scale:1, duration:0.4, ease:"power2.inOut" }, 2.10);
+tl.to("#s8-a", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 2.30);
+tl.fromTo("#s8-b", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 2.30);
+tl.to("#s8-cam", { x:0, y:0, scale:1.25, duration:0.6, ease:"power2.inOut" }, 2.60);
+
+    tl.to({}, { duration: 5.11 }, 0);
+    window.__timelines["s8"] = tl;
+  </script>
+</template>

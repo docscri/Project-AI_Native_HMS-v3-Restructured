@@ -20,22 +20,35 @@
   .call i { width:12px; height:12px; border-radius:50%; background:#2F6B1E; box-shadow:0 0 0 5px #B6F36B88; }
 
     
-      #s2-ui { position:absolute; left:110px; top:60px; width:1700px; height:690px; border-radius:26px; background:#C9D2CD; }
-      .big { position:absolute; left:260px; font-size:108px; font-weight:800; letter-spacing:-.03em; display:flex; align-items:center; gap:34px; }
-      .big i { width:30px; height:30px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 12px #FFB04D33; }
-      #s2-l0 { top:300px; } #s2-l1 { top:460px; } #s2-l2 { top:620px; }
-      #s2-lead { position:absolute; left:264px; top:200px; font-size:40px; font-weight:600; color:var(--muted); }
+      #s2-lead { position:absolute; left:0; right:0; top:190px; text-align:center; font-size:40px; font-weight:600; color:var(--muted); }
+      .pc { position:absolute; top:300px; width:500px; height:470px; border-radius:30px; background:#121D19; box-shadow:0 40px 80px -30px #000, inset 0 0 0 1px #ffffff14;
+        padding:40px; display:flex; flex-direction:column; justify-content:space-between; }
+      #s2-k0 { left:170px; } #s2-k1 { left:710px; } #s2-k2 { left:1250px; }
+      .pc .art { position:relative; height:200px; }
+      .pc h2 { font-size:54px; line-height:1.05; font-weight:800; letter-spacing:-.02em; }
+      .pc h2 em { font-style:normal; color:var(--amber); }
+      .win2 { position:absolute; width:220px; height:140px; border-radius:14px; background:#1F2C27; box-shadow:0 14px 26px -12px #000, inset 0 0 0 1px #ffffff1c; }
+      .win2::before { content:""; position:absolute; left:14px; top:14px; width:60px; height:8px; border-radius:4px; background:#FFB04D; opacity:.8; }
+      .step { position:absolute; bottom:0; width:70px; border-radius:10px 10px 0 0; background:#1F2C27; box-shadow:inset 0 0 0 1px #ffffff1c; }
+      .step.on { background:#FFB04D; }
+      .bar { position:absolute; left:0; right:0; top:80px; height:26px; border-radius:13px; background:#1F2C27; box-shadow:inset 0 0 0 1px #ffffff1c; overflow:hidden; }
+      .bar i { position:absolute; left:0; top:0; bottom:0; width:100%; border-radius:13px; background:#FFB04D; transform-origin:0 50%; }
+      .pct { position:absolute; left:0; top:130px; font-size:30px; font-weight:800; color:var(--amber); }
     
   </style>
   <div id="root" data-composition-id="s2" data-width="1920" data-height="1080">
-    <div id="s2-lead">Most clinic software comes with…</div><div class="big" id="s2-l0"><i></i>Too many screens.</div><div class="big" id="s2-l1"><i></i>Too many steps.</div><div class="big" id="s2-l2"><i></i>Too much training.</div>
+    <div id="s2-lead">Most clinic software comes with…</div><div class="pc" id="s2-k0"><div class="art"><div class="win2" id="s2-w0" style="left:20px;top:10px"></div><div class="win2" id="s2-w1" style="left:54px;top:32px"></div><div class="win2" id="s2-w2" style="left:88px;top:54px"></div><div class="win2" id="s2-w3" style="left:122px;top:76px"></div><div class="win2" id="s2-w4" style="left:156px;top:98px"></div></div><h2>Too many<br><em>screens.</em></h2></div><div class="pc" id="s2-k1"><div class="art"><div class="step" id="s2-s0" style="left:0px;height:40px"></div><div class="step" id="s2-s1" style="left:80px;height:76px"></div><div class="step" id="s2-s2" style="left:160px;height:112px"></div><div class="step" id="s2-s3" style="left:240px;height:148px"></div><div class="step" id="s2-s4" style="left:320px;height:184px"></div></div><h2>Too many<br><em>steps.</em></h2></div><div class="pc" id="s2-k2"><div class="art"><div class="bar"><i id="s2-bar"></i></div><div class="pct" id="s2-pct">Week 1 of 6</div></div><h2>Too much<br><em>training.</em></h2></div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
     tl.fromTo("#s2-lead", { opacity:0, filter:"blur(8px)" }, { opacity:1, filter:"blur(0px)", duration:0.4, ease:"power2.out" }, 0.25);
-tl.fromTo("#s2-l0", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 2.23);
-tl.fromTo("#s2-l1", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 3.26);
-tl.fromTo("#s2-l2", { opacity:0, x:-60, filter:"blur(10px)" }, { opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }, 4.30);
+tl.fromTo("#s2-k0", { opacity:0, y:120, scale:0.92 }, { opacity:1, y:0, scale:1, duration:0.6, ease:"expo.out" }, 2.13);
+tl.fromTo("#s2-k1", { opacity:0, y:120, scale:0.92 }, { opacity:1, y:0, scale:1, duration:0.6, ease:"expo.out" }, 3.16);
+tl.fromTo("#s2-k2", { opacity:0, y:120, scale:0.92 }, { opacity:1, y:0, scale:1, duration:0.6, ease:"expo.out" }, 4.20);
+tl.fromTo("#s2-k0 .win2", { opacity:0, y:30, scale:0.8 }, { opacity:1, y:0, scale:1, duration:0.35, ease:"back.out(1.6)", stagger:0.16 }, 2.43);
+tl.fromTo("#s2-k1 .step", { scaleY:0, transformOrigin:"50% 100%" }, { scaleY:1, duration:0.3, ease:"power3.out", stagger:0.14 }, 3.46);
+tl.to("#s2-k1 .step", { backgroundColor:"#FFB04D", duration:0.15, stagger:0.14 }, 4.06);
+tl.fromTo("#s2-bar", { scaleX:0 }, { scaleX:0.16, duration:1.80, ease:"power1.inOut" }, 4.50);
 
     tl.to({}, { duration: 6.60 }, 0);
     window.__timelines["s2"] = tl;

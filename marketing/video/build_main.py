@@ -181,44 +181,75 @@ def build_scenes(lines, vo):
              '<path d="M10 33 L 4 20 L 12 20 L 22 31"/><circle cx="96" cy="30" r="1.6" fill="#B6F36B"/><circle cx="88" cy="30" r="1.6" fill="#B6F36B"/>'
              '<circle cx="80" cy="30" r="1.6" fill="#B6F36B"/></svg>')
     css1 = """
+      #s1-dots { position:absolute; inset:0; background-image:radial-gradient(#E8F1EC 1.4px, transparent 1.6px); background-size:44px 44px; opacity:.10;
+        -webkit-mask-image:radial-gradient(900px 520px at 50% 48%, #000 30%, transparent 75%); mask-image:radial-gradient(900px 520px at 50% 48%, #000 30%, transparent 75%); }
+      .cloud { position:absolute; border-radius:50%; background:#E8F1EC; filter:blur(60px); opacity:.06; }
+      #s1-c0 { left:180px; top:120px; width:520px; height:170px; } #s1-c1 { left:1180px; top:240px; width:620px; height:200px; }
+      #s1-glow { position:absolute; left:0; top:0; width:260px; height:120px; border-radius:50%; background:#B6F36B; filter:blur(40px); opacity:.18; }
       #s1-path { position:absolute; left:0; top:0; width:1920px; height:1080px; }
       #s1-trail { position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 50%; }
       #s1-plane { position:absolute; left:0; top:0; width:210px; height:105px; }
       #s1-kicker { position:absolute; left:0; right:0; top:330px; text-align:center; }
       #s1-kicker span { display:inline-block; padding:10px 22px; border-radius:999px; background:#E8F1EC; color:#0B1411; font-size:24px; font-weight:800; letter-spacing:.02em; }
       #s1-line { position:absolute; left:0; right:0; top:430px; text-align:center; font-size:96px; line-height:1.12; font-weight:800; letter-spacing:-.03em; }
-      #s1-line .hi { color:var(--lime); }
+      #s1-line .hi { color:var(--lime); text-shadow:0 0 40px #B6F36B55; }
     """
-    trail = ('<svg id="s1-trail" viewBox="0 0 1920 1080"><path d="M-40 300 C 420 220, 900 180, 1320 210 S 1900 260, 2000 230" fill="none" stroke="#B6F36B" '
-             'stroke-opacity=".45" stroke-width="3" stroke-dasharray="2 18" stroke-linecap="round"/></svg>')
-    html1 = (trail + f'<div id="s1-plane">{PLANE}</div><div id="s1-kicker"><span>For clinics and solo doctors</span></div>'
+    trail = ('<svg id="s1-trail" viewBox="0 0 1920 1080"><defs><linearGradient id="s1-g" x1="0" x2="1"><stop offset="0" stop-color="#B6F36B" stop-opacity="0"/>'
+             '<stop offset="1" stop-color="#B6F36B" stop-opacity=".55"/></linearGradient></defs>'
+             '<path d="M-40 300 C 420 220, 900 180, 1320 210 S 1900 260, 2000 230" fill="none" stroke="url(#s1-g)" stroke-width="2.5"/>'
+             '<path d="M-40 312 C 420 232, 900 192, 1320 222 S 1900 272, 2000 242" fill="none" stroke="#B6F36B" stroke-opacity=".35" stroke-width="2" stroke-dasharray="2 16" stroke-linecap="round"/></svg>')
+    html1 = ('<div id="s1-dots"></div><div class="cloud" id="s1-c0"></div><div class="cloud" id="s1-c1"></div>' + trail
+             + f'<div id="s1-glow"></div><div id="s1-plane">{PLANE}</div><div id="s1-kicker"><span>For clinics and solo doctors</span></div>'
              f'<h1 id="s1-line"><span id="s1-l1">{words("s1", "Running a clinic shouldn’t feel")}</span><br>'
              f'<span id="s1-l2">{words("s1", "like")} <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></span></h1>')
     d1 = durs[0]
     js1 = ('tl.fromTo("#s1-trail", { scaleX:0.08 }, { scaleX:1, duration:%.2f, ease:"none" }, 0);\n' % (d1 * 0.9)
            + 'tl.fromTo("#s1-plane", { x:60, y:220, rotation:-6 }, { x:1960, y:150, rotation:2, duration:%.2f, ease:"none" }, 0);\n' % (d1 * 0.95)
+           + 'tl.fromTo("#s1-glow", { x:30, y:210 }, { x:1930, y:140, duration:%.2f, ease:"none" }, 0);\n' % (d1 * 0.95)
+           + 'tl.fromTo("#s1-c0", { x:0 }, { x:120, duration:%.2f, ease:"none" }, 0);\n' % d1
+           + 'tl.fromTo("#s1-c1", { x:0 }, { x:-140, duration:%.2f, ease:"none" }, 0);\n' % d1
            + 'tl.fromTo("#s1-kicker span", { opacity:1 }, { opacity:1, duration:0.1 }, 0);\n'
            + 'tl.fromTo("#s1-l1 .w", { opacity:1 }, { opacity:1, duration:0.1 }, 0);\n'
            + words_in("#s1-l2 .w", LEAD + 1.0, 0.14))
     sc.append(("s1", durs[0], css1, html1, js1))
 
-    # 2. the problem, said plainly in three lines
+    # 2. the problem: three cards rise, each acting out its words (windows pile up, steps climb, a bar crawls)
     css2 = """
-      #s2-ui { position:absolute; left:110px; top:60px; width:1700px; height:690px; border-radius:26px; background:#C9D2CD; }
-      .big { position:absolute; left:260px; font-size:108px; font-weight:800; letter-spacing:-.03em; display:flex; align-items:center; gap:34px; }
-      .big i { width:30px; height:30px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 12px #FFB04D33; }
-      #s2-l0 { top:300px; } #s2-l1 { top:460px; } #s2-l2 { top:620px; }
-      #s2-lead { position:absolute; left:264px; top:200px; font-size:40px; font-weight:600; color:var(--muted); }
+      #s2-lead { position:absolute; left:0; right:0; top:190px; text-align:center; font-size:40px; font-weight:600; color:var(--muted); }
+      .pc { position:absolute; top:300px; width:500px; height:470px; border-radius:30px; background:#121D19; box-shadow:0 40px 80px -30px #000, inset 0 0 0 1px #ffffff14;
+        padding:40px; display:flex; flex-direction:column; justify-content:space-between; }
+      #s2-k0 { left:170px; } #s2-k1 { left:710px; } #s2-k2 { left:1250px; }
+      .pc .art { position:relative; height:200px; }
+      .pc h2 { font-size:54px; line-height:1.05; font-weight:800; letter-spacing:-.02em; }
+      .pc h2 em { font-style:normal; color:var(--amber); }
+      .win2 { position:absolute; width:220px; height:140px; border-radius:14px; background:#1F2C27; box-shadow:0 14px 26px -12px #000, inset 0 0 0 1px #ffffff1c; }
+      .win2::before { content:""; position:absolute; left:14px; top:14px; width:60px; height:8px; border-radius:4px; background:#FFB04D; opacity:.8; }
+      .step { position:absolute; bottom:0; width:70px; border-radius:10px 10px 0 0; background:#1F2C27; box-shadow:inset 0 0 0 1px #ffffff1c; }
+      .step.on { background:#FFB04D; }
+      .bar { position:absolute; left:0; right:0; top:80px; height:26px; border-radius:13px; background:#1F2C27; box-shadow:inset 0 0 0 1px #ffffff1c; overflow:hidden; }
+      .bar i { position:absolute; left:0; top:0; bottom:0; width:100%; border-radius:13px; background:#FFB04D; transform-origin:0 50%; }
+      .pct { position:absolute; left:0; top:130px; font-size:30px; font-weight:800; color:var(--amber); }
     """
-    html2 = '<div id="s2-lead">Most clinic software comes with…</div>' + "".join(f'<div class="big" id="s2-l{i}"><i></i>{t}</div>' for i, t in enumerate(("Too many screens.", "Too many steps.", "Too much training.")))
+    wins = "".join(f'<div class="win2" id="s2-w{i}" style="left:{20 + i * 34}px;top:{10 + i * 22}px"></div>' for i in range(5))
+    steps = "".join(f'<div class="step" id="s2-s{i}" style="left:{i * 80}px;height:{40 + i * 36}px"></div>' for i in range(5))
+    cards = [("s2-k0", wins, "Too many<br><em>screens.</em>"), ("s2-k1", steps, "Too many<br><em>steps.</em>"),
+             ("s2-k2", '<div class="bar"><i id="s2-bar"></i></div><div class="pct" id="s2-pct">Week 1 of 6</div>', "Too much<br><em>training.</em>")]
+    html2 = '<div id="s2-lead">Most clinic software comes with…</div>' + "".join(f'<div class="pc" id="{c}"><div class="art">{a}</div><h2>{t}</h2></div>' for c, a, t in cards)
     js2 = 'tl.fromTo("#s2-lead", { opacity:0, filter:"blur(8px)" }, { opacity:1, filter:"blur(0px)", duration:0.4, ease:"power2.out" }, 0.25);\n'
-    for i, t in enumerate((kt(1, LEAD + 2.1), kt(1, LEAD + 3.1), kt(1, LEAD + 4.1))):
-        js2 += f'tl.fromTo("#s2-l{i}", {{ opacity:0, x:-60, filter:"blur(10px)" }}, {{ opacity:1, x:0, filter:"blur(0px)", duration:0.45, ease:"expo.out" }}, {t - 0.3:.2f});\n'
+    ts = (kt(1, LEAD + 2.1) - 0.4, kt(1, LEAD + 3.1) - 0.4, kt(1, LEAD + 4.1) - 0.4)
+    for i, t in enumerate(ts):
+        js2 += f'tl.fromTo("#s2-k{i}", {{ opacity:0, y:120, scale:0.92 }}, {{ opacity:1, y:0, scale:1, duration:0.6, ease:"expo.out" }}, {t:.2f});\n'
+    js2 += 'tl.fromTo("#s2-k0 .win2", { opacity:0, y:30, scale:0.8 }, { opacity:1, y:0, scale:1, duration:0.35, ease:"back.out(1.6)", stagger:0.16 }, %.2f);\n' % (ts[0] + 0.3)
+    js2 += 'tl.fromTo("#s2-k1 .step", { scaleY:0, transformOrigin:"50%% 100%%" }, { scaleY:1, duration:0.3, ease:"power3.out", stagger:0.14 }, %.2f);\n' % (ts[1] + 0.3)
+    js2 += 'tl.to("#s2-k1 .step", { backgroundColor:"#FFB04D", duration:0.15, stagger:0.14 }, %.2f);\n' % (ts[1] + 0.9)
+    js2 += 'tl.fromTo("#s2-bar", { scaleX:0 }, { scaleX:0.16, duration:%.2f, ease:"power1.inOut" }, %.2f);\n' % (max(1.0, durs[1] - ts[2] - 0.6), ts[2] + 0.3)
     sc.append(("s2", durs[1], css2, html2, js2))
 
     # 3. Dictate: the wordmark and the four parts of the clinic, then the app itself
     css3 = """
-      #s3-mark { position:absolute; left:0; right:0; top:230px; text-align:center; font-size:150px; font-weight:800; letter-spacing:-.04em; }
+      #s3-sub { position:absolute; left:0; right:0; top:560px; text-align:center; font-size:52px; font-weight:700; letter-spacing:-.01em; }
+      #s3-sub span { color:var(--lime); }
+      #s3-mark { position:absolute; left:0; right:0; top:330px; text-align:center; font-size:150px; font-weight:800; letter-spacing:-.04em; }
       #s3-mark i { color:var(--lime); font-style:normal; }
       .pills { position:absolute; left:0; right:0; top:500px; display:flex; justify-content:center; gap:26px; }
       .pill { width:330px; padding:30px 28px; border-radius:26px; background:#E8F1EC; color:#0B1411; display:flex; flex-direction:column; gap:18px; }
@@ -226,12 +257,11 @@ def build_scenes(lines, vo):
       .pill b svg { width:34px; height:34px; }
       .pill span { font-size:34px; font-weight:800; letter-spacing:-.01em; }
     """
-    pills = "".join(f'<div class="pill" id="s3-p{i}"><b>{ICONS[k]}</b><span>{t}</span></div>' for i, (k, t) in enumerate(PILLARS))
-    html3 = f'<div id="s3-mark" data-layout-allow-overflow>Dictate<i>.</i></div><div class="pills">{pills}</div>' + window("s3", [("a", "03-home")])
+    html3 = (f'<div id="s3-mark" data-layout-allow-overflow>Dictate<i>.</i></div>'
+             f'<div id="s3-sub">One simple place to run your <span>whole clinic.</span></div>' + window("s3", [("a", "03-home")]))
     js3 = 'tl.fromTo("#s3-mark", { opacity:0, scale:1.15, filter:"blur(14px)" }, { opacity:1, scale:1, filter:"blur(0px)", duration:0.6, ease:"expo.out" }, 0.1);\n'
-    for i in range(4):
-        js3 += f'tl.fromTo("#s3-p{i}", {{ opacity:0, y:50 }}, {{ opacity:1, y:0, duration:0.5, ease:"expo.out" }}, {kt(2, 1.4) + i * 0.12:.2f});\n'
-    js3 += (f'tl.to(["#s3-mark", ".pills"], {{ opacity:0, y:-80, filter:"blur(10px)", duration:0.35, ease:"power3.in" }}, {kt(2, 4.4):.2f});\n'
+    js3 += f'tl.fromTo("#s3-sub", {{ opacity:0, filter:"blur(8px)" }}, {{ opacity:1, filter:"blur(0px)", duration:0.4, ease:"power2.out" }}, {kt(2, 1.4):.2f});\n'
+    js3 += (f'tl.to(["#s3-mark", "#s3-sub"], {{ opacity:0, y:-80, filter:"blur(10px)", duration:0.35, ease:"power3.in" }}, {kt(2, 4.4):.2f});\n'
             f'tl.fromTo("#s3-win", {{ y:300, opacity:0, scale:0.9 }}, {{ y:0, opacity:1, scale:1, duration:0.8, ease:"expo.out" }}, {kt(2, 4.55):.2f});\n')
     sc.append(("s3", durs[2], css3, html3, js3))
 
@@ -353,22 +383,20 @@ def build_scenes(lines, vo):
 
     # 11. end card: the mark, the line, the four parts, who it is for
     css11 = """
-      #s11-mark { position:absolute; left:0; right:0; top:250px; text-align:center; font-size:170px; font-weight:800; letter-spacing:-.04em; }
+      #s11-mark { position:absolute; left:0; right:0; top:330px; text-align:center; font-size:170px; font-weight:800; letter-spacing:-.04em; }
       #s11-mark i { color:var(--lime); font-style:normal; }
-      #s11-line { position:absolute; left:0; right:0; top:490px; text-align:center; font-size:58px; font-weight:700; }
+      #s11-line { position:absolute; left:0; right:0; top:570px; text-align:center; font-size:58px; font-weight:700; }
       #s11-line .hi { color:var(--lime); }
       .row { position:absolute; left:0; right:0; top:640px; display:flex; justify-content:center; gap:18px; }
       .chipx { display:flex; align-items:center; gap:12px; padding:14px 24px 14px 16px; border-radius:999px; background:#E8F1EC; color:#0B1411; font-size:26px; font-weight:800; }
       .chipx svg { width:26px; height:26px; }
       #s11-for { position:absolute; left:0; right:0; top:780px; text-align:center; font-size:30px; font-weight:600; color:var(--muted); }
     """
-    chips = "".join(f'<div class="chipx" id="s11-c{i}">{ICONS[k_]}{t}</div>' for i, (k_, t) in enumerate(PILLARS))
     html11 = (f'<div id="s11-mark">Dictate<i>.</i></div><div id="s11-line">{words("s11", "Your whole clinic,")} <span class="w hi">made</span> <span class="w hi">simple.</span></div>'
-              f'<div class="row">{chips}</div><div id="s11-for">Built for clinics and solo doctors</div>')
+              )
     js11 = ('tl.fromTo("#s11-mark", { opacity:0, scale:1.12, filter:"blur(14px)" }, { opacity:1, scale:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 0.1);\n'
             + words_in("#s11-line .w", LEAD + 0.5, 0.1)
-            + 'tl.fromTo("#s11-c0, #s11-c1, #s11-c2, #s11-c3", { opacity:0, y:30 }, { opacity:1, y:0, duration:0.45, ease:"expo.out", stagger:0.1 }, %.2f);\n' % (LEAD + 1.4)
-            + 'tl.fromTo("#s11-for", { opacity:0 }, { opacity:1, duration:0.4 }, %.2f);\n' % (LEAD + 2.0))
+            )
     sc.append(("s11", durs[10], css11, html11, js11))
     return sc, durs
 

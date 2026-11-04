@@ -20,22 +20,30 @@
   .call i { width:12px; height:12px; border-radius:50%; background:#2F6B1E; box-shadow:0 0 0 5px #B6F36B88; }
 
     
+      #s1-dots { position:absolute; inset:0; background-image:radial-gradient(#E8F1EC 1.4px, transparent 1.6px); background-size:44px 44px; opacity:.10;
+        -webkit-mask-image:radial-gradient(900px 520px at 50% 48%, #000 30%, transparent 75%); mask-image:radial-gradient(900px 520px at 50% 48%, #000 30%, transparent 75%); }
+      .cloud { position:absolute; border-radius:50%; background:#E8F1EC; filter:blur(60px); opacity:.06; }
+      #s1-c0 { left:180px; top:120px; width:520px; height:170px; } #s1-c1 { left:1180px; top:240px; width:620px; height:200px; }
+      #s1-glow { position:absolute; left:0; top:0; width:260px; height:120px; border-radius:50%; background:#B6F36B; filter:blur(40px); opacity:.18; }
       #s1-path { position:absolute; left:0; top:0; width:1920px; height:1080px; }
       #s1-trail { position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 50%; }
       #s1-plane { position:absolute; left:0; top:0; width:210px; height:105px; }
       #s1-kicker { position:absolute; left:0; right:0; top:330px; text-align:center; }
       #s1-kicker span { display:inline-block; padding:10px 22px; border-radius:999px; background:#E8F1EC; color:#0B1411; font-size:24px; font-weight:800; letter-spacing:.02em; }
       #s1-line { position:absolute; left:0; right:0; top:430px; text-align:center; font-size:96px; line-height:1.12; font-weight:800; letter-spacing:-.03em; }
-      #s1-line .hi { color:var(--lime); }
+      #s1-line .hi { color:var(--lime); text-shadow:0 0 40px #B6F36B55; }
     
   </style>
   <div id="root" data-composition-id="s1" data-width="1920" data-height="1080">
-    <svg id="s1-trail" viewBox="0 0 1920 1080"><path d="M-40 300 C 420 220, 900 180, 1320 210 S 1900 260, 2000 230" fill="none" stroke="#B6F36B" stroke-opacity=".45" stroke-width="3" stroke-dasharray="2 18" stroke-linecap="round"/></svg><div id="s1-plane"><svg viewBox="0 0 120 60" width="210" height="105" fill="none" stroke="#B6F36B" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M6 34 C 20 30, 70 28, 104 27 C 114 27, 118 31, 112 35 C 100 40, 40 42, 14 40 Z"/><path d="M50 30 L 34 10 L 44 10 L 70 29"/><path d="M52 39 L 40 54 L 49 54 L 70 39"/><path d="M10 33 L 4 20 L 12 20 L 22 31"/><circle cx="96" cy="30" r="1.6" fill="#B6F36B"/><circle cx="88" cy="30" r="1.6" fill="#B6F36B"/><circle cx="80" cy="30" r="1.6" fill="#B6F36B"/></svg></div><div id="s1-kicker"><span>For clinics and solo doctors</span></div><h1 id="s1-line"><span id="s1-l1"><span class="w ">Running</span> <span class="w ">a</span> <span class="w ">clinic</span> <span class="w ">shouldn’t</span> <span class="w ">feel</span></span><br><span id="s1-l2"><span class="w ">like</span> <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></span></h1>
+    <div id="s1-dots"></div><div class="cloud" id="s1-c0"></div><div class="cloud" id="s1-c1"></div><svg id="s1-trail" viewBox="0 0 1920 1080"><defs><linearGradient id="s1-g" x1="0" x2="1"><stop offset="0" stop-color="#B6F36B" stop-opacity="0"/><stop offset="1" stop-color="#B6F36B" stop-opacity=".55"/></linearGradient></defs><path d="M-40 300 C 420 220, 900 180, 1320 210 S 1900 260, 2000 230" fill="none" stroke="url(#s1-g)" stroke-width="2.5"/><path d="M-40 312 C 420 232, 900 192, 1320 222 S 1900 272, 2000 242" fill="none" stroke="#B6F36B" stroke-opacity=".35" stroke-width="2" stroke-dasharray="2 16" stroke-linecap="round"/></svg><div id="s1-glow"></div><div id="s1-plane"><svg viewBox="0 0 120 60" width="210" height="105" fill="none" stroke="#B6F36B" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M6 34 C 20 30, 70 28, 104 27 C 114 27, 118 31, 112 35 C 100 40, 40 42, 14 40 Z"/><path d="M50 30 L 34 10 L 44 10 L 70 29"/><path d="M52 39 L 40 54 L 49 54 L 70 39"/><path d="M10 33 L 4 20 L 12 20 L 22 31"/><circle cx="96" cy="30" r="1.6" fill="#B6F36B"/><circle cx="88" cy="30" r="1.6" fill="#B6F36B"/><circle cx="80" cy="30" r="1.6" fill="#B6F36B"/></svg></div><div id="s1-kicker"><span>For clinics and solo doctors</span></div><h1 id="s1-line"><span id="s1-l1"><span class="w ">Running</span> <span class="w ">a</span> <span class="w ">clinic</span> <span class="w ">shouldn’t</span> <span class="w ">feel</span></span><br><span id="s1-l2"><span class="w ">like</span> <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></span></h1>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
     tl.fromTo("#s1-trail", { scaleX:0.08 }, { scaleX:1, duration:4.06, ease:"none" }, 0);
 tl.fromTo("#s1-plane", { x:60, y:220, rotation:-6 }, { x:1960, y:150, rotation:2, duration:4.29, ease:"none" }, 0);
+tl.fromTo("#s1-glow", { x:30, y:210 }, { x:1930, y:140, duration:4.29, ease:"none" }, 0);
+tl.fromTo("#s1-c0", { x:0 }, { x:120, duration:4.51, ease:"none" }, 0);
+tl.fromTo("#s1-c1", { x:0 }, { x:-140, duration:4.51, ease:"none" }, 0);
 tl.fromTo("#s1-kicker span", { opacity:1 }, { opacity:1, duration:0.1 }, 0);
 tl.fromTo("#s1-l1 .w", { opacity:1 }, { opacity:1, duration:0.1 }, 0);
 tl.fromTo("#s1-l2 .w", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", stagger:0.14 }, 1.35);

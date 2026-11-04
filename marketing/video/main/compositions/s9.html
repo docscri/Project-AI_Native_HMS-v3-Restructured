@@ -11,23 +11,20 @@
 .cursor { position:absolute; left:0; top:0; width:64px; height:64px; filter:drop-shadow(0 6px 10px #0008); z-index:20; }
 
     
-      .dev { position:absolute; overflow:hidden; background:#000; box-shadow:0 40px 80px -20px #000, 0 0 0 1px #ffffff1a; }
-      .dev img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
-      #s9-lap { left:110px; top:190px; width:1100px; height:619px; border-radius:22px; border:10px solid #1d2925; }
-      #s9-tab { left:1150px; top:150px; width:470px; height:676px; border-radius:30px; border:12px solid #1d2925; }
-      #s9-pho { left:1540px; top:300px; width:280px; height:606px; border-radius:40px; border:10px solid #1d2925; }
-    
   </style>
   <div id="root" data-composition-id="s9" data-width="1920" data-height="1080">
-    <div class="dev" id="s9-lap"><img src="assets/shots/03-home.jpg"></div><div class="dev" id="s9-tab"><img src="assets/shots/09c-tablet-brief.jpg"></div><div class="dev" id="s9-pho"><img src="assets/shots/09a-phone-note.jpg"></div>
+    <div id="s9-win" class="win"><div id="s9-cam" class="cam"><img id="s9-a" class="shot" src="assets/shots/08a-collections.jpg" style="opacity:1"><img id="s9-b" class="shot" src="assets/shots/08b-team.jpg" style="opacity:0"></div></div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo("#s9-lap", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 0.20);
-tl.fromTo("#s9-tab", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 0.70);
-tl.fromTo("#s9-pho", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 1.20);
+    tl.fromTo("#s9-win", { y:60, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.5, ease:"expo.out" }, 0.00);
+tl.to("#s9-cam", { x:-5.5, y:0, scale:1.35, duration:0.6, ease:"power2.inOut" }, 0.30);
+tl.to("#s9-cam", { x:0, y:0, scale:1, duration:0.4, ease:"power2.inOut" }, 2.10);
+tl.to("#s9-a", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 2.30);
+tl.fromTo("#s9-b", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 2.30);
+tl.to("#s9-cam", { x:0, y:0, scale:1.25, duration:0.6, ease:"power2.inOut" }, 2.60);
 
-    tl.to({}, { duration: 4.51 }, 0);
+    tl.to({}, { duration: 5.11 }, 0);
     window.__timelines["s9"] = tl;
   </script>
 </template>

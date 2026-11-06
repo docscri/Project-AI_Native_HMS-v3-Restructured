@@ -1,0 +1,48 @@
+<template>
+  <style>
+    @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
+    
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:transparent; font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.w { display:inline-block; }
+.phone { position:absolute; left:290px; top:372px; width:500px; height:1083px; border-radius:58px; overflow:hidden;
+  border:12px solid #1d2925; background:#0B1411; box-shadow:0 50px 100px -30px #000, 0 0 0 1px #ffffff1a; }
+.phone img { position:absolute; left:0; top:0; width:100%; height:100%; object-fit:cover; object-position:top; }
+.chap { position:absolute; left:0; right:0; top:300px; display:flex; justify-content:center; }
+.chap > div { position:absolute; display:flex; align-items:center; gap:14px; opacity:0; }
+.chap b { width:44px; height:44px; border-radius:12px; background:var(--lime); color:#0B1411; display:grid; place-items:center; font-size:22px; font-weight:800; }
+.chap span { font-size:36px; font-weight:800; letter-spacing:-.01em; }
+
+    
+      #s2-mark { position:absolute; left:0; right:0; top:700px; text-align:center; font-size:170px; font-weight:800; letter-spacing:-.04em; }
+      #s2-mark i { color:var(--lime); font-style:normal; }
+      #s2-sub { position:absolute; left:80px; right:80px; top:930px; text-align:center; font-size:58px; line-height:1.15; font-weight:700; }
+      #s2-sub span { color:var(--lime); }
+    
+  </style>
+  <div id="root" data-composition-id="s2" data-width="1080" data-height="1920">
+    <div id="s2-mark">Dictate<i>.</i></div><div id="s2-sub">One simple place to run your <span>whole clinic.</span></div><div class="chap"><div id="s2-ch0"><b>1</b><span>Front desk</span></div><div id="s2-ch1"><b>2</b><span>Patients</span></div><div id="s2-ch2"><b>3</b><span>Consultation</span></div><div id="s2-ch3"><b>4</b><span>Collections</span></div></div><div class="phone" id="s2-ph"><img id="s2-a" src="assets/shots/p-ops.jpg" style="opacity:1"><img id="s2-b" src="assets/shots/p-patient.jpg" style="opacity:0"><img id="s2-c" src="assets/shots/p-note.jpg" style="opacity:0"><img id="s2-d" src="assets/shots/p-money.jpg" style="opacity:0"></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s2-mark", { opacity:0, scale:1.15, filter:"blur(14px)" }, { opacity:1, scale:1, filter:"blur(0px)", duration:0.6, ease:"expo.out" }, 0.1);
+tl.fromTo("#s2-sub", { opacity:0, filter:"blur(8px)" }, { opacity:1, filter:"blur(0px)", duration:0.4, ease:"power2.out" }, 1.88);
+tl.to(["#s2-mark", "#s2-sub"], { opacity:0, y:-90, filter:"blur(10px)", duration:0.35, ease:"power3.in" }, 4.01);
+tl.fromTo("#s2-ph", { y:500, opacity:0 }, { y:0, opacity:1, duration:0.7, ease:"expo.out" }, 4.21);
+tl.fromTo("#s2-ch0", { opacity:0, y:-12 }, { opacity:1, y:0, duration:0.3, ease:"expo.out", immediateRender:false }, 4.56);
+tl.to("#s2-ch0", { opacity:0, y:8, duration:0.15, ease:"power2.in" }, 5.40);
+tl.fromTo("#s2-ch1", { opacity:0, y:-12 }, { opacity:1, y:0, duration:0.3, ease:"expo.out", immediateRender:false }, 5.56);
+tl.to("#s2-ch1", { opacity:0, y:8, duration:0.15, ease:"power2.in" }, 6.16);
+tl.fromTo("#s2-ch2", { opacity:0, y:-12 }, { opacity:1, y:0, duration:0.3, ease:"expo.out", immediateRender:false }, 6.32);
+tl.to("#s2-ch2", { opacity:0, y:8, duration:0.15, ease:"power2.in" }, 7.08);
+tl.fromTo("#s2-ch3", { opacity:0, y:-12 }, { opacity:1, y:0, duration:0.3, ease:"expo.out", immediateRender:false }, 7.24);
+tl.to("#s2-a", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 5.56);
+tl.fromTo("#s2-b", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 5.56);
+tl.to("#s2-b", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 6.32);
+tl.fromTo("#s2-c", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 6.32);
+tl.to("#s2-c", { opacity:0, filter:"blur(6px)", duration:0.16, ease:"power2.in" }, 7.24);
+tl.fromTo("#s2-d", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", immediateRender:false }, 7.24);
+
+    tl.to({}, { duration: 9.41 }, 0);
+    window.__timelines["s2"] = tl;
+  </script>
+</template>

@@ -1,0 +1,45 @@
+<template>
+  <style>
+    @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
+    
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:transparent; font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.w { display:inline-block; }
+.phone { position:absolute; left:290px; top:372px; width:500px; height:1083px; border-radius:58px; overflow:hidden;
+  border:12px solid #1d2925; background:#0B1411; box-shadow:0 50px 100px -30px #000, 0 0 0 1px #ffffff1a; }
+.phone img { position:absolute; left:0; top:0; width:100%; height:100%; object-fit:cover; object-position:top; }
+.chap { position:absolute; left:0; right:0; top:300px; display:flex; justify-content:center; }
+.chap > div { position:absolute; display:flex; align-items:center; gap:14px; opacity:0; }
+.chap b { width:44px; height:44px; border-radius:12px; background:var(--lime); color:#0B1411; display:grid; place-items:center; font-size:22px; font-weight:800; }
+.chap span { font-size:36px; font-weight:800; letter-spacing:-.01em; }
+
+    
+      #s1-dots { position:absolute; inset:0; background-image:radial-gradient(#E8F1EC 1.4px, transparent 1.6px); background-size:44px 44px; opacity:.10;
+        -webkit-mask-image:radial-gradient(520px 760px at 50% 50%, #000 30%, transparent 75%); mask-image:radial-gradient(520px 760px at 50% 50%, #000 30%, transparent 75%); }
+      .cloud { position:absolute; border-radius:50%; background:#E8F1EC; filter:blur(60px); opacity:.06; }
+      #s1-c0 { left:60px; top:520px; width:420px; height:150px; } #s1-c1 { left:560px; top:1220px; width:460px; height:170px; }
+      #s1-trail { position:absolute; left:0; top:0; width:1080px; height:1920px; transform-origin:0 50%; }
+      #s1-glow { position:absolute; left:0; top:0; width:240px; height:110px; border-radius:50%; background:#B6F36B; filter:blur(40px); opacity:.18; }
+      #s1-plane { position:absolute; left:0; top:0; width:190px; height:95px; }
+      #s1-kicker { position:absolute; left:0; right:0; top:820px; text-align:center; }
+      #s1-kicker span { display:inline-block; padding:12px 26px; border-radius:999px; background:#E8F1EC; color:#0B1411; font-size:30px; font-weight:800; }
+      #s1-line { position:absolute; left:60px; right:60px; top:920px; text-align:center; font-size:104px; line-height:1.08; font-weight:800; letter-spacing:-.03em; }
+      #s1-line .hi { color:var(--lime); text-shadow:0 0 40px #B6F36B55; }
+    
+  </style>
+  <div id="root" data-composition-id="s1" data-width="1080" data-height="1920">
+    <div id="s1-dots"></div><div class="cloud" id="s1-c0"></div><div class="cloud" id="s1-c1"></div><svg id="s1-trail" viewBox="0 0 1080 1920"><defs><linearGradient id="s1-g" x1="0" x2="1"><stop offset="0" stop-color="#B6F36B" stop-opacity="0"/><stop offset="1" stop-color="#B6F36B" stop-opacity=".55"/></linearGradient></defs><path d="M-60 760 C 260 640, 560 600, 820 610 S 1060 640, 1160 600" fill="none" stroke="url(#s1-g)" stroke-width="2.5"/><path d="M-60 774 C 260 654, 560 614, 820 624 S 1060 654, 1160 614" fill="none" stroke="#B6F36B" stroke-opacity=".35" stroke-width="2" stroke-dasharray="2 16" stroke-linecap="round"/></svg><div id="s1-glow"></div><div id="s1-plane"><svg viewBox="0 0 120 60" width="190" height="95" fill="none" stroke="#B6F36B" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M6 34 C 20 30, 70 28, 104 27 C 114 27, 118 31, 112 35 C 100 40, 40 42, 14 40 Z"/><path d="M50 30 L 34 10 L 44 10 L 70 29"/><path d="M52 39 L 40 54 L 49 54 L 70 39"/><path d="M10 33 L 4 20 L 12 20 L 22 31"/><circle cx="96" cy="30" r="1.6" fill="#B6F36B"/><circle cx="88" cy="30" r="1.6" fill="#B6F36B"/><circle cx="80" cy="30" r="1.6" fill="#B6F36B"/></svg></div><div id="s1-kicker"><span>For clinics and solo doctors</span></div><h1 id="s1-line"><span id="s1-l1"><span class="w ">Running</span> <span class="w ">a</span> <span class="w ">clinic</span> <span class="w ">shouldn’t</span> <span class="w ">feel</span></span><br><span id="s1-l2"><span class="w ">like</span> <span class="w hi">flying</span> <span class="w hi">a</span> <span class="w hi">plane.</span></span></h1>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s1-trail", { scaleX:0.1 }, { scaleX:1, duration:4.04, ease:"none" }, 0);
+tl.fromTo("#s1-plane", { x:40, y:680, rotation:-10 }, { x:1100, y:560, rotation:2, duration:4.26, ease:"none" }, 0);
+tl.fromTo("#s1-glow", { x:10, y:670 }, { x:1070, y:550, duration:4.26, ease:"none" }, 0);
+tl.fromTo("#s1-c0", { x:0 }, { x:90, duration:4.49, ease:"none" }, 0);
+tl.fromTo("#s1-c1", { x:0 }, { x:-100, duration:4.49, ease:"none" }, 0);
+tl.fromTo("#s1-l1 .w", { opacity:1 }, { opacity:1, duration:0.1 }, 0);
+tl.fromTo("#s1-l2 .w", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", stagger:0.14 }, 1.35);
+
+    tl.to({}, { duration: 4.49 }, 0);
+    window.__timelines["s1"] = tl;
+  </script>
+</template>

@@ -251,7 +251,7 @@ def build():
   <style>
     @font-face {{ font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }}
     #root {{ position:absolute; inset:0; font-family:'Manrope', sans-serif; }}
-    .cap {{ position:absolute; left:60px; right:60px; top:1210px; text-align:center; opacity:0; }}
+    .cap {{ position:absolute; left:60px; right:60px; top:1545px; text-align:center; opacity:0; }}
     .cap span {{ display:inline-block; padding:12px 26px; border-radius:18px; background:#0B1411eb; color:#E8F1EC; font-size:46px; line-height:1.2; font-weight:800; letter-spacing:-.01em; }}
   </style>
   <div id="root" data-composition-id="captions" data-width="{W}" data-height="{H}">{cap_html}</div>

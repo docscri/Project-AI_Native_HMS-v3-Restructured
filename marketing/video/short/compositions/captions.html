@@ -1,0 +1,39 @@
+<template>
+  <style>
+    @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
+    #root { position:absolute; inset:0; font-family:'Manrope', sans-serif; }
+    .cap { position:absolute; left:60px; right:60px; top:1210px; text-align:center; opacity:0; }
+    .cap span { display:inline-block; padding:12px 26px; border-radius:18px; background:#0B1411eb; color:#E8F1EC; font-size:46px; line-height:1.2; font-weight:800; letter-spacing:-.01em; }
+  </style>
+  <div id="root" data-composition-id="captions" data-width="1080" data-height="1920"><div class="cap" id="cap-0"><span>Dictate is one simple place</span></div><div class="cap" id="cap-1"><span>to run your whole clinic:</span></div><div class="cap" id="cap-2"><span>front desk, patients,</span></div><div class="cap" id="cap-3"><span>consultation and collections.</span></div><div class="cap" id="cap-4"><span>After the visit,</span></div><div class="cap" id="cap-5"><span>just dictate. The note comes</span></div><div class="cap" id="cap-6"><span>ready to review and sign.</span></div><div class="cap" id="cap-7"><span>Built for clinics and solo doctors.</span></div></div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#cap-0", { opacity:0 }, { opacity:1, duration:0.12, ease:"power2.out" }, 4.89);
+tl.to("#cap-0", { opacity:0, duration:0.12, ease:"power2.in" }, 6.80);
+tl.set("#cap-0", { opacity:0, visibility:"hidden" }, 6.92);
+tl.fromTo("#cap-1", { opacity:0 }, { opacity:1, duration:0.12, ease:"power2.out" }, 6.92);
+tl.to("#cap-1", { opacity:0, duration:0.12, ease:"power2.in" }, 8.67);
+tl.set("#cap-1", { opacity:0, visibility:"hidden" }, 8.79);
+tl.fromTo("#cap-2", { opacity:0 }, { opacity:1, duration:0.12, ease:"power2.out" }, 8.79);
+tl.to("#cap-2", { opacity:0, duration:0.12, ease:"power2.in" }, 10.25);
+tl.set("#cap-2", { opacity:0, visibility:"hidden" }, 10.37);
+tl.fromTo("#cap-3", { opacity:0 }, { opacity:1, duration:0.12, ease:"power2.out" }, 10.37);
+tl.to("#cap-3", { opacity:0, duration:0.12, ease:"power2.in" }, 12.43);
+tl.set("#cap-3", { opacity:0, visibility:"hidden" }, 12.55);
+tl.fromTo("#cap-4", { opacity:0 }, { opacity:1, duration:0.12, ease:"power2.out" }, 14.29);
+tl.to("#cap-4", { opacity:0, duration:0.12, ease:"power2.in" }, 15.10);
+tl.set("#cap-4", { opacity:0, visibility:"hidden" }, 15.22);
+tl.fromTo("#cap-5", { opacity:0 }, { opacity:1, duration:0.12, ease:"power2.out" }, 15.22);
+tl.to("#cap-5", { opacity:0, duration:0.12, ease:"power2.in" }, 16.74);
+tl.set("#cap-5", { opacity:0, visibility:"hidden" }, 16.86);
+tl.fromTo("#cap-6", { opacity:0 }, { opacity:1, duration:0.12, ease:"power2.out" }, 16.86);
+tl.to("#cap-6", { opacity:0, duration:0.12, ease:"power2.in" }, 18.20);
+tl.set("#cap-6", { opacity:0, visibility:"hidden" }, 18.32);
+tl.fromTo("#cap-7", { opacity:0 }, { opacity:1, duration:0.12, ease:"power2.out" }, 19.47);
+tl.to("#cap-7", { opacity:0, duration:0.12, ease:"power2.in" }, 21.39);
+tl.set("#cap-7", { opacity:0, visibility:"hidden" }, 21.51);
+
+    tl.to({}, { duration: 28.61 }, 0);
+    window.__timelines["captions"] = tl;
+  </script>
+</template>

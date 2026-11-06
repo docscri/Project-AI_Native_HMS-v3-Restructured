@@ -1,0 +1,33 @@
+<template>
+  <style>
+    @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
+    
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:transparent; font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.w { display:inline-block; }
+.phone { position:absolute; left:290px; top:372px; width:500px; height:1083px; border-radius:58px; overflow:hidden;
+  border:12px solid #1d2925; background:#0B1411; box-shadow:0 50px 100px -30px #000, 0 0 0 1px #ffffff1a; }
+.phone img { position:absolute; left:0; top:0; width:100%; height:100%; object-fit:cover; object-position:top; }
+.chap { position:absolute; left:0; right:0; top:300px; display:flex; justify-content:center; }
+.chap > div { position:absolute; display:flex; align-items:center; gap:14px; opacity:0; }
+.chap b { width:44px; height:44px; border-radius:12px; background:var(--lime); color:#0B1411; display:grid; place-items:center; font-size:22px; font-weight:800; }
+.chap span { font-size:36px; font-weight:800; letter-spacing:-.01em; }
+
+    
+      #s5-mark { position:absolute; left:0; right:0; top:760px; text-align:center; font-size:180px; font-weight:800; letter-spacing:-.04em; }
+      #s5-mark i { color:var(--lime); font-style:normal; }
+      #s5-line { position:absolute; left:60px; right:60px; top:1000px; text-align:center; font-size:64px; line-height:1.15; font-weight:700; }
+      #s5-line .hi { color:var(--lime); }
+    
+  </style>
+  <div id="root" data-composition-id="s5" data-width="1080" data-height="1920">
+    <div id="s5-mark">Dictate<i>.</i></div><div id="s5-line"><span class="w ">Your</span> <span class="w ">whole</span> <span class="w ">clinic,</span> <span class="w hi">made</span> <span class="w hi">simple.</span></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s5-mark", { opacity:0, scale:1.12, filter:"blur(14px)" }, { opacity:1, scale:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 0.1);
+tl.fromTo("#s5-line .w", { opacity:0, filter:"blur(6px)" }, { opacity:1, filter:"blur(0px)", duration:0.16, ease:"power2.out", stagger:0.1 }, 0.85);
+
+    tl.to({}, { duration: 6.35 }, 0);
+    window.__timelines["s5"] = tl;
+  </script>
+</template>

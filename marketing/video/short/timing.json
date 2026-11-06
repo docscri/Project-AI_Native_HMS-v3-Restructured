@@ -1,0 +1,52 @@
+{
+ "total": 28.61,
+ "scenes": {
+  "s1": 0.0,
+  "s2": 4.49,
+  "s3": 13.89,
+  "s4": 19.07,
+  "s5": 22.26
+ },
+ "captions": [
+  [
+   "Dictate is one simple place",
+   4.89,
+   6.92
+  ],
+  [
+   "to run your whole clinic:",
+   6.92,
+   8.79
+  ],
+  [
+   "front desk, patients,",
+   8.79,
+   10.37
+  ],
+  [
+   "consultation and collections.",
+   10.37,
+   12.55
+  ],
+  [
+   "After the visit,",
+   14.29,
+   15.22
+  ],
+  [
+   "just dictate. The note comes",
+   15.22,
+   16.86
+  ],
+  [
+   "ready to review and sign.",
+   16.86,
+   18.32
+  ],
+  [
+   "Built for clinics and solo doctors.",
+   19.47,
+   21.51
+  ]
+ ]
+}

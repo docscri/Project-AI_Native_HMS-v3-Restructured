@@ -1,0 +1,5 @@
+1|Running a clinic shouldn't feel like flying a plane.
+2|Dictate is one simple place to run your whole clinic: front desk, patients, consultation and collections.
+3|After the visit, just dictate. The note comes ready to review and sign.
+4|Built for clinics and solo doctors.
+5|Dictate. Your whole clinic, made simple.

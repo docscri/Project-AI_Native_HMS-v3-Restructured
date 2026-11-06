@@ -1,0 +1,33 @@
+<template>
+  <style>
+    @font-face { font-family:'Manrope'; src:url('assets/fonts/manrope-latin.woff2') format('woff2'); font-weight:400 800; }
+    
+#root { position:absolute; inset:0; --ground:#0B1411;--ground-2:#121D19;--ink:#E8F1EC;--muted:#8FA39A;--lime:#B6F36B;--amber:#FFB04D; background:transparent; font-family:'Manrope', sans-serif; color:var(--ink); overflow:hidden; }
+.w { display:inline-block; }
+.phone { position:absolute; left:290px; top:372px; width:500px; height:1083px; border-radius:58px; overflow:hidden;
+  border:12px solid #1d2925; background:#0B1411; box-shadow:0 50px 100px -30px #000, 0 0 0 1px #ffffff1a; }
+.phone img { position:absolute; left:0; top:0; width:100%; height:100%; object-fit:cover; object-position:top; }
+.chap { position:absolute; left:0; right:0; top:300px; display:flex; justify-content:center; }
+.chap > div { position:absolute; display:flex; align-items:center; gap:14px; opacity:0; }
+.chap b { width:44px; height:44px; border-radius:12px; background:var(--lime); color:#0B1411; display:grid; place-items:center; font-size:22px; font-weight:800; }
+.chap span { font-size:36px; font-weight:800; letter-spacing:-.01em; }
+
+    
+      .dev { position:absolute; overflow:hidden; background:#000; box-shadow:0 40px 80px -20px #000, 0 0 0 1px #ffffff1a; border:12px solid #1d2925; }
+      .dev img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
+      #s4-tab { left:90px; top:420px; width:620px; height:893px; border-radius:40px; }
+      #s4-pho { left:600px; top:640px; width:390px; height:845px; border-radius:52px; }
+    
+  </style>
+  <div id="root" data-composition-id="s4" data-width="1080" data-height="1920">
+    <div class="dev" id="s4-tab"><img src="assets/shots/09c-tablet-brief.jpg"></div><div class="dev" id="s4-pho"><img src="assets/shots/p-charts.jpg"></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#s4-tab", { y:80, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 0.00);
+tl.fromTo("#s4-pho", { y:80, opacity:0, filter:"blur(8px)" }, { y:0, opacity:1, filter:"blur(0px)", duration:0.7, ease:"expo.out" }, 0.35);
+
+    tl.to({}, { duration: 3.19 }, 0);
+    window.__timelines["s4"] = tl;
+  </script>
+</template>

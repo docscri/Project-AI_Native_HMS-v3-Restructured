@@ -51,7 +51,7 @@ no-show, cancelled), payments and a refund, future bookings, a waitlist, attenda
    - `joseph@demo.in`: Dr. Joseph Mathew, psychiatrist
    - `divya@demo.in`: Divya Raj, front desk
    - `sneha@demo.in`: Sneha Thomas, psychiatric social worker
-   - `arun@demo.in`: Dr. Arun Menon, psychiatrist on his own who visits three clinics (the "I visit clinics" app)
+   - `arun@demo.in`: Dr. Arun Menon, psychiatrist on his own who visits three clinics (sign up with "Just me")
 
 It does nothing if the database already has a clinic, so it can never mix with real patients. To go back to your own data,
 stop the app, delete the demo `data` folder and rename `data-mine` back to `data`.

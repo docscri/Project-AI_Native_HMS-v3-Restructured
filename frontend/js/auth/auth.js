@@ -32,7 +32,7 @@ function viewOnboarding(step) {
   OB.step = step;
   const me = S.me || {};
   if (step === 1) obFrame(1, `<h1>Create your account</h1>
-    ${S.me ? "" : `<div class="seg ob-kind" role="group" aria-label="Account type"><button type="button" data-a="ob-kind" data-v="clinic" aria-pressed="${!OB.solo}">My clinic</button><button type="button" data-a="ob-kind" data-v="solo" aria-pressed="${!!OB.solo}">I visit clinics</button></div>`}
+    ${S.me ? "" : `<div class="seg ob-kind" role="group" aria-label="Account type"><button type="button" data-a="ob-kind" data-v="clinic" aria-pressed="${!OB.solo}">My clinic</button><button type="button" data-a="ob-kind" data-v="solo" aria-pressed="${!!OB.solo}">Just me</button></div>`}
     <label class="field">Name<input id="ob-name" value="${esc(me.name || "")}"></label>
     <div class="grid2"><label class="field">Email<input id="ob-email" type="email" value="${esc(me.email || "")}"></label><label class="field">Phone<input id="ob-phone" value="${esc(me.phone || "")}"></label></div>
     <label class="field">Password<input id="ob-pw" type="password" autocomplete="new-password"></label>

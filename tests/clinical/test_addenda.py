@@ -55,3 +55,17 @@ def test_addenda_show_on_the_patient_page_the_print_and_the_next_brief():
         assert [a["text"] for a in b["events"][0]["addenda"]] == ["HbA1c received: 7.4%."]
         c.post(f"/api/notes/{n['id']}/addenda", headers=h, json={"text": "Lipids normal."})
         assert c.get(f"/api/visits/{today['id']}", headers=h).json()["brief"] is None    # a new addendum makes the brief again
+
+
+def test_note_pdf_in_the_printed_format():
+    """Share as PDF: a real PDF with the note's text and addenda; another clinic gets 404."""
+    with TestClient(app) as c:
+        h, doc = clinic(c, "note-pdf@x.in")
+        v, n = signed_note(c, h, doc)
+        c.post(f"/api/notes/{n['id']}/sign", headers=h)
+        c.post(f"/api/notes/{n['id']}/addenda", headers=h, json={"text": "HbA1c received: 7.4% (₹ paid)."})
+        r = c.get(f"/api/notes/{n['id']}/pdf", headers=h)
+        assert r.status_code == 200 and r.headers["content-type"] == "application/pdf" and r.content.startswith(b"%PDF")
+        assert r.headers["content-disposition"].endswith('.pdf"') and len(r.content) < 200_000
+        other, _ = clinic(c, "note-pdf-other@x.in")
+        assert c.get(f"/api/notes/{n['id']}/pdf", headers=other).status_code == 404

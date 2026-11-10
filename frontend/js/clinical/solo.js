@@ -84,26 +84,23 @@ async function openPlaces() {
     <div class="solo-add"><input id="so-place" placeholder="Add place" autocomplete="off"><button class="btn" data-a="so-place-add">Add</button></div>`);
 }
 
-// What a signed note says, as plain text for WhatsApp or the phone's share sheet.
-function noteText(v) {
-  const c = v.note.content, lines = [`${S.me.name}`, `${v.patient_name}${v.age != null ? ", " + v.age : ""} · ${longDate(v.date)}`, ""];
-  const dx = c.sections ? c.sections.find(s => /diagnos|impression|assessment/i.test(s.title))?.text : c.soap.A;
-  const plan = c.sections ? c.sections.find(s => /management/i.test(s.title))?.text : c.soap.P;
-  if (dx) lines.push(`Diagnosis: ${dx}`);
-  const rx = (c.rx || []).filter(r => r.medicine);
-  if (rx.length) lines.push("", "Prescription:", ...rx.map(r => `• ${r.medicine}${r.dose ? " — " + r.dose : ""}${r.duration ? ", " + r.duration : ""}${r.instructions ? " (" + r.instructions + ")" : ""}`));
-  if (plan) lines.push("", `Advice: ${plan}`);
-  return lines.join("\n");
-}
-
+// Share: the note as a PDF in the printed format (WhatsApp, email... through the phone's share sheet).
+// Where a browser can't share files, the PDF is saved instead.
 async function shareNote(visitId) {
   const v = await api(`/visits/${visitId}`);
   if (!v.note) return;
-  const text = noteText(v);
-  if (navigator.share) { try { await navigator.share({ title: `Note · ${v.patient_name}`, text }); return; } catch (e) { if (e.name === "AbortError") return; } }
-  const digits = (v.patient_phone || v.phone || "").replace(/\D/g, "");
-  const to = digits.length === 10 ? "91" + digits : digits;
-  window.open(`https://wa.me/${to}?text=${encodeURIComponent(text)}`, "_blank");
+  toast("Preparing PDF…");
+  const res = await fetch(`/api/notes/${v.note.id}/pdf`, { headers: { Authorization: "Bearer " + S.token } });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || "Could not make the PDF.");
+  const name = (res.headers.get("content-disposition") || "").match(/filename="([^"]+)"/)?.[1] || "note.pdf";
+  const file = new File([await res.blob()], name, { type: "application/pdf" });
+  if (navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: `Note · ${v.patient_name}` }); return; }
+    catch (e) { if (e.name === "AbortError") return; }   // anything else: save it instead
+  }
+  const url = URL.createObjectURL(file), a = Object.assign(document.createElement("a"), { href: url, download: name });
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 30000);
+  toast("PDF saved");
 }
 
 document.addEventListener("click", async e => {

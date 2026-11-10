@@ -1432,3 +1432,10 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
   .cx-float .dock:has(.dock-go):not(:has(.dock-ghost)) { background: transparent; box-shadow: none; padding: 0 !important; min-height: 0; }
   .cx-float .dock:has(.dock-go):not(:has(.dock-ghost)) .dock-go { min-height: 46px; padding: 0 30px; font-size: 15px; box-shadow: 0 12px 28px -12px #0b1411aa; }
 }
+/* "Where?": places as small dark pills with lime text, wrapping */
+.solo-places { flex-direction: row !important; flex-wrap: wrap; gap: 8px !important; }
+.solo-place-btn { min-height: 40px !important; padding: 0 16px !important; border-radius: 999px !important; font-size: 14.5px !important; font-weight: 700;
+  background: var(--ink) !important; color: var(--lime) !important; text-align: center !important; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  transition: transform .1s, filter .15s; touch-action: manipulation; }
+.solo-place-btn:active { transform: scale(.96); }
+@media (hover: hover) { .solo-place-btn:hover { filter: brightness(1.25); } }

@@ -2,7 +2,7 @@ import html
 import json
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 
 from app.core.patient import age
 from app.shared import printing as printpage
@@ -80,3 +80,36 @@ def print_note(note_id: int, auto: int = 0, me=Depends(require_any("consultation
                 ".add{border-left:3px solid #B6F36B;padding:4px 0 4px 14px;margin:10px 0}.add small{font-size:11px;font-weight:700;color:#6B7C75}"
                 ".add p{margin:4px 0 0;font-size:15px;line-height:1.6;white-space:pre-wrap}</style>")
     return printpage.page(f"{p['name']} · {printpage.day(v['date'])}", note_css + body, auto=bool(auto))
+
+
+@router.get("/notes/{note_id}/pdf")
+def note_pdf(note_id: int, me=Depends(require_any("consultation", "patients")), db=Depends(get_db)):
+    """The note as a PDF in the printed format, to share (WhatsApp, email) or save. Fetched with the login header."""
+    from app.shared.printing.pdf import note_pdf as build
+    n = service.get(db, note_id)
+    if not n or n["clinic_id"] != me["clinic_id"]:
+        return Response(json.dumps({"detail": "Note not found."}), 404, media_type="application/json")
+    c, v, p, d = service.print_parts(db, me, n)
+    content = json.loads(n["content"])
+    labels = {"S": "Subjective", "O": "Objective", "A": "Assessment", "P": "Plan"}
+    if "sections" in content:
+        vitals = " · ".join(f"{k} {t}" for k, t in (content.get("vitals") or {}).items() if t)
+        parts = [(x["title"], x["text"].strip()) for x in content["sections"] if (x.get("text") or "").strip()]
+    else:
+        vitals = ""
+        parts = [(labels[k], t.strip()) for k, t in content["soap"].items() if t and t.strip() and k in labels]
+    sections = [(str(i), label, text) for i, (label, text) in enumerate(parts, 1)]   # numbered 1, 2, 3 as on screen
+    sex = {"M": "Male", "F": "Female", "O": "Other"}.get(p["sex"] or "", "")
+    who = " · ".join(x for x in [f"{age(p['dob'])} yrs" if p["dob"] else "", sex, p["uhid"]] if x)
+    when = printpage.day(v["date"])
+    doctor = d["name"] + (f" · {d['speciality']}" if d["speciality"] else "")
+    signed = f"Signed by {n['signed_by_name'] or d['name']} · {printpage.stamp(n['signed_at'])}" if n["signed_at"] else "Draft · not signed"
+    adds = [(f"{printpage.stamp(x['signed_at'])} · {x['signed_by_name']}", x["text"]) for x in service.addenda(db, n["id"])]
+    if v.get("location_id"):   # a solo doctor: the clinic where this visit happened
+        loc = db.execute("select name from locations where id = ?", (v["location_id"],)).fetchone()
+        c = dict(c) | {"place": loc[0] if loc else None}
+    data = build(clinic=c, patient=p, who=who, when=when, doctor=doctor, title=f"{p['name']} · {when}", vitals=vitals,
+                 sections=sections, rx=[r for r in content["rx"] if r.get("medicine")], addenda=adds, signed=signed)
+    name = "".join(ch if ch.isalnum() else "-" for ch in p["name"]).strip("-") or "note"
+    return Response(data, media_type="application/pdf",
+                    headers={"Content-Disposition": f'inline; filename="{name}-{v["date"]}.pdf"', "Cache-Control": "no-store"})

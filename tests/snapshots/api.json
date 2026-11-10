@@ -2317,6 +2317,7 @@
   "GET /api/locations",
   "GET /api/me",
   "GET /api/members",
+  "GET /api/notes/{note_id}/pdf",
   "GET /api/notes/{note_id}/print",
   "GET /api/operations/day",
   "GET /api/operations/queue",

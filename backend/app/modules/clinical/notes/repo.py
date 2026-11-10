@@ -1,4 +1,5 @@
 """Notes SQL."""
+from app.shared.states import NOTE
 import json
 
 from app.shared.db import now, row, rows
@@ -57,10 +58,9 @@ def save(db, note_id: int, content: str, edited: int) -> bool:
                       (content, edited, now(), note_id)).rowcount == 1
 
 
-def sign(db, note_id: int, ts: str, member_id: int, name: str) -> bool:
-    # Status check is in the write itself to block racing saves/signs.
-    return db.execute("update notes set status = 'signed', signed_at = ?, signed_by = ?, signed_by_name = ? where id = ? and status = 'draft'",
-                      (ts, member_id, name, note_id)).rowcount == 1
+def sign(db, note_id: int, ts: str, member_id: int, name: str) -> None:
+    # Only from draft, in the write itself, to block racing saves/signs.
+    NOTE.move(db, note_id, "draft", "signed", signed_at=ts, signed_by=member_id, signed_by_name=name)
 
 
 def visit(db, visit_id: int) -> dict | None:

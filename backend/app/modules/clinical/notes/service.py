@@ -164,8 +164,7 @@ def sign(db, me, note_id: int) -> dict:
     if (kept := existing_reports_only(db, n["patient_id"], cites)) != cites:   # a report removed since the draft was made
         repo.set_citations(db, note_id, json.dumps(kept))
     ts = now()
-    if not repo.sign(db, note_id, ts, me["id"], me["name"]):
-        raise Conflict("Already signed.")
+    repo.sign(db, note_id, ts, me["id"], me["name"])
     v = get_visit(db, me, n["visit_id"])
     if v["status"] == "with_doctor":
         move(db, me, v, "done", completed_at=ts)

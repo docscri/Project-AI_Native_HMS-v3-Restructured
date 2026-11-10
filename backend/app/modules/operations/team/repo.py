@@ -1,4 +1,5 @@
 """Team: attendance and leave SQL."""
+from app.shared.states import LEAVE
 from app.shared.db import row, rows
 
 
@@ -99,9 +100,9 @@ def ids(db, where: str, args: list) -> list[int]:
         f"select l.id from leave_requests l where {where} and l.status != 'cancelled' order by l.start_date desc, l.id desc", args)]
 
 
-def cancel(db, leave_id: int) -> None:
-    db.execute("update leave_requests set status = 'cancelled' where id = ?", (leave_id,))
+def cancel(db, leave_id: int, frm: str) -> None:
+    LEAVE.move(db, leave_id, frm, "cancelled")
 
 
-def decide(db, leave_id: int, status: str, by: int, at: str) -> None:
-    db.execute("update leave_requests set status = ?, decided_by = ?, decided_at = ? where id = ?", (status, by, at, leave_id))
+def decide(db, leave_id: int, frm: str, status: str, by: int, at: str) -> None:
+    LEAVE.move(db, leave_id, frm, status, decided_by=by, decided_at=at)

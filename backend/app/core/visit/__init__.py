@@ -3,28 +3,17 @@ import json
 
 from app.shared.audit import log_event
 from app.shared.db import row, rows
-from app.shared.errors import Conflict, NotFound
+from app.shared.errors import NotFound
+from app.shared.states import VISIT
 
 from ..clinic import clinic_of
 from ..clinic.schedule import day_schedule, find_session, token_time
 from .ledger import balance, ledger
 
-MOVES = {
-    "booked": {"waiting", "cancelled", "no_show"},
-    "waiting": {"with_doctor", "booked"},   # undo arrival
-    "with_doctor": {"done"},
-}
-
-
 def move(db, me, visit: dict, to: str, **fields) -> None:
-    if to not in MOVES.get(visit["status"], set()):
-        raise Conflict("Can't change this visit now.")
-    sets = {"status": to, **fields}
     # Only from the status we read: if another request moved the visit meanwhile (arrived while being cancelled),
     # this one fails instead of overwriting it.
-    if db.execute(f"update visits set {', '.join(f'{k} = ?' for k in sets)} where id = ? and status = ?",
-                  (*sets.values(), visit["id"], visit["status"])).rowcount != 1:
-        raise Conflict("This visit just changed. Refresh and try again.")
+    VISIT.move(db, visit["id"], visit["status"], to, **fields)
     visit["status"] = to
     log_event(db, me["clinic_id"], me["id"], "visit", visit["id"], to, {k: v for k, v in fields.items() if v is not None} or None)
 

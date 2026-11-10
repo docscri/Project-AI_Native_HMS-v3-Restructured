@@ -1,4 +1,5 @@
 """Administration SQL."""
+from app.shared.states import MEMBER
 from app.shared.db import row, rows
 
 
@@ -63,8 +64,9 @@ def has_history(db, member_id: int) -> bool:
     return bool(db.execute(sql, (member_id,) * len(HISTORY)).fetchone())
 
 
-def deactivate(db, member_id: int) -> None:
-    db.execute("update members set status = 'inactive' where id = ?", (member_id,))
+def deactivate(db, member_id: int, frm: str) -> None:
+    if frm != "inactive":
+        MEMBER.move(db, member_id, frm, "inactive")
 
 
 def clear_own_trail(db, member_id: int) -> None:

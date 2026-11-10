@@ -2,6 +2,7 @@
 import json
 
 from app.shared.db import now, row, rows
+from app.shared.states import DOCUMENT
 
 
 def for_patient(db, patient_id: int) -> list[dict]:
@@ -29,12 +30,13 @@ def listed(db, doc_id: int) -> dict | None:
     return row(db.execute("select id, filename, ai_status, created_at from documents where id = ?", (doc_id,)).fetchone())
 
 
-def set_processing(db, doc_id: int) -> None:
-    db.execute("update documents set ai_status = 'processing', extracted = null where id = ?", (doc_id,))
+def set_processing(db, doc_id: int, frm: str) -> None:
+    DOCUMENT.move(db, doc_id, frm, "processing", extracted=None)
 
 
 def set_read(db, doc_id: int, status: str, extracted: dict) -> None:
-    db.execute("update documents set ai_status = ?, extracted = ? where id = ?", (status, json.dumps(extracted), doc_id))
+    assert DOCUMENT.can("processing", status), status
+    db.execute("update documents set ai_status = ?, extracted = ? where id = ? and ai_status = 'processing'", (status, json.dumps(extracted), doc_id))
 
 
 def for_visit(db, visit_id: int) -> list[dict]:

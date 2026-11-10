@@ -69,3 +69,7 @@ Each job the AI does is a folder in `backend/app/shared/ai/tasks/`, laid out the
   that fails the checks all give the fallback, and the failure is logged with the task and version (no patient text).
 - Bump `Version:` when you change a prompt: saved briefs and note values made with an older version are made again.
 
+
+## States
+
+Every status (visit, note, member, leave, waitlist, document reading) is a `Machine` in `backend/app/shared/states.py`: its allowed moves, the states a row may start in, and the message for a refused move. Change a status only with `MACHINE.move(db, id, from, to, **fields)`; it writes only if the row is still `from`, so racing requests get a clear 409 instead of a mixed-up record. Diagrams: [STATES.md](STATES.md). `tests/test_states.py` fails if a machine drifts from the database CHECK constraints, if STATES.md is stale, or if new SQL sets a status by hand.

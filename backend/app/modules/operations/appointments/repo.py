@@ -96,5 +96,5 @@ def get_waiting(db, clinic_id, wait_id) -> dict | None:
     return row(db.execute("select * from waitlist where id = ? and clinic_id = ? and status = 'waiting'", (wait_id, clinic_id)).fetchone())
 
 
-def remove(db, clinic_id, wait_id) -> None:
-    db.execute("update waitlist set status = 'removed' where id = ? and clinic_id = ?", (wait_id, clinic_id))
+def get_entry(db, clinic_id, wait_id) -> dict | None:
+    return row(db.execute("select * from waitlist where id = ? and clinic_id = ?", (wait_id, clinic_id)).fetchone())

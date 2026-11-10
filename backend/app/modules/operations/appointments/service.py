@@ -13,6 +13,7 @@ from app.modules.operations.appointments.schema import Booking, Cancel, Reschedu
 from app.shared.audit import log_event
 from app.shared.db import now
 from app.shared.errors import Conflict, Invalid, NotFound
+from app.shared.states import WAITLIST
 from app.shared.validate import valid_day
 
 
@@ -270,5 +271,9 @@ def book_waiting(db, me, wait_id: int) -> dict:
 
 
 def leave(db, me, wait_id: int) -> dict:
-    repo.remove(db, me["clinic_id"], wait_id)
+    w = repo.get_entry(db, me["clinic_id"], wait_id)
+    if not w:
+        raise NotFound("Not on the waitlist.")
+    if w["status"] != "removed":   # removing twice is fine
+        WAITLIST.move(db, wait_id, w["status"], "removed")
     return {"ok": True}

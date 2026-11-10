@@ -64,9 +64,7 @@ def retry(db, me, doc_id: int) -> dict:
     d = repo.in_clinic(db, me["clinic_id"], doc_id)
     if not d:
         raise NotFound("Document not found.")
-    if d["ai_status"] != "failed":
-        raise Conflict("This document isn't waiting for another try.")
-    repo.set_processing(db, doc_id)
+    repo.set_processing(db, doc_id, d["ai_status"])
     log_event(db, me["clinic_id"], me["id"], "document", doc_id, "read_again")
     return repo.listed(db, doc_id)
 

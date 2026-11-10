@@ -221,16 +221,14 @@ def decide(db, me, leave_id: int, action: str) -> dict:
     if action == "cancel":
         if l["member_id"] != me["id"] and not has_admin(me):
             raise Forbidden("Not your leave.")
+        repo.cancel(db, leave_id, l["status"])   # first, so a leave that just changed isn't half undone
         if l["status"] == "approved":
             apply_doctor_leave(db, me, l["member_id"], l["start_date"], l["end_date"], False)
-        repo.cancel(db, leave_id)
     elif action in ("approve", "reject"):
         if not has_admin(me):
             raise Forbidden("Only an admin can decide.")
-        if l["status"] != "pending":
-            raise Conflict("Already decided.")
         st = "approved" if action == "approve" else "rejected"
-        repo.decide(db, leave_id, st, me["id"], now())
+        repo.decide(db, leave_id, l["status"], st, me["id"], now())
         if st == "approved":
             apply_doctor_leave(db, me, l["member_id"], l["start_date"], l["end_date"], True)
     else:

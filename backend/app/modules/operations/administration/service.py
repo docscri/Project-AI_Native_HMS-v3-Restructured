@@ -7,6 +7,7 @@ from app.shared.auth import (has_admin, INVITE_DAYS, RESET_HOURS, SCREENS, creat
                              public_member, validate_password)
 from app.shared.db import now
 from app.shared.errors import BadGateway, Conflict, Gone, Invalid, NotFound
+from app.shared.states import MEMBER
 from app.shared.validate import clean_email, clean_phone, valid_day
 from app.core import departments
 from app.core.clinic import clinic_of, public_clinic
@@ -161,10 +162,14 @@ def update_member(db, me: dict, member_id: int, body) -> dict:
         changes["is_admin"] = int(changes["is_admin"])
     if body.clear_fee:
         changes["fee_override"] = None
-    if body.status == "active" and m["status"] == "invited":
-        changes.pop("status")  # only accepting activates an invite
-    if changes:
-        repo.update_member(db, member_id, changes)
+    to = changes.pop("status", None)
+    if to == "active" and m["status"] == "inactive" and not m["password_hash"]:
+        to = "invited"   # never joined: back to waiting on their invite, not an account with no password
+    if to and to != m["status"] and not (to == "active" and m["status"] == "invited"):   # only accepting activates an invite
+        MEMBER.move(db, member_id, m["status"], to)
+        changes["status"] = to   # for the checks below; already written
+    if changes.keys() - {"status"}:
+        repo.update_member(db, member_id, {k: v for k, v in changes.items() if k != "status"})
     if changes.get("status") == "inactive":
         end_sessions(db, member_id)
     log_event(db, me["clinic_id"], me["id"], "member", member_id, "updated", body.model_dump(exclude_none=True))
@@ -180,7 +185,7 @@ def remove_member(db, me: dict, member_id: int) -> dict:
         raise Conflict("The owner cannot be removed.")
     used = repo.has_history(db, member_id)
     if used:
-        repo.deactivate(db, member_id)
+        repo.deactivate(db, member_id, m["status"])
         end_sessions(db, member_id)
     else:
         repo.clear_own_trail(db, member_id)

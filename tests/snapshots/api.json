@@ -344,6 +344,7 @@
       "start": "str"
      }
     ],
+    "solo": "bool",
     "start": "str",
     "token_timing": "str",
     "uhid_prefix": "str"
@@ -378,6 +379,7 @@
       "start": "str"
      }
     ],
+    "solo": "bool",
     "start": "str",
     "token_timing": "str",
     "uhid_prefix": "str"
@@ -412,6 +414,7 @@
       "start": "str"
      }
     ],
+    "solo": "bool",
     "start": "str",
     "token_timing": "str",
     "uhid_prefix": "str"
@@ -949,6 +952,7 @@
        "start": "str"
       }
      ],
+     "solo": "bool",
      "start": "str",
      "token_timing": "str",
      "uhid_prefix": "str"
@@ -974,6 +978,7 @@
      "screens": [
       "str"
      ],
+     "solo": "bool",
      "speciality": "str",
      "status": "str",
      "work_days": "NoneType",
@@ -1005,6 +1010,7 @@
     "screens": [
      "str"
     ],
+    "solo": "bool",
     "speciality": "str",
     "status": "str",
     "work_days": "NoneType",
@@ -1036,6 +1042,7 @@
     "screens": [
      "str"
     ],
+    "solo": "bool",
     "speciality": "NoneType",
     "status": "str",
     "work_days": "NoneType",
@@ -1066,6 +1073,7 @@
     "screens": [
      "str"
     ],
+    "solo": "bool",
     "speciality": "NoneType",
     "status": "str",
     "work_days": "NoneType",
@@ -1111,6 +1119,7 @@
      "screens": [
       "str"
      ],
+     "solo": "bool",
      "speciality": "str",
      "status": "str",
      "work_days": "NoneType",
@@ -1338,6 +1347,7 @@
       "start": "str"
      }
     ],
+    "solo": "bool",
     "start": "str",
     "token_timing": "str",
     "uhid_prefix": "str"
@@ -1372,6 +1382,7 @@
     "screens": [
      "str"
     ],
+    "solo": "bool",
     "speciality": "str",
     "status": "str",
     "work_days": "NoneType",
@@ -2286,6 +2297,7 @@
  },
  "routes": [
   "DELETE /api/documents/{doc_id}",
+  "DELETE /api/locations/{location_id}",
   "DELETE /api/members/{member_id}",
   "DELETE /api/schedules/{doctor_id}/{date}",
   "DELETE /api/waitlist/{wait_id}",
@@ -2302,6 +2314,7 @@
   "GET /api/documents/{doc_id}/file",
   "GET /api/invites/{code}",
   "GET /api/leave",
+  "GET /api/locations",
   "GET /api/me",
   "GET /api/members",
   "GET /api/notes/{note_id}/print",
@@ -2333,6 +2346,7 @@
   "POST /api/invites/accept",
   "POST /api/leave",
   "POST /api/leave/{leave_id}/{action}",
+  "POST /api/locations",
   "POST /api/members",
   "POST /api/members/{member_id}/invite",
   "POST /api/members/{member_id}/invite/email",
@@ -2342,11 +2356,13 @@
   "POST /api/notes/{note_id}/sign",
   "POST /api/onboarding/finish",
   "POST /api/onboarding/owner",
+  "POST /api/onboarding/solo",
   "POST /api/operations/end-session",
   "POST /api/patients",
   "POST /api/patients/{patient_id}/merge",
   "POST /api/schedules/leave",
   "POST /api/visits",
+  "POST /api/visits/quick",
   "POST /api/visits/walk-in",
   "POST /api/visits/{visit_id}/arrive",
   "POST /api/visits/{visit_id}/brief",

@@ -14,6 +14,7 @@ from app.modules.clinical.brief import routes as brief
 from app.modules.clinical.consultation import routes as consultation
 from app.modules.clinical.documents import routes as documents
 from app.modules.clinical.notes import routes as notes
+from app.modules.clinical.solo import routes as solo
 from app.modules.financial.reports import routes as reports
 from app.modules.financial.payments import routes as payments
 from app.modules.operations.account import routes as account
@@ -37,7 +38,7 @@ app = FastAPI(title="Dictate", lifespan=lifespan)
 
 errors.install(app)
 ROUTERS = (account, administration, scheduling, patients, appointments, payments,
-           consultation, brief, documents, notes, team, reports)
+           consultation, brief, documents, notes, team, reports, solo)
 for r in ROUTERS:
     app.include_router(r.router)
 

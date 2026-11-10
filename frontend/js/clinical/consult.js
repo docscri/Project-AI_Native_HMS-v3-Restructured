@@ -38,7 +38,7 @@ function renderConsult() {
   $("#root").innerHTML = `<div class="cx ${S.cxL ? "dl-open" : ""} ${S.cxR ? "dr-open" : ""}">
     <header class="cx-top">
       <button class="cx-menu" data-a="cx-drawer" data-v="left" aria-label="Queue and menu" title="Queue and menu"><i></i><i></i><i></i>${waitingN ? `<span class="cx-badge">${waitingN}</span>` : ""}</button>
-      <b class="cx-logo">Dictate</b>
+      ${S.clinic.solo ? `<a class="cx-back" href="#/p/${v?.patient_id || D.pid || ""}" aria-label="Back to patient">‹</a>` : ""}<b class="cx-logo">Dictate</b>
       <span class="cx-chip">${esc(S.clinic.name)} · OPD</span>
       <nav class="cx-links">${SCREENS.filter(s => m.screens.includes(s[0]) && s[0] !== "consultation").map(([, h, l]) => `<a href="${h}">${l}</a>`).join("")}</nav>
       <span class="grow"></span>
@@ -123,7 +123,7 @@ function center() {
   return `<div class="cx-card">
     <div class="cx-head"><div><h1>${esc(v.patient_name)}${v.age != null ? ", " + v.age : ""}</h1>
       <span class="cx-status cx-status-sm st-${v.status}"><i></i>${stateLabel}</span></div>
-      <span class="cx-top-right">${genBtn(v)}${["with_doctor", "done"].includes(v.status) ? `<button class="cx-pill-btn" data-a="fu-open" data-v="${v.id}">Follow-up</button>` : ""}<span class="cx-status st-${v.status}"><i></i>${stateLabel}</span>${sideBtn()}</span>${infoBtn()}</div>
+      <span class="cx-top-right">${genBtn(v)}${["with_doctor", "done"].includes(v.status) && !S.clinic.solo ? `<button class="cx-pill-btn" data-a="fu-open" data-v="${v.id}">Follow-up</button>` : ""}<span class="cx-status st-${v.status}"><i></i>${stateLabel}</span>${sideBtn()}</span>${infoBtn()}</div>
     <div class="cx-tabrow"><div class="cx-tabs">${CTABS.map(([k, l]) => `<button data-a="cs-tab" data-v="${k}" aria-pressed="${S.ctab === k}">${l}</button>`).join("")}</div>
       ${S.ctab === "brief" ? `<div class="cx-tabs cx-subtabs">${BTABS.map(([k, l]) => `<button data-a="cs-btab" data-v="${k}" aria-pressed="${(S.btab || "summary") === k}">${l}</button>`).join("")}</div>` : ""}</div>
     <div class="cx-pane">${({ brief: paneBrief, dictate: paneDictate, note: paneNote })[S.ctab](v)}</div>

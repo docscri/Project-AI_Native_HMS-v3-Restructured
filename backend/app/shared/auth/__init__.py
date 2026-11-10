@@ -71,8 +71,11 @@ def public_member(m: dict) -> dict:
         m.pop(key, None)
     m["is_owner"] = bool(m["is_owner"])
     m["is_admin"] = bool(m["is_admin"] or m["is_owner"])
-    # Enforced per request so stale screen ticks can't grant access.
-    m["screens"] = list(SCREENS) if m["is_owner"] else [
+    # Enforced per request so stale screen ticks can't grant access. A solo doctor has only patients and consultation:
+    # no operations, billing, schedules, team or administration, whatever the owner flag says.
+    solo = bool(m.pop("clinic_solo", 0))
+    m["solo"] = solo
+    m["screens"] = ["patients", "consultation"] if solo else list(SCREENS) if m["is_owner"] else [
         x for x in json.loads(m["screens"]) if x in SCREENS
         and (x != "administration" or m["is_admin"]) and (x != "consultation" or m["kind"] == "doctor")]
     m["invite_expired"] = bool(m.get("invite_expires_at") and m["invite_expires_at"] < now())
@@ -83,8 +86,8 @@ def member_for_token(db, token: str) -> dict | None:
     if not token:
         return None
     s = row(db.execute(
-        """select s.token_hash, s.expires_at, m.* from sessions s join members m on m.id = s.member_id
-           where s.token_hash = ? and m.status = 'active'""", (token_hash(token),)).fetchone())
+        """select s.token_hash, s.expires_at, m.*, c.solo as clinic_solo from sessions s join members m on m.id = s.member_id
+           join clinics c on c.id = m.clinic_id where s.token_hash = ? and m.status = 'active'""", (token_hash(token),)).fetchone())
     if not s or s["expires_at"] < now():
         return None
     if s["expires_at"] < later(hours=SESSION_HOURS - 0.25):  # refresh at most every 15 min

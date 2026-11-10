@@ -14,6 +14,7 @@ def public_clinic(c: dict) -> dict:
     c = dict(c)
     c["days"] = json.loads(c["days"])
     c["onboarded"] = bool(c["onboarded"])
+    c["solo"] = bool(c.get("solo"))
     c["sessions"] = parse_sessions(c.get("sessions"), c["start"], c["end"])
     c["derived"] = limits(c["sessions"][0]["start"], c["sessions"][0]["end"], c["limit_by"], c["limit_value"]) if c["sessions"] else None
     return c

@@ -12,7 +12,7 @@ function viewLogin() {
       <div class="login-pw"><input class="login-input" id="lg-pw" type="password" placeholder="Password" aria-label="Password" autocomplete="current-password">
         <button class="login-submit glow" type="submit" aria-label="Sign in">${arrowRight}</button></div>
     </form>
-    <p class="login-footer"><a class="login-link" href="#/signup">Create account</a><span class="dot-sep">·</span><a class="login-link" href="#/forgot">Forgot password?</a></p></div>`);
+    <p class="login-footer"><a class="login-link" href="#/signup">Create account</a><span class="dot-sep">·</span><a class="login-link" href="#/solo">Solo doctor</a><span class="dot-sep">·</span><a class="login-link" href="#/forgot">Forgot password?</a></p></div>`);
   $("#login").addEventListener("submit", e => { e.preventDefault(); $(".login-screen").classList.add("busy"); run(async () => {
     try {
       const r = await api("/auth/login", { body: { email: $("#lg-email").value, password: $("#lg-pw").value }, quiet: true });

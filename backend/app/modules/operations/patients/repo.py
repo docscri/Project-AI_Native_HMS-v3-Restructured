@@ -31,8 +31,8 @@ def search(db, clinic_id: int, like: str) -> list[dict]:
 
 def visits(db, patient_id: int) -> list[dict]:
     return rows(db.execute(
-        """select v.id, v.date, v.status, v.token, m.name as doctor from visits v join members m on m.id = v.doctor_id
-           where v.patient_id = ? order by v.date desc, v.id desc""", (patient_id,)))
+        """select v.id, v.date, v.status, v.token, m.name as doctor, l.name as location from visits v join members m on m.id = v.doctor_id
+           left join locations l on l.id = v.location_id where v.patient_id = ? order by v.date desc, v.id desc""", (patient_id,)))
 
 
 def briefs(db, patient_id: int) -> list[str]:

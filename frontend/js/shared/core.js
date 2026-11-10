@@ -134,8 +134,15 @@ async function route() {
   if (parts[0] === "invite") return viewInvite(parts[1]);
   if (parts[0] === "reset") return viewReset(parts[1]);
   if (parts[0] === "forgot" && !S.me) return viewForgot();
-  if (!S.token || !S.me) return parts[0] === "signup" ? viewOnboarding(1) : viewLogin();
+  if (!S.token || !S.me) return parts[0] === "signup" ? viewOnboarding(1) : parts[0] === "solo" ? viewSoloSignup() : viewLogin();
   if (!S.clinic.onboarded) return viewOnboarding(OB.step >= 2 ? OB.step : 2);   // a refresh (e.g. closing a pop-up) stays on the step you were on
+  if (S.clinic.solo) {   // a solo doctor: home (search), a patient, and the consultation
+    const q = new URLSearchParams(query || "");
+    if (parts[0] === "consult" && parts[1]) return viewConsult(Number(parts[1]), q.get("doctor"), q.get("patient"));
+    if (parts[0] === "p" && parts[1]) return viewSoloPatient(Number(parts[1]));
+    if (parts[0]) return go("#/");
+    return viewSoloHome();
+  }
   const allowed = SCREENS.filter(s => S.me.screens.includes(s[0]));
   const map = { ops: "operations", patients: "patients", consult: "consultation", admin: "administration" };
   if (!parts[0] || !map[parts[0]] || !S.me.screens.includes(map[parts[0]])) return go(allowed[0]?.[1] || "#/patients");

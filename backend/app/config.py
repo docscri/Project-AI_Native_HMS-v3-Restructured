@@ -17,16 +17,16 @@ DATABASE = "sqlite"
 STORAGE = "local"
 LLM = "gemini"
 LLM_MODEL = "gemini-3.8-flash"     # newest stable Flash on our key (Oct 2026); "gemini-flash-latest" follows Google's current Flash
-# The model for each AI job (a folder in shared/ai/tasks/); "" uses LLM_MODEL. Every job uses 3.8 Flash: 2.5 Flash-Lite is
-# no longer offered on our key, and at our prices 3.8 Flash ($0.30 in / $3.75 out per 1M) costs less for these short
-# jobs than 3.5 Flash-Lite ($0.75 / $2.50), since they send far more than they get back.
+# The model for each AI job (a folder in shared/ai/tasks/); "" uses LLM_MODEL. The stronger model reads reports and
+# writes the note, where a mistake costs most; summaries of already-checked text use 3.8 Flash-Lite
+# (same $0.30 per 1M in as 3.8 Flash, $2.50 out instead of $3.75).
 # Override one job without editing this file: LLM_MODEL_<JOB>=<model>, e.g. LLM_MODEL_BRIEF_SUMMARY=gemini-3.8-flash
 LLM_MODELS = {
     "read_report": "",                       # lab reports and scans (images, PDFs)
     "draft_note": "",                        # the note and prescription
-    "brief_summary": "",
-    "visit_lines": "",
-    "note_values": "",
+    "brief_summary": "gemini-3.8-flash-lite",
+    "visit_lines": "gemini-3.8-flash-lite",
+    "note_values": "gemini-3.8-flash-lite",
 }
 SPEECH = "deepgram"
 SPEECH_MODEL = "nova-3"

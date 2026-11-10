@@ -1291,7 +1291,7 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 @media (min-width: 761px) { .solo-view { margin-top: 12px; border-radius: 28px; margin-bottom: 24px; padding: 30px 30px 120px; } }
 .cx-back { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--frame-2); color: var(--frame-fg); display: grid; place-items: center;
   text-decoration: none; font-size: 26px; font-weight: 700; line-height: 1; padding-bottom: 3px; }
-.solo ~ * .cx-menu, body:has(.cx-back) .cx-menu { display: none !important; }   /* solo: back to the patient instead of the queue drawer */
+
 /* Solo on a laptop: wider page, patients in a grid, patient page in two columns, hover states. */
 @media (hover: hover) {
   .solo-card:hover, .solo-place-btn.ghost:hover { background: var(--tile-2); }
@@ -1316,4 +1316,39 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
   .solo-top { padding-inline: max(32px, calc((100vw - 1180px) / 2)); }
   .solo-view { position: relative; }
   .solo-fab { position: absolute; top: 40px; bottom: auto; right: 40px; min-height: 52px; font-size: 16px; box-shadow: none; }
+}
+
+/* Brief sub-tabs (Summary / Events / Charts): plain text tabs on every screen, no box or line around them;
+   only the open one is marked. */
+.cx .cx-subtabs { display: flex; gap: 20px; padding: 0 2px; border: 0 !important; background: transparent !important; box-shadow: none !important; overflow-x: auto; scrollbar-width: none; }
+.cx .cx-subtabs button { background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; min-height: 36px; padding: 0 !important;
+  color: var(--muted) !important; font-weight: 600; position: relative; }
+.cx .cx-subtabs button[aria-pressed="true"] { color: var(--ink) !important; }
+.cx .cx-subtabs button[aria-pressed="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: 4px; height: 2px; border-radius: 2px; background: var(--lime-ink, var(--ink)); }
+
+/* Solo doctor in a consultation: no queue, clinic chip, links or role chip; back to the patient instead. */
+.cx-solo .cx-menu, .cx-solo .cx-chip, .cx-solo .cx-links, .cx-solo .cx-left, .cx-solo .cx-select { display: none !important; }
+.cx-solo .cx-top .grow { flex: 1; }
+.cx-solo .cx-body, .cx-solo .cx-body.wide { grid-template-columns: minmax(0, 1fr) clamp(270px, 24vw, 320px); }
+.cx-solo .cx-body.wide { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 1200px) { .cx-solo .cx-body, .cx-solo .cx-body.wide { grid-template-columns: minmax(0, 1fr); } }
+@media (min-width: 1201px) { .cx-solo .cx-body { max-width: 1240px; width: 100%; margin: 0 auto; } }
+
+/* Solo screens: lighter buttons */
+.solo-go { min-height: 46px; font-size: 16px; align-self: flex-start; padding: 0 26px; }
+.solo-vbtns .btn { border-width: 1.2px; line-height: 1.2; }
+.solo-vbtns .btn.primary { border-color: transparent; }
+.solo-vbtns { padding: 2px 0; }
+.ob-kind { width: 100%; display: grid; grid-template-columns: 1fr 1fr; margin: 4px 0 6px; }
+.ob-kind button { padding: 10px 12px; }
+@media (min-width: 1024px) { .solo-view:has(.solo-pt) > .solo-go { justify-self: start; } }
+
+/* Phone and tablet: a slim tab bar. Brief / Consult / Note as one 34px control, sub-tabs right under it. */
+@media (max-width: 1023px) {
+  .cx .cx-tabrow { gap: 2px !important; }
+  .cx .cx-tabrow > .cx-tabs:first-child { padding: 3px !important; gap: 0 !important; }
+  .cx .cx-tabrow > .cx-tabs:first-child button { min-height: 30px !important; padding: 0 8px !important; font-size: 13.5px; }
+  .cx .cx-subtabs { gap: 18px; }
+  .cx .cx-subtabs button { min-height: 30px; font-size: 13.5px; }
+  .cx .cx-subtabs button[aria-pressed="true"]::after { bottom: 2px; }
 }

@@ -134,7 +134,7 @@ async function route() {
   if (parts[0] === "invite") return viewInvite(parts[1]);
   if (parts[0] === "reset") return viewReset(parts[1]);
   if (parts[0] === "forgot" && !S.me) return viewForgot();
-  if (!S.token || !S.me) return parts[0] === "signup" ? viewOnboarding(1) : parts[0] === "solo" ? viewSoloSignup() : viewLogin();
+  if (!S.token || !S.me) return parts[0] === "signup" ? viewOnboarding(1) : parts[0] === "solo" ? (OB.solo = true, viewOnboarding(1), document.querySelector('[data-a="ob-kind"][data-v="solo"]')?.click()) : viewLogin();
   if (!S.clinic.onboarded) return viewOnboarding(OB.step >= 2 ? OB.step : 2);   // a refresh (e.g. closing a pop-up) stays on the step you were on
   if (S.clinic.solo) {   // a solo doctor: home (search), a patient, and the consultation
     const q = new URLSearchParams(query || "");

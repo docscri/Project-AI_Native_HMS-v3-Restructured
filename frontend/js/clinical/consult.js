@@ -35,7 +35,7 @@ function renderConsult() {
   if (S.noteVisit !== v?.id) { S.noteVisit = v?.id; S.noteEdit = false; S.allEvents = false; }
   const floatMic = v && (["waiting", "with_doctor"].includes(v.status) || S.recState) && S.ctab !== "note";
   const waitingN = D.today.visits.filter(x => x.status === "waiting").length;
-  $("#root").innerHTML = `<div class="cx ${S.cxL ? "dl-open" : ""} ${S.cxR ? "dr-open" : ""}">
+  $("#root").innerHTML = `<div class="cx ${S.clinic.solo ? "cx-solo" : ""} ${S.cxL ? "dl-open" : ""} ${S.cxR ? "dr-open" : ""}">
     <header class="cx-top">
       <button class="cx-menu" data-a="cx-drawer" data-v="left" aria-label="Queue and menu" title="Queue and menu"><i></i><i></i><i></i>${waitingN ? `<span class="cx-badge">${waitingN}</span>` : ""}</button>
       ${S.clinic.solo ? `<a class="cx-back" href="#/p/${v?.patient_id || D.pid || ""}" aria-label="Back to patient">‹</a>` : ""}<b class="cx-logo">Dictate</b>

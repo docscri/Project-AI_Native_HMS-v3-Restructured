@@ -12,7 +12,7 @@ function viewLogin() {
       <div class="login-pw"><input class="login-input" id="lg-pw" type="password" placeholder="Password" aria-label="Password" autocomplete="current-password">
         <button class="login-submit glow" type="submit" aria-label="Sign in">${arrowRight}</button></div>
     </form>
-    <p class="login-footer"><a class="login-link" href="#/signup">Create account</a><span class="dot-sep">·</span><a class="login-link" href="#/solo">Solo doctor</a><span class="dot-sep">·</span><a class="login-link" href="#/forgot">Forgot password?</a></p></div>`);
+    <p class="login-footer"><a class="login-link" href="#/signup">Create account</a><span class="dot-sep">·</span><a class="login-link" href="#/forgot">Forgot password?</a></p></div>`);
   $("#login").addEventListener("submit", e => { e.preventDefault(); $(".login-screen").classList.add("busy"); run(async () => {
     try {
       const r = await api("/auth/login", { body: { email: $("#lg-email").value, password: $("#lg-pw").value }, quiet: true });
@@ -32,10 +32,11 @@ function viewOnboarding(step) {
   OB.step = step;
   const me = S.me || {};
   if (step === 1) obFrame(1, `<h1>Create your account</h1>
+    ${S.me ? "" : `<div class="seg ob-kind" role="group" aria-label="Account type"><button type="button" data-a="ob-kind" data-v="clinic" aria-pressed="${!OB.solo}">My clinic</button><button type="button" data-a="ob-kind" data-v="solo" aria-pressed="${!!OB.solo}">I visit clinics</button></div>`}
     <label class="field">Name<input id="ob-name" value="${esc(me.name || "")}"></label>
     <div class="grid2"><label class="field">Email<input id="ob-email" type="email" value="${esc(me.email || "")}"></label><label class="field">Phone<input id="ob-phone" value="${esc(me.phone || "")}"></label></div>
     <label class="field">Password<input id="ob-pw" type="password" autocomplete="new-password"></label>
-    <label class="choice"><input type="checkbox" id="ob-doc" ${me.kind === "staff" ? "" : "checked"} onchange="document.getElementById('ob-dept-wrap').hidden = !this.checked"><span><b>I am also a doctor here</b></span></label>
+    <label class="choice" ${OB.solo ? "hidden" : ""}><input type="checkbox" id="ob-doc" ${me.kind === "staff" ? "" : "checked"} onchange="document.getElementById('ob-dept-wrap').hidden = !this.checked"><span><b>I am also a doctor here</b></span></label>
     <div id="ob-dept-wrap" ${me.kind === "staff" ? "hidden" : ""}>${deptSelect("ob-dept", me.speciality)}</div>`);
   if (step === 2) obFrame(2, `<h1>Your clinic</h1>
     <label class="field">Clinic name<input id="ob-cname" value="${esc(S.clinic.name)}"></label>
@@ -55,6 +56,10 @@ const inviteLink = m => m.status === "invited" ? `<button class="btn small" data
 
 async function obNext(step) {
   if (step === 1 && S.me) { S.me = await api("/onboarding/owner", { method: "PUT", body: { name: $("#ob-name").value, email: $("#ob-email").value, phone: $("#ob-phone").value, password: $("#ob-pw").value, is_doctor: $("#ob-doc").checked, speciality: $("#ob-dept")?.value || "" } }); S.doctors = await api("/doctors"); return viewOnboarding(2); }
+  if (step === 1 && OB.solo) {
+    const r = await api("/onboarding/solo", { body: { name: $("#ob-name").value, email: $("#ob-email").value, phone: $("#ob-phone").value, password: $("#ob-pw").value, speciality: $("#ob-dept")?.value || "" } });
+    OB = {}; setToken(r.token); await boot(); return go("#/");
+  }
   if (step === 1) {
     const r = await api("/onboarding/owner", { body: { name: $("#ob-name").value, email: $("#ob-email").value, phone: $("#ob-phone").value, password: $("#ob-pw").value, is_doctor: $("#ob-doc").checked, speciality: $("#ob-dept")?.value || "General Medicine" } });
     setToken(r.token); const me = await api("/me"); S.me = me.member; S.clinic = me.clinic; return viewOnboarding(2);
@@ -100,4 +105,15 @@ document.addEventListener("submit", e => {
       }
     } finally { $(".login-screen")?.classList.remove("busy"); }
   });
+});
+
+// Sign-up: own clinic (4 steps) or a doctor who visits clinics (just the account).
+document.addEventListener("click", e => {
+  const b = e.target.closest('[data-a="ob-kind"]'); if (!b) return;
+  OB.solo = b.dataset.v === "solo";
+  const keep = ["ob-name", "ob-email", "ob-phone", "ob-pw", "ob-dept"].map(id => [id, $("#" + id)?.value]);
+  viewOnboarding(1);
+  keep.forEach(([id, v]) => { if (v != null && $("#" + id)) $("#" + id).value = v; });
+  if (OB.solo) { $("#ob-dept-wrap").hidden = false; $(".ob-top .label").textContent = ""; }
+  $(".ob-foot [data-a=ob-next]").textContent = OB.solo ? "Create account" : "Continue";
 });

@@ -158,5 +158,7 @@ function addPasswordEyes(root = document) {
     box.append(b);
   });
 }
-new MutationObserver(() => addPasswordEyes()).observe(document.documentElement, { childList: true, subtree: true });
+let eyesQueued = false;   // batched to one scan per frame: the recording timer and live dictation change the page constantly
+new MutationObserver(() => { if (eyesQueued) return; eyesQueued = true; requestAnimationFrame(() => { eyesQueued = false; addPasswordEyes(); }); })
+  .observe(document.documentElement, { childList: true, subtree: true });
 document.addEventListener("DOMContentLoaded", () => addPasswordEyes());

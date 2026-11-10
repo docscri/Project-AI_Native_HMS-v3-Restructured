@@ -73,6 +73,12 @@ class DeepgramStream:
             if audio:
                 await self.conn.send_media(audio)
 
+    async def finalize(self) -> None:
+        """Paused: asks for the words heard so far now, keeping the stream open for resume (keep-alive holds it)."""
+        async with self.send_lock:
+            if self.conn is not None and not self.closing:
+                await self.conn.send_finalize()
+
     async def close(self) -> None:
         """Waits for Deepgram's last words before closing."""
         async with self.close_lock:

@@ -125,6 +125,10 @@ async def dictate(ws: WebSocket, visit_id: int):
             msg = await ws.receive()
             if msg["type"] == "websocket.disconnect" or msg.get("text") == "stop":
                 break
+            if msg.get("text") == "pause":   # the mic stays open; resume just sends audio again
+                if finalize := getattr(stream, "finalize", None):
+                    await finalize()
+                continue
             if msg.get("bytes"):
                 # The login is checked again every few seconds: after logout, a password change or the note being
                 # signed, no more audio is sent on.

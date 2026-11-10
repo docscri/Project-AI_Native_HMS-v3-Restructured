@@ -31,22 +31,32 @@ function listen(visitId) {
   r.onerror = e => !["no-speech", "aborted"].includes(e.error) && toast("Mic: " + e.error, true);
   S.rec = r; r.start();
 }
+// Pause, resume, stop and cancel repaint only the bottom bar, at once; the slow parts (the speech service's
+// last words, saving) carry on after. Redrawing the whole consultation made the buttons feel stuck on phones.
+function paintDock() {
+  const f = $(".cx-float"), v = S.data?.cur;
+  if (f && v && v.id === S.recVisit && (S.recState || S.ctab !== "note")) f.innerHTML = dock(v); else renderConsult();
+}
 function pauseMic() {
   if (S.recState !== "on") return;
   S.recAcc = recElapsed(); S.recState = "paused";
+  if (S.rec?.pause) { S.rec.pause().catch(() => {}); return paintDock(); }   // Deepgram: soft pause, link kept
   const r = S.rec; S.rec = null;
   // Deepgram's last words arrive after the pause, so keep the insertion point until they have.
   if (r?.finish) S.finishing = r.finish().catch(() => {}).finally(() => { if (S.recState !== "on") S.dict = null; });
   else { try { r?.stop(); } catch {} S.dict = null; }
-  renderConsult();
+  paintDock();
 }
 function resumeMic() {
   if (S.recState !== "paused") return;
-  S.recState = "on"; S.recStart = Date.now(); listen(S.recVisit); renderConsult();
+  S.recState = "on"; S.recStart = Date.now(); paintDock();
+  if (S.dict && !S.dict.len) S.dict = null;   // new words go where the cursor is now
+  if (!S.rec?.resume?.()) { const old = S.rec; S.rec = null; try { old?.stop(); } catch {} listen(S.recVisit); }   // link lost while paused: reconnect
 }
 async function stopMic() {
   const id = S.recVisit, r = S.rec;
   S.rec = null; S.recState = null; clearInterval(S.recT);
+  paintDock();
   try { r?.finish ? await r.finish() : r?.stop(); } catch {}
   S.dict = null; S.dictDone = id;
   await saveText(id); refreshConsult();
@@ -55,11 +65,11 @@ async function stopMic() {
 async function cancelMic() {
   const id = S.recVisit, r = S.rec, base = S.recBase ?? "";
   Object.assign(S, { rec: null, recState: null, recCancelled: true, dict: null, dictDone: null }); clearInterval(S.recT);
+  const put = () => { const el = $("#free-text"); if (el && Number(el.dataset.v) === id) el.value = base; edit(id, base); };
+  put(); paintDock(); toast("Dictation cancelled.");
   try { r?.abort ? r.abort() : r?.finish ? await r.finish() : r?.stop(); } catch {}
   await S.finishing;
-  const el = $("#free-text"); if (el && Number(el.dataset.v) === id) el.value = base;
-  edit(id, base); await saveText(id); refreshConsult();
-  toast("Dictation cancelled.");
+  put(); await saveText(id); refreshConsult();   // again, in case late words slipped in while it closed
 }
 function speech(visitId, text, final) {
   const el = $("#free-text"); if (!el || el.readOnly || Number(el.dataset.v) !== visitId || S.recCancelled) return;
@@ -95,7 +105,8 @@ async function micCapture(onFrame, onLost) {
     src.connect(node); node.connect(mute); mute.connect(ctx.destination);
     stream.getTracks().forEach(t => { t.onended = () => { if (!stopped) { stop(); onLost(); } }; });
   } catch (e) { await stop(); throw e; }
-  return { start: () => { on = true; }, stop };
+  const hold = async () => { if (on && node && !stopped) await new Promise(r => { flushed = r; node.port.postMessage("flush"); setTimeout(r, 150); }); on = false; };
+  return { start: () => { on = true; }, hold, go: () => { if (!stopped) on = true; }, stop };
 }
 // Deepgram via the server. Text lands in the writing box and is saved by the normal autosave.
 async function streamMic(visitId) {
@@ -112,12 +123,15 @@ async function streamMic(visitId) {
   const timer = setTimeout(() => fail("Dictation couldn't connect"), 10000);
   ws.onmessage = ({ data }) => {
     const m = JSON.parse(data);
-    if (m.type === "ready") { clearTimeout(timer); mic.start(); }
+    if (m.type === "ready") { clearTimeout(timer); if (S.recState === "on") mic.start(); }   // paused while connecting: wait for resume
     else if (m.type === "transcript") speech(visitId, m.text, m.final);
     else if (m.type === "error") { clearTimeout(timer); fail(m.message); }
   };
   ws.onclose = () => { clearTimeout(timer); closed(); fail("Dictation stopped. Try again."); };
   rec.stop = () => { clearTimeout(timer); mic.stop(); ws.close(); };
+  // Pause keeps the mic and the link open and just stops sending sound, so resume is instant.
+  rec.pause = async () => { await mic.hold(); if (ws.readyState === 1) ws.send("pause"); };
+  rec.resume = () => { if (ws.readyState !== 1) return false; ws.send("resume"); mic.go(); return true; };
   rec.finish = async () => {   // send the last audio, then wait for Deepgram's last words
     clearTimeout(timer); await mic.stop({ flush: true });
     if (ws.readyState === 1) { ws.send("stop"); await Promise.race([done, new Promise(r => setTimeout(r, 8000))]); }

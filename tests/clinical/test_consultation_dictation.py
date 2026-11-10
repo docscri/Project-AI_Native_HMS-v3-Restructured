@@ -17,6 +17,9 @@ class FakeStream:
     async def send(self, audio):
         await self.on_text({"text": audio.decode(), "final": False})
 
+    async def finalize(self):
+        await self.on_text({"text": "paused here", "final": True})
+
     async def close(self):
         FakeStream.closed += 1
         await self.on_text({"text": "last words", "final": True})
@@ -154,3 +157,21 @@ def test_untouched_ai_draft_saved_back_is_not_an_edit(monkeypatch):
         editor = {"soap": {k: n["content"]["soap"][k] for k in "SOAP"},
                   "rx": [{f: r[f] for f in ("medicine", "dose", "duration", "instructions")} for r in n["content"]["rx"]]}
         assert c.put(f"/api/notes/{n['id']}", headers=h, json=editor).json()["edited"] == 0
+
+
+def test_pause_keeps_the_stream_open(deepgram):
+    """Pause asks for the words so far and keeps the link; resume is just more audio on the same stream."""
+    with TestClient(app) as c:
+        h, doc = clinic(c, "d9@x.in")
+        v = started_visit(c, h, doc)
+        closed = FakeStream.closed
+        with c.websocket_connect(f"/api/visits/{v['id']}/dictate", subprotocols=["dictate", token(h)]) as ws:
+            assert ws.receive_json() == {"type": "ready"}
+            ws.send_text("pause")
+            assert ws.receive_json() == {"type": "transcript", "text": "paused here", "final": True}
+            assert FakeStream.closed == closed
+            ws.send_text("resume")
+            ws.send_bytes(b"and headache")
+            assert ws.receive_json()["text"] == "and headache"
+            ws.send_text("stop")
+            assert ws.receive_json()["text"] == "last words"

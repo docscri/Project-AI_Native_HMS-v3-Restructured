@@ -1427,3 +1427,8 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 /* Bottom bar buttons: no tap delay, instant press feedback */
 .dock button, .mic-dot { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .dock button:active, .mic-dot:active { transform: scale(.92); transition: transform .06s; }
+/* Phone/tablet: a bar with one action (Save, or Print alone) is just that button, no dark ring */
+@media (max-width: 1023px) {
+  .cx-float .dock:has(.dock-go):not(:has(.dock-ghost)) { background: transparent; box-shadow: none; padding: 0 !important; min-height: 0; }
+  .cx-float .dock:has(.dock-go):not(:has(.dock-ghost)) .dock-go { min-height: 46px; padding: 0 30px; font-size: 15px; box-shadow: 0 12px 28px -12px #0b1411aa; }
+}

@@ -1472,3 +1472,7 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 .sig-box .sig-state { flex: 1 1 100%; flex-direction: row; align-items: baseline; justify-content: space-between; }
 .sig-box .sig-btns { width: 100%; display: grid !important; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
 .sig-box .sig-btns .btn { justify-content: center; padding-inline: 6px; }
+/* Signature view: Remove (small, outlined) on the left, Done on the right, same height, not stretched */
+.sig-modal .foot { flex-wrap: nowrap; align-items: center; }
+.sig-modal .foot .btn { flex: none !important; min-height: 40px; padding: 0 18px; font-size: 14px; border-width: 1.2px; }
+.sig-modal .foot .btn.danger { margin-right: auto; }

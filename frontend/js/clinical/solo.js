@@ -45,13 +45,14 @@ async function viewSoloPatient(id) {
     $("#solo-view").innerHTML = `
       <a class="solo-back" href="#/">‹ Patients</a>
       <section class="solo-pt"><span class="solo-av big">${esc(initials(p.name))}</span><div><h1>${esc(p.name)}</h1><p>${esc(soloWho(p))}</p></div></section>
-      <button class="solo-go" data-a="${open ? "so-continue" : "so-start"}" data-v="${open ? open.id : p.id}">${open ? "Continue visit" : "Start visit"}</button>
+      <div class="solo-acts"><button class="solo-go" data-a="${open ? "so-continue" : "so-start"}" data-v="${open ? open.id : p.id}">${open ? "Continue visit" : "Start visit"}</button>
+        ${reportBtn("solo-rep", p.id, open?.id, "patient", (() => { const n = open ? open.documents.length : p.documents.filter(d => !d.visit_id).length; return n ? `Reports · ${n}` : "+ Report"; })())}</div>
       ${past.length ? `<span class="solo-label">Visits</span>` : ""}
       <div class="solo-visits">${past.map(v => `<article class="solo-visit${v.status === "with_doctor" ? " open" : ""}"${v.status === "with_doctor" ? ` role="button" tabindex="0" data-a="so-continue" data-v="${v.id}"` : ""}>
           <div class="solo-vtop"><b>${longDate(v.date)}</b>${v.location ? `<span class="solo-place">${esc(v.location)}</span>` : ""}${v.status === "with_doctor" ? `<span class="pill s-with_doctor">In visit</span><span class="solo-tap">Tap to continue ›</span>` : ""}</div>
           ${v.line ? `<p>${esc(v.line)}</p>` : ""}
           <div class="solo-vbtns">${v.status === "with_doctor" ? ""
-            : v.note ? `<button class="btn small" data-a="note-view" data-v="${v.id}">Note</button><button class="btn small" data-a="so-share" data-v="${v.id}">Share</button><button class="btn small" data-a="note-print" data-v="${v.note.id}">Print</button>` : ""}</div>
+            : v.note ? `${v.documents?.length ? reportBtn("btn small", p.id, v.id, "patient", `Reports · ${v.documents.length}`) : ""}<button class="btn small" data-a="note-view" data-v="${v.id}">Note</button><button class="btn small" data-a="so-share" data-v="${v.id}">Share</button><button class="btn small" data-a="note-print" data-v="${v.note.id}">Print</button>` : ""}</div>
         </article>`).join("") || ""}</div>`;
   });
 }
@@ -73,7 +74,8 @@ async function openSoloStart(patientId) {
   modal(`<h2>Where?</h2>
     ${places.length ? `<div class="solo-places">${places.map(l => `<button class="solo-place-btn" data-a="so-go" data-v="${l.id}">${esc(l.name)}</button>`).join("")}</div>` : ""}
     <div class="solo-add"><input id="so-place" placeholder="Add place" autocomplete="off"><button class="btn" data-a="so-place-add">Add</button></div>
-    ${places.length ? "" : `<button class="solo-skip" data-a="so-go" data-v="">Skip for now ›</button>`}`);
+    <div class="solo-where-foot">${reportBtn("solo-rep small", patientId, null, "none", "+ Add report")}
+      ${places.length ? "" : `<button class="solo-skip" data-a="so-go" data-v="">Skip for now ›</button>`}</div>`);
 }
 
 async function openPlaces() {

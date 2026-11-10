@@ -1476,3 +1476,28 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 .sig-modal .foot { flex-wrap: nowrap; align-items: center; }
 .sig-modal .foot .btn { flex: none !important; min-height: 40px; padding: 0 18px; font-size: 14px; border-width: 1.2px; }
 .sig-modal .foot .btn.danger { margin-right: auto; }
+
+/* Reports */
+.solo-acts { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.solo-rep { min-height: 46px; padding: 0 20px; border-radius: 999px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink);
+  font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; touch-action: manipulation; }
+.solo-rep.small { min-height: 36px; padding: 0 14px; font-size: 13.5px; border-width: 1.2px; }
+.solo-rep:active { transform: scale(.96); }
+.solo-where-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.solo-where-foot .solo-skip { margin: 0; }
+.cx-rep { background: transparent !important; border: 1.5px solid var(--ink) !important; color: var(--ink) !important; }
+#rep-layer .scrim { z-index: 110; }
+.rp-modal { width: min(520px, calc(100% - 24px)); }
+.rp-list { display: flex; flex-direction: column; gap: 6px; }
+.rp-row { display: flex; align-items: center; gap: 10px; background: var(--tile); border-radius: 14px; padding: 6px 6px 6px 14px; }
+.rp-name { flex: 1; min-width: 0; font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rp-st { flex: none; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 10px; border: 0; }
+.rp-st.reading { background: var(--white); color: var(--muted); }
+.rp-st.ok { background: var(--ink); color: var(--lime); }
+.rp-st.failed { background: transparent; color: var(--red-ink); box-shadow: inset 0 0 0 1.2px var(--red-ink); cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; }
+.rp-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rp-btn { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border-radius: 16px; background: var(--ink); color: var(--lime);
+  font-weight: 700; font-size: 14.5px; cursor: pointer; touch-action: manipulation; }
+.rp-btn:active { transform: scale(.97); }
+.rp-busy { text-align: center; color: var(--muted); font-weight: 700; padding: 14px; background: var(--tile); border-radius: 16px; }
+.rp-modal .foot .btn { flex: none !important; min-height: 40px; padding: 0 22px; }

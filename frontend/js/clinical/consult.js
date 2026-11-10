@@ -123,7 +123,7 @@ function center() {
   return `<div class="cx-card">
     <div class="cx-head"><div><h1>${esc(v.patient_name)}${v.age != null ? ", " + v.age : ""}</h1>
       <span class="cx-status cx-status-sm st-${v.status}"><i></i>${stateLabel}</span></div>
-      <span class="cx-top-right">${genBtn(v)}${["with_doctor", "done"].includes(v.status) && !S.clinic.solo ? `<button class="cx-pill-btn" data-a="fu-open" data-v="${v.id}">Follow-up</button>` : ""}<span class="cx-status st-${v.status}"><i></i>${stateLabel}</span>${sideBtn()}</span>${infoBtn()}</div>
+      <span class="cx-top-right">${genBtn(v)}${S.me.kind === "doctor" && ["waiting", "with_doctor"].includes(v.status) ? reportBtn("cx-pill-btn cx-rep", v.patient_id, v.id, "consult") : ""}${["with_doctor", "done"].includes(v.status) && !S.clinic.solo ? `<button class="cx-pill-btn" data-a="fu-open" data-v="${v.id}">Follow-up</button>` : ""}<span class="cx-status st-${v.status}"><i></i>${stateLabel}</span>${sideBtn()}</span>${infoBtn()}</div>
     <div class="cx-tabrow"><div class="cx-tabs">${CTABS.map(([k, l]) => `<button data-a="cs-tab" data-v="${k}" aria-pressed="${S.ctab === k}">${l}</button>`).join("")}</div>
       ${S.ctab === "brief" ? `<div class="cx-tabs cx-subtabs">${BTABS.map(([k, l]) => `<button data-a="cs-btab" data-v="${k}" aria-pressed="${(S.btab || "summary") === k}">${l}</button>`).join("")}</div>` : ""}</div>
     <div class="cx-pane">${({ brief: paneBrief, dictate: paneDictate, note: paneNote })[S.ctab](v)}</div>

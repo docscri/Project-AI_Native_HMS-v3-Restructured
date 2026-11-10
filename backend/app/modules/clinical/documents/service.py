@@ -1,6 +1,7 @@
 """Upload, read in the background, serve back."""
 import logging
 
+from app.core.patient import get_patient
 from app.core.visit import get_visit
 from app.modules.clinical.brief import service as brief
 from app.shared import files as storage
@@ -39,11 +40,30 @@ def run_extraction(doc_id: int) -> None:
         db.close()
     if d and d["visit_id"]:
         brief.prebuild(d["visit_id"])   # a report brought at arrival appears in the brief
+    elif d:   # filed under the patient (before a visit): refresh the brief of any visit of theirs under way today
+        db = connect()
+        try:
+            open_ids = repo.open_visits(db, d["patient_id"])
+        finally:
+            db.close()
+        for vid in open_ids:
+            brief.prebuild(vid)
 
 
 def upload(db, me, visit_id: int, filename: str | None, mime: str, data: bytes) -> tuple[dict, int]:
     """Saves the file and commits so the background read sees it; returns the row and its id."""
     v = get_visit(db, me, visit_id)
+    return _save(db, me, v["patient_id"], visit_id, filename, mime, data)
+
+
+def upload_for_patient(db, me, patient_id: int, filename: str | None, mime: str, data: bytes) -> tuple[dict, int]:
+    """A report filed under the patient before any visit (one sent ahead on WhatsApp, say). It is the patient's,
+    so the next brief and note read it like any other."""
+    get_patient(db, me, patient_id)
+    return _save(db, me, patient_id, None, filename, mime, data)
+
+
+def _save(db, me, patient_id: int, visit_id: int | None, filename: str | None, mime: str, data: bytes) -> tuple[dict, int]:
     if mime == "image/jpg":
         mime = "image/jpeg"
     if mime not in storage.ALLOWED:
@@ -53,8 +73,8 @@ def upload(db, me, visit_id: int, filename: str | None, mime: str, data: bytes) 
     if not data:
         raise Invalid("The file is empty.")
     path = storage.save(me["clinic_id"], data, mime)
-    did = repo.add(db, me["clinic_id"], v["patient_id"], visit_id, filename or "document", str(path), mime)
-    log_event(db, me["clinic_id"], me["id"], "document", did, "uploaded", {"visit": visit_id})
+    did = repo.add(db, me["clinic_id"], patient_id, visit_id, filename or "document", str(path), mime)
+    log_event(db, me["clinic_id"], me["id"], "document", did, "uploaded", {"visit": visit_id} if visit_id else {"patient": patient_id})
     db.commit()
     return repo.listed(db, did), did
 

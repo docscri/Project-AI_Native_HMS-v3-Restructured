@@ -62,3 +62,8 @@ def uncite_in_drafts(db, patient_id: int, cite: str) -> None:
     for n in rows(db.execute("select id, citations from notes where patient_id = ? and status = 'draft'", (patient_id,))):
         cites = {k: [c for c in ids if c != cite] for k, ids in json.loads(n["citations"] or "{}").items()}
         db.execute("update notes set citations = ? where id = ? and status = 'draft'", (json.dumps(cites), n["id"]))
+
+
+def open_visits(db, patient_id: int) -> list[int]:
+    return [r[0] for r in db.execute("select id from visits where patient_id = ? and status in ('waiting', 'with_doctor')", (patient_id,))]
+

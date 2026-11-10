@@ -22,6 +22,16 @@ async def upload(visit_id: int, tasks: BackgroundTasks, file: UploadFile = File(
     return out
 
 
+@router.post("/patients/{patient_id}/documents")
+async def upload_for_patient(patient_id: int, tasks: BackgroundTasks, file: UploadFile = File(...),
+                             me=Depends(require_any("operations", "consultation", "patients")), db=Depends(get_db)):
+    mime = file.content_type or mimetypes.guess_type(file.filename or "")[0] or "application/octet-stream"
+    data = await file.read(storage.MAX_BYTES + 1)
+    out, did = service.upload_for_patient(db, me, patient_id, file.filename, mime, data)
+    tasks.add_task(service.run_extraction, did)
+    return out
+
+
 @router.get("/visits/{visit_id}/documents")
 def visit_documents(visit_id: int, me=Depends(require_any("operations", "consultation", "patients")), db=Depends(get_db)):
     return service.for_visit(db, me, visit_id)

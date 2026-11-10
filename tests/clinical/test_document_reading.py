@@ -106,3 +106,20 @@ def test_front_desk_lists_and_removes_documents_until_the_note_is_signed():
         assert c.delete(f"/api/documents/{right['id']}", headers=desk).status_code == 409   # a signed note may cite it
         other, _ = clinic(c, "docremove-other@x.in")
         assert c.delete(f"/api/documents/{right['id']}", headers=other).status_code == 404    # other clinics can't touch it
+
+
+def test_report_filed_under_the_patient_before_a_visit_reaches_the_brief():
+    """A doctor files a report on the patient page before any visit; the next visit's brief and sources read it."""
+    with TestClient(app) as c:
+        h, doc = clinic(c, "docpatient@x.in")
+        p = c.post("/api/patients", headers=h, json={"name": "Early", "consent": True}).json()
+        d = c.post(f"/api/patients/{p['id']}/documents", headers=h,
+                   files={"file": ("lab.txt", b"Sunrise Diagnostics\nHbA1c 8.1 %", "text/plain")}).json()
+        filed = c.get(f"/api/patients/{p['id']}", headers=h).json()["documents"]
+        assert [(x["id"], x["visit_id"], x["ai_status"]) for x in filed] == [(d["id"], None, "ready")]
+        v = c.post("/api/visits/walk-in", headers=h, json={"patient_id": p["id"], "doctor_id": doc, "payment_method": "cash"}).json()
+        c.post(f"/api/visits/{v['id']}/start", headers=h)
+        assert f"D{d['id']}" in summary(c, h, v)[1]
+        other, _ = clinic(c, "docpatient-other@x.in")
+        assert c.post(f"/api/patients/{p['id']}/documents", headers=other, files={"file": ("x.txt", b"x", "text/plain")}).status_code == 404
+        assert c.delete(f"/api/documents/{d['id']}", headers=h).json() == {"ok": True}   # no signed note relies on it yet

@@ -2378,6 +2378,7 @@
   "POST /api/onboarding/solo",
   "POST /api/operations/end-session",
   "POST /api/patients",
+  "POST /api/patients/{patient_id}/documents",
   "POST /api/patients/{patient_id}/merge",
   "POST /api/schedules/leave",
   "POST /api/visits",

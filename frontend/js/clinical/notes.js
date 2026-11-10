@@ -20,12 +20,15 @@ function paneNote(v) {
   if (S.noteEdit && !signed) return noteEditor(n, false);
   return soapRead(v, n);
 }
-function soapRead(v, n, still) {
+function soapRead(v, n, still, skipEmpty = false) {
   let num = 0;
   const sec = (k, label, body) => `<div class="soap-sec"><b class="soap-tile">${k}</b><div><span class="soap-label">${label}</span><div class="soap-body">${body}</div></div></div>`;
   const vit = isDept(n) ? vitalsLine(n) : "";
+  let shown = 0;
   const out = (vit ? `<div class="vit-strip" aria-label="Vitals">${vit}</div>` : "") + noteParts(n).map(([k, label, body]) => {
     const text = body.trim();
+    if (skipEmpty && !text) return "";   // reading a signed note: leave out sections with nothing in them
+    if (skipEmpty && /^\d+$/.test(k)) k = String(++shown);   // and number the rest 1, 2, 3
     const sents = sentences(text).map(x => x.text);
     const srcs = (n.citations?.[k] || []).map(id => ({ id, text: sourceOf(v, id)?.text || "" }));
     return sec(k, esc(label), sents.map(t => `${citeNum(++num, bestSource(t, srcs), still)}${marked(t, srcs, still)}`).join(" ") || `<span class="muted">—</span>`);

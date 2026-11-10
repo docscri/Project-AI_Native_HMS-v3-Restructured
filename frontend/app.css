@@ -1367,3 +1367,15 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
   .cx .cx-subtabs { gap: 8px; }
   .cx .cx-subtabs button { font-size: 12px; }
 }
+
+/* Note viewer: Signed, Add addendum and Print stay on one line */
+.nv-acts { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; flex: none; }
+@media (max-width: 760px) { .nv-acts { width: 100%; } .nv-acts .btn, .nv-acts .pill { white-space: nowrap; } }
+/* Solo: an open visit is one tap back into it */
+.solo-visit.open { cursor: pointer; box-shadow: inset 0 0 0 1.5px var(--ink); }
+.solo-visit.open:active { background: var(--tile-2); }
+.solo-tap { margin-left: auto; color: var(--ink); font-weight: 700; font-size: 13.5px; }
+.solo-vbtns:empty { display: none; }
+.solo-skip { align-self: center; margin: 2px auto 0; display: block; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 14.5px;
+  font-weight: 700; padding: 8px 14px; border-radius: 999px; cursor: pointer; }
+.solo-skip:hover, .solo-skip:focus-visible { color: var(--ink); background: var(--tile); }

@@ -37,8 +37,8 @@ async function openNoteView(visitId) {
   modal(`<div class="nv">
     <div class="nv-top"><div><h2>${esc(v.patient_name)}${v.age != null ? ", " + v.age : ""}</h2>
       <span class="muted">${longDate(v.date)} · ${esc(v.doctor_name)}${signed ? ` · Signed ${when(n.signed_at)}${by}` : ""}</span></div>
-      <span class="grow"></span><span class="pill ${signed ? "s-paid" : "s-waiting"}">${signed ? "Signed" : "Draft"}</span>${signed && S.me.kind === "doctor" ? `<button class="btn small" data-a="add-addendum" data-v="${n.id}" data-visit="${v.id}">Add addendum</button>` : ""}${signed ? `<button class="btn small primary" data-a="note-print" data-v="${n.id}">Print</button>` : ""}</div>
-    <div class="nv-body">${soapRead(v, n, true)}</div></div>`, true);
+      <span class="grow"></span><div class="nv-acts"><span class="pill ${signed ? "s-paid" : "s-waiting"}">${signed ? "Signed" : "Draft"}</span>${signed && S.me.kind === "doctor" ? `<button class="btn small" data-a="add-addendum" data-v="${n.id}" data-visit="${v.id}">Add addendum</button>` : ""}${signed ? `<button class="btn small primary" data-a="note-print" data-v="${n.id}">Print</button>` : ""}</div></div>
+    <div class="nv-body">${soapRead(v, n, true, signed)}</div></div>`, true);
 }
 function renderFollowUp() {
   const opts = [[3, "3 days"], [7, "1 week"], [14, "2 weeks"], [30, "1 month"]];

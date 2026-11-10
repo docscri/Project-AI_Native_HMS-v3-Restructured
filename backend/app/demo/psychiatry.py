@@ -4,6 +4,7 @@
 
 Everything goes through the app's own API (so it is stored exactly as real use would store it); earlier visits are then
 moved back in time. Logins (password demo1234):
+    arun@demo.in     Dr. Arun Menon, psychiatrist on his own, visits three clinics (solo mode)
     anitha@demo.in   Dr. Anitha Varma, psychiatrist, owner and admin (sees everything)
     joseph@demo.in   Dr. Joseph Mathew, psychiatrist
     divya@demo.in    Divya Raj, front desk (Operations, Patients)
@@ -538,6 +539,106 @@ def seed(client: TestClient | None = None) -> bool:
         # pre-visit briefs ready for the patients in the queue
         for vid in [fathima_today, sv["id"], *waiting]:
             call("POST", f"/visits/{vid}/brief", owner)
+    return True
+
+
+# ---------------------------------------------------------------- a solo psychiatrist who visits clinics
+SOLO_EMAIL = "arun@demo.in"
+SOLO_PLACES = ["Town Clinic, Kozhikode", "Hope Hospital, Feroke", "Riverside Clinic, Chengannur"]
+SOLO_PATIENTS = {
+    "anjali": {"name": "Anjali Varghese", "dob": "1994-04-12", "sex": "F", "phone": "9847022301"},
+    "manoj": {"name": "Manoj Kumar", "dob": "1979-10-03", "sex": "M", "phone": "9847022302"},
+    "reshma": {"name": "Reshma Babu", "dob": "2001-08-19", "sex": "F"},
+    "george": {"name": "George Mathew", "dob": "1958-01-27", "sex": "M", "phone": "9847022304"},
+}
+# (patient, days ago, place index, said, sections, rx)
+SOLO_HISTORY = [
+    ("anjali", 56, 0, ["Feeling low for three months after moving cities, poor sleep, crying spells.", "No thoughts of self-harm.",
+                       "Low mood, reactive affect, no psychotic features.", "Moderate depressive episode.",
+                       "Start sertraline 50 mg once daily at night, sleep hygiene, review in four weeks."],
+     {"1": ("Low mood for 3 months after moving cities; poor sleep; crying spells.", [1]), "5": ("No thoughts of self-harm.", [2]),
+      "4": ("Low mood, reactive affect. No psychotic features.", [3]), "7": ("Moderate depressive episode.", [4]),
+      "8": ("Start sertraline 50 mg at night. Sleep hygiene. Review in 4 weeks.", [5])},
+     [("Sertraline 50 mg", "0-0-1", "28 days", "after food")]),
+    ("anjali", 27, 1, ["Mood better, sleeping six hours, back at work.", "Mild nausea in the first week, settled.",
+                       "Euthymic, reactive, good insight.", "Moderate depressive episode, improving.", "Continue sertraline 50 mg, review in six weeks."],
+     {"1": ("Follow-up: mood better, sleeping 6 hours, back at work.", [1]), "2": ("Mild nausea in week 1, settled.", [2]),
+      "4": ("Euthymic, reactive, good insight.", [3]), "7": ("Moderate depressive episode, improving.", [4]),
+      "8": ("Continue sertraline 50 mg. Review in 6 weeks.", [5])},
+     [("Sertraline 50 mg", "0-0-1", "42 days", "after food")]),
+    ("manoj", 40, 2, ["Drinking daily for ten years, wants to stop, last drink two days ago.", "Tremor and sweating since yesterday.",
+                      "Oriented, mild tremor, no hallucinations.", "Alcohol dependence syndrome, mild withdrawal.",
+                      "Chlordiazepoxide taper over seven days, thiamine, review in one week with family."],
+     {"1": ("Daily alcohol for 10 years; wants to stop. Last drink 2 days ago.", [1]), "2": ("Tremor and sweating since yesterday.", [2]),
+      "4": ("Oriented. Mild tremor. No hallucinations.", [3]), "7": ("Alcohol dependence syndrome with mild withdrawal.", [4]),
+      "8": ("Chlordiazepoxide taper over 7 days. Thiamine. Review in 1 week with family.", [5])},
+     [("Chlordiazepoxide 10 mg", "1-1-1", "7 days", "taper as advised"), ("Thiamine 100 mg", "1-0-0", "30 days", "")]),
+    ("manoj", 32, 2, ["Completed taper, no drinking for nine days, cravings in the evening.", "Calm, cooperative.",
+                      "Alcohol dependence syndrome, early abstinence.", "Start naltrexone 50 mg once daily, join support group, review in a month."],
+     {"1": ("Completed taper. Abstinent 9 days; evening cravings.", [1]), "4": ("Calm, cooperative.", [2]),
+      "7": ("Alcohol dependence syndrome, early abstinence.", [3]), "8": ("Start naltrexone 50 mg daily. Support group. Review in 1 month.", [4])},
+     [("Naltrexone 50 mg", "1-0-0", "30 days", "after breakfast")]),
+    ("george", 14, 0, ["Forgetting names and misplacing keys for a year, says his wife.", "MMSE 24 of 30.",
+                       "Alert, mild recent memory loss, mood normal.", "Mild cognitive impairment, rule out reversible causes.",
+                       "Thyroid, B12 and CT brain, review with reports."],
+     {"1": ("Forgetting names, misplacing keys for a year (per wife).", [1]), "6": ("MMSE 24/30.", [2]),
+      "4": ("Alert. Mild recent memory loss. Mood normal.", [3]), "7": ("Mild cognitive impairment; rule out reversible causes.", [4]),
+      "8": ("TSH, B12, CT brain. Review with reports.", [5])}, []),
+]
+
+
+def seed_solo(client: TestClient | None = None) -> bool:
+    """Adds Dr. Arun Menon, a psychiatrist on his own who sees patients at three clinics. Skipped if he already exists."""
+    from app.main import app
+    from app.shared import db as database
+    from app.shared.db import connect
+
+    database.init()
+    db = connect()
+    try:
+        if db.execute("select 1 from members where lower(email) = ?", (SOLO_EMAIL,)).fetchone():
+            return False
+    finally:
+        db.close()
+
+    with (client or TestClient(app)) as c:
+        def call(method, path, tok=None, **kw):
+            r = c.request(method, "/api" + path, headers={"Authorization": f"Bearer {tok}"} if tok else {}, **kw)
+            if r.status_code >= 400:
+                raise RuntimeError(f"{method} {path}: {r.status_code} {r.text[:200]}")
+            return r.json()
+
+        tok = call("POST", "/onboarding/solo", json={"name": "Dr. Arun Menon", "email": SOLO_EMAIL, "phone": "9847000201",
+                                                    "password": PASSWORD, "speciality": "Psychiatry"})["token"]
+        places = [call("POST", "/locations", tok, json={"name": n})["id"] for n in SOLO_PLACES]
+        patients = {k: call("POST", "/patients", tok, json=p | {"consent": True})["id"] for k, p in SOLO_PATIENTS.items()}
+        today = date.today()
+
+        def visit(pkey, place, said, sections, rx):
+            v = call("POST", "/visits/quick", tok, json={"patient_id": patients[pkey], "location_id": places[place]})
+            call("PUT", f"/visits/{v['id']}/text", tok, json={"text": " ".join(said), "rev": 0})
+            n = call("POST", f"/visits/{v['id']}/note/draft", tok)
+            call("PUT", f"/notes/{n['id']}", tok, json={"sections": {k: t for k, (t, _) in sections.items()}, "vitals": {},
+                                                         "rx": [{"medicine": m, "dose": d, "duration": du, "instructions": i} for m, d, du, i in rx]})
+            db = connect()
+            try:
+                db.execute("update notes set citations = ?, sources = ?, edited = 0 where id = ?",
+                           (json.dumps({k: [f"T{i}" for i in cites] for k, (_, cites) in sections.items()}),
+                            json.dumps({f"T{i + 1}": s for i, s in enumerate(said)}), n["id"]))
+                db.commit()
+            finally:
+                db.close()
+            return v, n
+
+        for pkey, days_ago, place, said, sections, rx in SOLO_HISTORY:
+            v, n = visit(pkey, place, said, sections, rx)
+            call("POST", f"/notes/{n['id']}/sign", tok)
+            move_back(v["id"], n["id"], days_ago, today)
+        # today: Reshma's first visit, dictated and drafted, not signed yet
+        visit("reshma", 0, ["Panic attacks twice a week for two months, racing heart, fear of dying.", "No substance use.",
+                            "Anxious, no low mood, insight present."],
+              {"1": ("Panic attacks twice weekly for 2 months: palpitations, fear of dying.", [1]),
+               "3": ("No substance use.", [2]), "4": ("Anxious. No low mood. Insight present.", [3])}, [])
     return True
 
 

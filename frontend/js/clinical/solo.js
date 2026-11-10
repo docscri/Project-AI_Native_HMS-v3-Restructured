@@ -24,7 +24,7 @@ async function viewSoloHome() {
       <div class="solo-hello"><small>${new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}</small>
         <h1>Hello, ${esc(firstName(S.me.name).replace(/^Dr\.?$/i, S.me.name))}</h1></div>
       <label class="solo-search"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-        <input id="so-q" data-a="so-q" placeholder="Search name, phone or ID" value="${esc(S.sq)}" autocomplete="off" aria-label="Search patients"></label>
+        <input id="so-q" data-a="so-q" placeholder="Search name, phone or ID"${matchMedia("(hover: hover)").matches ? " title=\"Press / to search\"" : ""} value="${esc(S.sq)}" autocomplete="off" aria-label="Search patients"></label>
       <span class="solo-label">${S.sq.trim() ? "Results" : "Recent patients"}</span>
       <div class="solo-list" id="so-list">${list.map(p => `<button class="solo-card" data-a="so-open" data-v="${p.id}">
           <span class="solo-av">${esc(initials(p.name))}</span><span class="solo-who"><b>${esc(p.name)}</b><small>${esc(soloWho(p))}</small></span>
@@ -134,6 +134,11 @@ document.addEventListener("click", async e => {
     if (a === "so-places") await openPlaces();
     if (a === "so-share") await shareNote(Number(v));
   });
+});
+// Laptop: "/" jumps to the search box on the home screen.
+document.addEventListener("keydown", e => {
+  if (e.key !== "/" || !S.clinic?.solo || e.target.closest("input,textarea,select,[contenteditable]")) return;
+  const q = $("#so-q"); if (q) { e.preventDefault(); q.focus(); }
 });
 document.addEventListener("input", e => {
   if (e.target.dataset?.a !== "so-q") return;

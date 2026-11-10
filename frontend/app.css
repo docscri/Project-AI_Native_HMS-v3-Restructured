@@ -1453,3 +1453,22 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
   border-radius: 18px; touch-action: none; cursor: crosshair; margin-top: 8px; }
 .sig-hint { display: block; text-align: center; color: var(--muted); font-size: 12.5px; font-weight: 600; margin-top: 6px; }
 #sig-layer .scrim { z-index: 120; }
+
+/* Phone: a pop-up is as tall as its content and the backdrop scrolls (a fixed max height let long forms spill
+   past the bottom, e.g. Save in Account). Viewers with their own inner scroll keep the cap. */
+@media (max-width: 620px) {
+  .modal { max-height: none; }
+  .modal.wide:has(.nv), .modal.wide:has(.dv), #tpl-layer .modal.wide { max-height: calc(100vh - 24px); }
+  .scrim { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+}
+/* Signature: one compact row; the image opens on View */
+.sig-box { flex-direction: row !important; align-items: center; flex-wrap: wrap; gap: 8px 10px !important; padding: 12px 14px !important; }
+.sig-state { display: flex; flex-direction: column; margin-right: auto; min-width: 0; }
+.sig-state b { font-size: 14px; }
+.sig-state b.none { color: var(--muted); font-weight: 600; }
+.sig-btns { gap: 6px !important; }
+.sig-view-img { display: grid; place-items: center; background: var(--white); border-radius: 18px; padding: 18px; min-height: 140px; }
+.sig-view-img img { max-width: 100%; max-height: 180px; }
+.sig-box .sig-state { flex: 1 1 100%; flex-direction: row; align-items: baseline; justify-content: space-between; }
+.sig-box .sig-btns { width: 100%; display: grid !important; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+.sig-box .sig-btns .btn { justify-content: center; padding-inline: 6px; }

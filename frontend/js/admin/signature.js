@@ -1,20 +1,24 @@
 /* A doctor's signature, shown on the notes they sign (print and PDF). Drawn with a finger or uploaded as a photo;
    either way it is cleaned here into a small transparent PNG: ink only, trimmed, no paper. */
 
-async function paintSignature() {
+function paintSignature() {
   const box = $("#sig-box"); if (!box) return;
-  let img = "";
-  if (S.me.signature_id) {
-    try {
-      const r = await fetch(`/api/signatures/${S.me.signature_id}`, { headers: { Authorization: "Bearer " + S.token } });
-      if (r.ok) { if (S.sigUrl) URL.revokeObjectURL(S.sigUrl); S.sigUrl = URL.createObjectURL(await r.blob()); img = `<img src="${S.sigUrl}" alt="Your signature">`; }
-    } catch {}
-  }
-  box.innerHTML = `<div class="sig-top"><span class="sig-label">Signature</span><span class="muted">On notes you sign</span></div>
-    <div class="sig-preview ${img ? "" : "empty"}">${img || "No signature yet"}</div>
-    <div class="sig-btns"><button class="btn small" data-a="sig-draw">Draw</button>
+  const has = !!S.me.signature_id;
+  box.innerHTML = `<div class="sig-state"><span class="sig-label">Signature</span>${has ? "<b>Added</b>" : `<b class="none">Not added</b>`}</div>
+    <div class="sig-btns">${has ? `<button class="btn small" data-a="sig-view">View</button>` : ""}<button class="btn small" data-a="sig-draw">Draw</button>
       <label class="btn small sig-up">Upload<input type="file" accept="image/*" data-a="sig-file" hidden></label>
-      ${img ? `<button class="btn small ghost" data-a="sig-remove">Remove</button>` : ""}</div>`;
+      ${has ? `<button class="btn small danger" data-a="sig-remove">Remove</button>` : ""}</div>`;
+}
+async function viewSignature() {
+  const r = await fetch(`/api/signatures/${S.me.signature_id}`, { headers: { Authorization: "Bearer " + S.token } });
+  if (!r.ok) throw new Error("Could not load the signature.");
+  if (S.sigUrl) URL.revokeObjectURL(S.sigUrl);
+  S.sigUrl = URL.createObjectURL(await r.blob());
+  const layer = document.getElementById("sig-layer") || document.body.appendChild(Object.assign(document.createElement("div"), { id: "sig-layer" }));
+  layer.innerHTML = `<div class="scrim"><div class="modal sig-modal" role="dialog" aria-modal="true" aria-label="Your signature">
+    <h2>Your signature</h2><div class="sig-view-img"><img src="${S.sigUrl}" alt="Your signature"></div>
+    <span class="sig-hint">Shown on the notes you sign</span>
+    <div class="foot"><button class="btn primary" data-a="sig-cancel">Done</button></div></div></div>`;
 }
 
 // Ink only: anything near the paper's brightness becomes transparent, the rest dark ink; trimmed and scaled down.
@@ -84,6 +88,7 @@ document.addEventListener("click", e => {
   e.preventDefault(); e.stopPropagation();
   run(async () => {
     const a = t.dataset.a;
+    if (a === "sig-view") await viewSignature();
     if (a === "sig-draw") openSignaturePad();
     if (a === "sig-clear") S.sigPad?.clear();
     if (a === "sig-cancel") closeSignaturePad();

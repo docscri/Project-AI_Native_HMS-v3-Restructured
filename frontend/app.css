@@ -1391,3 +1391,8 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 .login-pw .pw-eye { color: color-mix(in srgb, var(--ink) 55%, transparent); }
 .login-pw .login-input:not(:placeholder-shown):not(:-webkit-autofill) ~ .pw-eye { color: color-mix(in srgb, var(--surface) 80%, transparent); }
 .login-pw .login-input:not(:placeholder-shown):not(:-webkit-autofill) ~ .pw-eye:hover { color: var(--surface); background: color-mix(in srgb, var(--surface) 12%, transparent); }
+/* Sign-up steps on phone and tablet: room between the Dictate name and the card */
+@media (max-width: 1023px) {
+  .login-screen.ob { padding-top: calc(108px + env(safe-area-inset-top)); }
+  .login-screen.ob .login-brand { top: calc(36px + env(safe-area-inset-top)); left: 28px; }
+}

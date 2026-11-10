@@ -86,7 +86,7 @@ async function openTemplate(dept) {
   const layer = document.getElementById("tpl-layer") || document.body.appendChild(Object.assign(document.createElement("div"), { id: "tpl-layer" }));
   layer.innerHTML = `<div class="scrim" data-a="tpl-close"><div class="modal wide" role="dialog" aria-modal="true" aria-label="Note template">
     <button class="icon-x modal-x" data-a="tpl-close" aria-label="Close">×</button><div class="tp"><div class="tp-top"><div><span class="tp-kicker">Note template</span><h2>${esc(t.title)}</h2>
-      <span class="muted">The OPD case sheet for this department: its sections, in order.</span></div></div>
+</div></div>
     <div class="tp-body">
       <div class="tp-strip"><span class="tp-label">Patient</span>${t.header.patient.map(x => `<span class="tp-chip">${esc(x)}</span>`).join("")}</div>
       <div class="tp-strip"><span class="tp-label">Vitals</span>${t.header.vitals.map(x => `<span class="tp-chip">${esc(x)}</span>`).join("")}</div>

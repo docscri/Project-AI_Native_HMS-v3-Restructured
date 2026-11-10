@@ -1343,12 +1343,27 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 .ob-kind button { padding: 10px 12px; }
 @media (min-width: 1024px) { .solo-view:has(.solo-pt) > .solo-go { justify-self: start; } }
 
-/* Phone and tablet: a slim tab bar. Brief / Consult / Note as one 34px control, sub-tabs right under it. */
+/* Phone and tablet: the laptop's compact tab bar. Brief / Consult / Note as small pills on the left,
+   Summary / Events / Charts as text tabs on the right, one row (wraps only on very narrow phones). */
 @media (max-width: 1023px) {
-  .cx .cx-tabrow { gap: 2px !important; }
-  .cx .cx-tabrow > .cx-tabs:first-child { padding: 3px !important; gap: 0 !important; }
-  .cx .cx-tabrow > .cx-tabs:first-child button { min-height: 30px !important; padding: 0 8px !important; font-size: 13.5px; }
-  .cx .cx-subtabs { gap: 18px; }
-  .cx .cx-subtabs button { min-height: 30px; font-size: 13.5px; }
-  .cx .cx-subtabs button[aria-pressed="true"]::after { bottom: 2px; }
+  .cx .cx-tabrow { flex-direction: row !important; align-items: center !important; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px !important; }
+  .cx .cx-tabrow > .cx-tabs:first-child { display: inline-flex !important; width: auto !important; background: transparent !important; padding: 0 !important; gap: 4px !important; border-radius: 0; }
+  .cx .cx-tabrow > .cx-tabs:first-child button { width: auto !important; min-height: 30px !important; padding: 0 12px !important; font-size: 13px;
+    background: var(--tile) !important; color: var(--ink) !important; border: 0 !important; border-radius: 999px !important; }
+  .cx .cx-tabrow > .cx-tabs:first-child button[aria-pressed="true"] { background: var(--ink) !important; color: var(--surface) !important; }
+  .cx .cx-subtabs { width: auto !important; gap: 14px; }
+  .cx .cx-subtabs button { min-height: 30px; font-size: 13px; }
+  .cx .cx-subtabs button[aria-pressed="true"]::after { bottom: 3px; }
+}
+@media (max-width: 480px) {
+  .cx .cx-tabrow { gap: 6px 8px !important; }
+  .cx .cx-tabrow > .cx-tabs:first-child { gap: 3px !important; }
+  .cx .cx-tabrow > .cx-tabs:first-child button { padding: 0 10px !important; font-size: 12.5px; min-height: 28px !important; }
+  .cx .cx-subtabs { gap: 10px; }
+  .cx .cx-subtabs button { font-size: 12.5px; min-height: 28px; }
+}
+@media (max-width: 480px) {
+  .cx .cx-tabrow > .cx-tabs:first-child button { padding: 0 9px !important; }
+  .cx .cx-subtabs { gap: 8px; }
+  .cx .cx-subtabs button { font-size: 12px; }
 }

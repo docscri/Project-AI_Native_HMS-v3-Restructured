@@ -126,3 +126,28 @@ function makeStepper(inp) {
   more.addEventListener("click", e => { e.preventDefault(); bump(true); });
   inp.after(box); inp.closest(".field")?.classList.add("has-stepper");
 }
+
+// Every password box gets a show/hide eye, wherever it appears (login, sign-up, invites, resets, account).
+const EYE = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const EYE_OFF = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>`;
+function addPasswordEyes(root = document) {
+  root.querySelectorAll('input[type="password"]:not([data-eye])').forEach(input => {
+    input.dataset.eye = "1";
+    let box = input.closest(".login-pw");
+    if (!box) { box = document.createElement("span"); box.className = "pw-wrap"; input.before(box); box.append(input); }
+    box.classList.add("has-eye");
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "pw-eye"; b.innerHTML = EYE;
+    b.setAttribute("aria-label", "Show password"); b.setAttribute("aria-pressed", "false");
+    b.addEventListener("mousedown", e => e.preventDefault());   // keep the cursor in the box
+    b.addEventListener("click", () => {
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      b.innerHTML = show ? EYE_OFF : EYE;
+      b.setAttribute("aria-label", show ? "Hide password" : "Show password"); b.setAttribute("aria-pressed", String(show));
+    });
+    box.append(b);
+  });
+}
+new MutationObserver(() => addPasswordEyes()).observe(document.documentElement, { childList: true, subtree: true });
+document.addEventListener("DOMContentLoaded", () => addPasswordEyes());

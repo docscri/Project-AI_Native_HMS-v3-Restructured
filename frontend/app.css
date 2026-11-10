@@ -1379,3 +1379,15 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 .solo-skip { align-self: center; margin: 2px auto 0; display: block; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 14.5px;
   font-weight: 700; padding: 8px 14px; border-radius: 999px; cursor: pointer; }
 .solo-skip:hover, .solo-skip:focus-visible { color: var(--ink); background: var(--tile); }
+/* Show/hide password eye */
+.pw-wrap { position: relative; display: block; width: 100%; }
+.pw-wrap > input { width: 100%; padding-right: 48px !important; }
+.pw-eye { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); width: 38px; height: 38px; border: 0; border-radius: 999px; background: transparent;
+  color: var(--muted); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.pw-eye:hover, .pw-eye:focus-visible { color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, transparent); }
+.login-pw.has-eye .login-input { padding-right: 104px; }
+.login-pw .pw-eye { right: 62px; }
+/* Login: the eye follows the field (dark text on the empty light field, light text once typed) */
+.login-pw .pw-eye { color: color-mix(in srgb, var(--ink) 55%, transparent); }
+.login-pw .login-input:not(:placeholder-shown):not(:-webkit-autofill) ~ .pw-eye { color: color-mix(in srgb, var(--surface) 80%, transparent); }
+.login-pw .login-input:not(:placeholder-shown):not(:-webkit-autofill) ~ .pw-eye:hover { color: var(--surface); background: color-mix(in srgb, var(--surface) 12%, transparent); }

@@ -18,7 +18,7 @@ async function viewSignature() {
   layer.innerHTML = `<div class="scrim"><div class="modal sig-modal" role="dialog" aria-modal="true" aria-label="Your signature">
     <h2>Your signature</h2><div class="sig-view-img"><img src="${S.sigUrl}" alt="Your signature"></div>
     <span class="sig-hint">Shown on the notes you sign</span>
-    <div class="foot"><button class="btn primary" data-a="sig-cancel">Done</button></div></div></div>`;
+    <div class="foot"><button class="btn danger" data-a="sig-remove" style="margin-right:auto">Remove</button><button class="btn primary" data-a="sig-cancel">Done</button></div></div></div>`;
 }
 
 // Ink only: anything near the paper's brightness becomes transparent, the rest dark ink; trimmed and scaled down.
@@ -93,7 +93,7 @@ document.addEventListener("click", e => {
     if (a === "sig-clear") S.sigPad?.clear();
     if (a === "sig-cancel") closeSignaturePad();
     if (a === "sig-save") { if (!S.sigPad?.drew()) return toast("Sign in the box first.", true); const blob = await cleanSignature(S.sigPad.cv, false); closeSignaturePad(); await saveSignature(blob); }
-    if (a === "sig-remove") { await api("/me/signature", { method: "DELETE" }); S.me.signature_id = null; S.me.has_signature = false; toast("Signature removed. Notes already signed keep it."); paintSignature(); }
+    if (a === "sig-remove") { closeSignaturePad(); await api("/me/signature", { method: "DELETE" }); S.me.signature_id = null; S.me.has_signature = false; toast("Signature removed. Notes already signed keep it."); paintSignature(); }
   });
 }, true);
 document.addEventListener("change", e => {

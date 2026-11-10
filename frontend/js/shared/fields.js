@@ -25,6 +25,15 @@ function enhance(root) {
   root.querySelectorAll('input[type="number"]:not([data-step])').forEach(makeStepper);
 }
 function closeMenus(except) { document.querySelectorAll(".dd.open").forEach(d => d !== except && !d.contains(except) && d.classList.remove("open")); }
+// Opens the list where it fits: below the box, or above it when the screen has more room there; never past the screen edge.
+function placeMenu(wrap, menu) {
+  wrap.classList.remove("up"); menu.style.maxHeight = "";
+  const r = wrap.getBoundingClientRect(), vh = window.visualViewport?.height || innerHeight, gap = 16;
+  const below = vh - r.bottom - gap, above = r.top - gap, want = Math.min(menu.scrollHeight, 300);
+  const up = below < want && above > below;
+  wrap.classList.toggle("up", up);
+  menu.style.maxHeight = Math.max(140, Math.min(300, up ? above : below) - 8) + "px";
+}
 function makeDropdown(sel) {
   sel.dataset.dd = "1";
   const wrap = document.createElement("div");
@@ -39,7 +48,7 @@ function makeDropdown(sel) {
   };
   paint();
   sel.parentNode.insertBefore(wrap, sel); wrap.append(btn, menu, sel); sel.classList.add("dd-native"); sel.tabIndex = -1;
-  btn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); closeMenus(wrap); wrap.classList.toggle("open"); menu.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" }); });
+  btn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); closeMenus(wrap); wrap.classList.toggle("open"); if (wrap.classList.contains("open")) placeMenu(wrap, menu); menu.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" }); });
   menu.addEventListener("click", e => {
     const o = e.target.closest(".dd-opt"); if (!o) return; e.preventDefault(); e.stopPropagation();
     sel.selectedIndex = Number(o.dataset.i); paint(); wrap.classList.remove("open"); btn.focus();

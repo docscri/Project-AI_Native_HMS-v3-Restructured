@@ -1396,3 +1396,5 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
   .login-screen.ob { padding-top: calc(108px + env(safe-area-inset-top)); }
   .login-screen.ob .login-brand { top: calc(36px + env(safe-area-inset-top)); left: 28px; }
 }
+/* Dropdown near the bottom of the screen opens upward */
+.dd.up > .dd-menu { top: auto; bottom: calc(100% + 8px); }

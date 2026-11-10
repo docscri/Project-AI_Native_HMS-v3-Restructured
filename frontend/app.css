@@ -1398,3 +1398,28 @@ input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-i
 }
 /* Dropdown near the bottom of the screen opens upward */
 .dd.up > .dd-menu { top: auto; bottom: calc(100% + 8px); }
+
+/* Phone and tablet: the bottom bar is a compact centred pill in every state, like the laptop's, sized down.
+   Recording: cancel · wave · time · pause · stop. Note: message (when it fits) · actions. */
+@media (max-width: 1023px) {
+  .cx-float { bottom: calc(14px + env(safe-area-inset-bottom)); height: 80px; margin-top: -80px; }
+  .cx-float .dock { width: auto !important; max-width: calc(100% - 24px); min-height: 50px; gap: 6px; padding: 5px !important; }
+  .cx-float .dock > .dock-msg { margin-left: 11px; }
+  .cx-float .dock.rec { width: min(380px, calc(100% - 24px)) !important; padding: 5px !important; gap: 8px; }
+  .cx-float .dock-cancel { width: 38px; height: 38px; margin-right: 0; }
+  .cx-float .dock-cancel svg { width: 16px; height: 16px; }
+  .cx-float .dock-wave { display: flex !important; flex: 1; height: 26px; gap: 3px; overflow: hidden; justify-content: center; }
+  .cx-float .dock-wave i { width: 2.5px; height: calc(var(--h) * .7); flex: none; }
+  .cx-float .dock-time { min-width: 34px; font-size: 12.5px; }
+  .cx-float .dock-round { width: 38px; height: 38px; }
+  .cx-float .dock-stop { width: 40px; height: 40px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--coral) 22%, transparent); }
+  .cx-float .dock-round svg, .cx-float .dock-stop svg { width: 15px; height: 15px; }
+  .cx-float .dock-msg { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .cx-float .dock .grow { flex: 0 0 4px; }
+  .cx-float .dock-ghost { min-height: 38px; padding: 0 13px; font-size: 13.5px; }
+  .cx-float .dock-go { min-height: 40px; padding: 0 16px; font-size: 13.5px; }
+  .cx-float .dock-text { padding-right: 12px; font-size: 13.5px; }
+  .mic-dot { width: 54px; height: 54px; }
+  .mic-dot svg { width: 22px; height: 22px; }
+}
+@media (max-width: 400px) { .cx-float .dock-msg { display: none; } }

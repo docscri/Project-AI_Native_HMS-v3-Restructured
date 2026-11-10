@@ -2338,6 +2338,7 @@
   "GET /api/notes/{note_id}/print",
   "GET /api/operations/day",
   "GET /api/operations/queue",
+  "GET /api/ops/usage",
   "GET /api/patients",
   "GET /api/patients/check",
   "GET /api/patients/{patient_id}",

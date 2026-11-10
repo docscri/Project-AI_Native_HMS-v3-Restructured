@@ -1,6 +1,7 @@
 """Upload, read in the background, serve back."""
 import logging
 
+from app.shared import usage
 from app.core.patient import get_patient
 from app.core.visit import get_visit
 from app.modules.clinical.brief import service as brief
@@ -30,7 +31,8 @@ def run_extraction(doc_id: int) -> None:
     try:
         d = repo.get(db, doc_id)
         try:
-            ex = extract_document(storage.read(d["path"]), d["mime"], d["filename"])
+            with usage.clinic(d["clinic_id"]):
+                ex = extract_document(storage.read(d["path"]), d["mime"], d["filename"])
             repo.set_read(db, doc_id, "ready", ex)
         except Exception as e:  # keep the file, flag the failure
             log.warning("Reading document %s failed: %s", doc_id, tasks.reason(e, read_report))   # for whoever runs the server

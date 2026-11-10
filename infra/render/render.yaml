@@ -20,3 +20,5 @@ services:
         sync: false
       - key: GEMINI_API_KEY        # optional: AI notes
         sync: false
+      - key: OPS_TOKEN             # optional: a long random secret; lets you read the usage meter at /api/ops/usage
+        sync: false

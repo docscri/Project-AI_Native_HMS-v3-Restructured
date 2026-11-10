@@ -14,6 +14,7 @@ from pathlib import Path
 
 import httpx
 
+from app.shared import usage
 from app import config
 from app.shared.ai import llm
 
@@ -78,7 +79,8 @@ def run(task, *, on_failure: str = "fallback", **inputs):
     wants_ai = getattr(task, "wants_ai", lambda **_: True)
     if llm.enabled() and wants_ai(**inputs):
         try:
-            reply = task.Reply.model_validate(llm.generate(task.parts(**inputs), config.model_for(task.NAME)))
+            with usage.job(task.NAME):
+                reply = task.Reply.model_validate(llm.generate(task.parts(**inputs), config.model_for(task.NAME)))
             return task.check(reply.model_dump(), **inputs)
         except Exception as e:
             log.warning("AI task %s (%s) failed: %s", version(task), config.model_for(task.NAME), reason(e, task))

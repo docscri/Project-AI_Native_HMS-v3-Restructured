@@ -10,6 +10,8 @@ from app.core.visit import get_visit
 from app.modules.clinical.consultation.service import editable
 from app.shared.ai import llm
 from app.shared.ai import speech as transcribe
+from app import config
+from app.shared import usage
 from app.shared.auth import current_member, member_for_token, public_member, require_any, require_screen
 from app.shared.db import connect, get_db
 from app.shared.errors import DomainError
@@ -90,6 +92,15 @@ def _check(token: str, visit_id: int) -> str | None:
         db.close()
 
 
+def _meter_speech(visit_id: int, seconds: float) -> None:
+    db = connect()
+    try:
+        r = db.execute("select clinic_id from visits where id = ?", (visit_id,)).fetchone()
+    finally:
+        db.close()
+    usage.record_speech(r[0] if r else None, config.value("SPEECH_MODEL"), seconds)
+
+
 @router.websocket("/visits/{visit_id}/dictate")
 async def dictate(ws: WebSocket, visit_id: int):
     # The login token comes as a WebSocket subprotocol so it never appears in URLs or logs.
@@ -110,7 +121,7 @@ async def dictate(ws: WebSocket, visit_id: int):
     if visit_id in _active:
         return await fail("Already dictating in another window.")
     _active.add(visit_id)
-    stream = None
+    stream, audio_bytes = None, 0
     try:
         async def on_text(event: dict):
             if ws.application_state == WebSocketState.CONNECTED:
@@ -138,6 +149,7 @@ async def dictate(ws: WebSocket, visit_id: int):
                         break
                     checked = time.monotonic()
                 await stream.send(msg["bytes"])
+                audio_bytes += len(msg["bytes"])
     except WebSocketDisconnect:
         pass
     except Exception:
@@ -146,6 +158,8 @@ async def dictate(ws: WebSocket, visit_id: int):
         if stream is not None:
             await asyncio.shield(stream.close())   # last words still reach the browser
         _active.discard(visit_id)
+        if audio_bytes:   # 16 kHz, 16-bit mono: 32,000 bytes a second
+            await asyncio.to_thread(_meter_speech, visit_id, audio_bytes / 32000)
         if ws.application_state == WebSocketState.CONNECTED:
             with suppress(Exception):
                 await ws.close()

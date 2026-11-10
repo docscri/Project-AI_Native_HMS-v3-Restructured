@@ -4,6 +4,8 @@ import os
 
 import httpx
 
+from app.shared import usage
+
 
 def enabled() -> bool:
     return bool(os.environ.get("GEMINI_API_KEY"))
@@ -17,4 +19,7 @@ def generate(parts: list[dict], model: str) -> dict:
         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},
     })
     r.raise_for_status()
-    return json.loads(r.json()["candidates"][0]["content"]["parts"][0]["text"])
+    body = r.json()
+    u = body.get("usageMetadata") or {}   # what Google billed: thinking tokens are charged as output
+    usage.record_ai(model, u.get("promptTokenCount", 0), u.get("candidatesTokenCount", 0) + u.get("thoughtsTokenCount", 0))
+    return json.loads(body["candidates"][0]["content"]["parts"][0]["text"])

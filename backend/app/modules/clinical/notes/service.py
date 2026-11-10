@@ -1,6 +1,7 @@
 """Draft from cited evidence, edit, sign."""
 import json
 
+from app.shared import usage
 from app.core import departments
 from app.core.clinic import clinic_of
 from app.core.patient import age
@@ -89,7 +90,8 @@ def draft(db, me, visit_id: int) -> dict:
     if not any(i["kind"] == "transcript" for i in items) and not any(i["kind"] == "document" for i in items):
         raise Invalid("Dictate or add a document first.")
     sheet = sheet_of(db, v["doctor_id"])
-    d = draft_note(patient, items, sheet)
+    with usage.clinic(me["clinic_id"]):
+        d = draft_note(patient, items, sheet)
     if isinstance(d.get("sections"), list):
         texts = {str(x.get("key")): x.get("text") for x in d["sections"] if isinstance(x, dict)}
         cites = d.get("citations") or {}

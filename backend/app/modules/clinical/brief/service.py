@@ -4,6 +4,7 @@ import logging
 import re
 from datetime import date
 
+from app.shared import usage
 from app.core.visit import get_visit
 from app.shared.ai import llm, tasks
 from app.shared.ai.tasks.brief_summary import task as brief_summary
@@ -185,6 +186,11 @@ def charts(notes: list[dict], docs: list[dict], db) -> list[dict]:
 
 
 def build(db, v: dict) -> dict:
+    with usage.clinic(v["clinic_id"]):
+        return _build(db, v)
+
+
+def _build(db, v: dict) -> dict:
     notes, finished = inputs(db, v)
     docs, unread = [d for d in finished if d["ai_status"] == "ready"], [d for d in finished if d["ai_status"] == "failed"]
     p = repo.patient(db, v["patient_id"])

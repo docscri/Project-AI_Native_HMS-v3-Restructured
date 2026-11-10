@@ -92,3 +92,13 @@ Keep it awake with a free monitor (e.g. UptimeRobot) that opens the address ever
 
 The clinic's time zone is India by default; set `CLINIC_TZ` (e.g. `Asia/Dubai`) for another place.
 New patients are registered only with their consent, which is recorded with the date.
+
+## Usage meter (AI and dictation cost per clinic)
+
+Every Gemini call (the tokens Google billed) and every dictation stream (seconds of audio) is recorded per clinic and job,
+priced with `AI_PRICES` / `SPEECH_PRICES` / `USD_INR` in `backend/app/config.py`. Keep those prices up to date.
+
+- On the server or locally: `python scripts/usage_report.py --month 2026-11` (add `--json` for raw numbers).
+- On Render: set `OPS_TOKEN` to a long random secret, then
+  `curl -H "X-Ops-Token: <secret>" https://<your-app>/api/ops/usage?month=2026-11`.
+  Without the token the address answers 404; clinics never see their costs.

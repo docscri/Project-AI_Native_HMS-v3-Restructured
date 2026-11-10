@@ -29,8 +29,20 @@ LLM_MODELS = {
     "note_values": "gemini-3.8-flash-lite",
 }
 SPEECH = "deepgram"
-SPEECH_MODEL = "nova-3"
+SPEECH_MODEL = "nova-3-medical"   # medical vocabulary (drugs, doses, MSE...); patients' audio opted out of Deepgram training
 SPEECH_LANGUAGE = "en"
+
+# Prices for the usage meter (scripts/usage_report.py, /api/ops/usage). Check them against Google's and Deepgram's
+# pages now and then: the meter prices each call at the rate here when it happened.
+AI_PRICES = {                      # model: ($ per 1M input tokens, $ per 1M output tokens)
+    "gemini-3.8-flash": (0.30, 3.75),
+    "gemini-3.8-flash-lite": (0.30, 2.50),
+}
+SPEECH_PRICES = {                  # model: $ per minute of audio (live streaming)
+    "nova-3-medical": 0.0065,
+    "nova-3": 0.0077,
+}
+USD_INR = 85
 
 PACKAGES = {"DATABASE": "app.shared.db", "STORAGE": "app.shared.files", "LLM": "app.shared.ai.llm", "SPEECH": "app.shared.ai.speech"}
 NO_PROVIDER = {"LLM": "none", "SPEECH": "browser"}   # built-in "off" choices with no file

@@ -27,7 +27,7 @@ class DeepgramStream:
         from deepgram.core.events import EventType
         from deepgram.listen.v1.types import ListenV1Results
         options = {"model": config.value("SPEECH_MODEL"), "language": config.value("SPEECH_LANGUAGE"),
-                   "interim_results": True, "smart_format": True, "encoding": "linear16", "sample_rate": 16000, "channels": 1}
+                   "interim_results": True, "smart_format": True, "mip_opt_out": True, "encoding": "linear16", "sample_rate": 16000, "channels": 1}
         for attempt in range(3):
             try:
                 ctx = self.client.listen.v1.connect(**options)

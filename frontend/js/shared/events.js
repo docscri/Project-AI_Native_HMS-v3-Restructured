@@ -16,7 +16,7 @@ document.addEventListener("click", e => {
   const a = t.dataset.a, v = t.dataset.v;
   if (a === "tpl-close") { if (e.target === t) $("#tpl-layer").innerHTML = ""; return; }
   if (a === "scrim") { if (e.target === t && M?.kind !== "sched") closeModal(); return; }
-  if (["lim", "mb-admin", "mr-range", "lvm-m", "lvm-y", "rgm-m", "rgm-y", "free-text", "up-file", "mg-q", "vf-q", "vf-doc", "pay-disc", "bk-q", "pt-q", "cs-q", "bk-date", "bk-doc", "sc-doc", "sc-month-picker", "sc-year-picker", "cs-doc"].includes(a)) return;
+  if (["sig-file", "lim", "mb-admin", "mr-range", "lvm-m", "lvm-y", "rgm-m", "rgm-y", "free-text", "up-file", "mg-q", "vf-q", "vf-doc", "pay-disc", "bk-q", "pt-q", "cs-q", "bk-date", "bk-doc", "sc-doc", "sc-month-picker", "sc-year-picker", "cs-doc"].includes(a)) return;
   e.preventDefault();
   const D = S.data;
   run(async () => {

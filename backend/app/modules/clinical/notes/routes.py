@@ -1,3 +1,4 @@
+import base64
 import html
 import json
 
@@ -8,6 +9,7 @@ from app.core.patient import age
 from app.shared import printing as printpage
 from app.shared.auth import require_any, require_screen
 from app.shared.db import get_db
+from app.modules.clinical.signatures import service as signatures
 from . import service
 from .schema import AddendumIn, NoteEdit
 
@@ -68,17 +70,20 @@ def print_note(note_id: int, auto: int = 0, me=Depends(require_any("consultation
     sex = {"M": "Male", "F": "Female", "O": "Other"}.get(p["sex"] or "", "")
     who = " · ".join(x for x in [f"{age(p['dob'])} yrs" if p["dob"] else "", sex, p["uhid"]] if x)
     signed = f"Signed by {e(n['signed_by_name'] or d['name'])} · {printpage.stamp(n['signed_at'])}" if n["signed_at"] else "Draft · not signed"
+    sig = signatures.image_or_none(db, me["clinic_id"], n.get("signature_id")) if n["signed_at"] else None
+    sig_img = f'<img class="sig" alt="Signature" src="data:image/png;base64,{base64.b64encode(sig).decode()}">' if sig else ""
     body = f"""<header><div><h1>{e(c['name'])}</h1><small>{e(' · '.join(x for x in [c['address'], c['phone']] if x))}</small></div>
 <div class="r"><b>{e(p['name'])}</b><small>{e(who)}</small><small><span class="lime">{printpage.day(v['date'])}</span> · {e(d['name'])}{' · ' + e(d['speciality']) if d['speciality'] else ''}</small></div></header>
 <div class="secs">{soap or '<p>—</p>'}</div>{rx_html}{addenda_html}
-<footer><div class="s">{signed}</div><div class="sign">Doctor's signature</div></footer>"""
+<footer><div class="s">{signed}</div><div class="sign">{sig_img}Doctor's signature</div></footer>"""
     note_css = ("<style>.secs{display:flex;flex-direction:column;gap:20px;margin:30px 0 8px}.sec{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start}"
                 ".tile{width:28px;height:28px;border-radius:8px;background:#0B1411;color:#E8F1EC;display:grid;place-items:center;font-size:12px;font-weight:800}"
                 ".sec small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#6B7C75;margin-top:2px}"
                 ".sec p{margin:4px 0 0;font-size:15.5px;line-height:1.65;font-weight:500;white-space:pre-wrap}"
                 ".vit small{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#6B7C75}.vit p{margin:4px 0 0;font-size:15px;font-weight:600}"
                 ".add{border-left:3px solid #B6F36B;padding:4px 0 4px 14px;margin:10px 0}.add small{font-size:11px;font-weight:700;color:#6B7C75}"
-                ".add p{margin:4px 0 0;font-size:15px;line-height:1.6;white-space:pre-wrap}</style>")
+                ".add p{margin:4px 0 0;font-size:15px;line-height:1.6;white-space:pre-wrap}"
+                "footer .sign{position:relative}.sig{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);max-width:190px;max-height:58px}</style>")
     return printpage.page(f"{p['name']} · {printpage.day(v['date'])}", note_css + body, auto=bool(auto))
 
 
@@ -109,7 +114,8 @@ def note_pdf(note_id: int, me=Depends(require_any("consultation", "patients")), 
         loc = db.execute("select name from locations where id = ?", (v["location_id"],)).fetchone()
         c = dict(c) | {"place": loc[0] if loc else None}
     data = build(clinic=c, patient=p, who=who, when=when, doctor=doctor, title=f"{p['name']} · {when}", vitals=vitals,
-                 sections=sections, rx=[r for r in content["rx"] if r.get("medicine")], addenda=adds, signed=signed)
+                 sections=sections, rx=[r for r in content["rx"] if r.get("medicine")], addenda=adds, signed=signed,
+                 signature=signatures.image_or_none(db, me["clinic_id"], n.get("signature_id")) if n["signed_at"] else None)
     name = "".join(ch if ch.isalnum() else "-" for ch in p["name"]).strip("-") or "note"
     return Response(data, media_type="application/pdf",
                     headers={"Content-Disposition": f'inline; filename="{name}-{v["date"]}.pdf"', "Cache-Control": "no-store"})

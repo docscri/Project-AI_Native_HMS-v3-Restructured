@@ -67,10 +67,12 @@ async function openAccount() {
     ${upcoming.length ? `<div class="rows my-leave">${upcoming.map(l => `<div class="r my-leave-row"><span class="num">${niceDate(l.start_date)}${l.end_date !== l.start_date ? " – " + niceDate(l.end_date) : ""}</span><span class="who muted">${esc(l.reason || "")}</span><span class="actions" style="gap:6px"><span class="pill ${LEAVE_ST[l.status][1]}">${LEAVE_ST[l.status][0]}</span><button class="btn small icon-btn" data-a="lv-cancel" data-v="${l.id}" aria-label="Cancel leave">×</button></span></div>`).join("")}</div>` : ""}
     <div class="grid2"><label class="field">Name<input id="ac-name" value="${esc(m.name)}"></label>${doc ? deptSelect("ac-role", m.speciality) : `<label class="field">Designation<input id="ac-role" value="${esc(m.designation || "")}"></label>`}</div>
     <div class="grid2"><label class="field">Email<input id="ac-email" type="email" value="${esc(m.email)}"></label><label class="field">Phone<input id="ac-phone" value="${esc(m.phone || "")}"></label></div>
+    ${doc ? `<div class="sig-box" id="sig-box"></div>` : ""}
     <label class="field">Current password<input id="ac-cur" type="password" autocomplete="current-password"></label>
     <div class="grid2"><label class="field">New password<input id="ac-new" type="password" autocomplete="new-password"></label><label class="field">Repeat new password<input id="ac-new2" type="password" autocomplete="new-password"></label></div>
     <div class="foot"><button class="btn danger" data-a="logout" style="margin-right:auto">Log out</button>${S.clinic.solo ? `<button class="btn" data-a="so-places">Places</button><button class="btn" data-a="tpl-view" data-from="ac-role">Template</button>`
       : `<button class="btn" data-a="my-leave">Leave</button>${doc ? `<button class="btn" data-a="my-schedule">My schedule</button><button class="btn" data-a="tpl-view" data-from="ac-role">Template</button>` : ""}`}<button class="btn primary" data-a="ac-save">Save</button></div>`);
+  if (doc) paintSignature();
 }
 function copyInvite(code, msg) {
   const link = `${location.origin}/#/invite/${code}`;

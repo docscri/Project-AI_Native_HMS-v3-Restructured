@@ -41,7 +41,8 @@ def _label(pdf: _Doc, text: str, x: float, w: float):
 
 
 def note_pdf(*, clinic: dict, patient: dict, who: str, when: str, doctor: str, title: str, vitals: str,
-             sections: list[tuple[str, str, str]], rx: list[dict], addenda: list[tuple[str, str]], signed: str) -> bytes:
+             sections: list[tuple[str, str, str]], rx: list[dict], addenda: list[tuple[str, str]], signed: str,
+             signature: bytes | None = None) -> bytes:
     """sections: (tile, label, text). addenda: (stamp · name, text)."""
     pdf = _Doc(f"{patient['name']} · {when}")
     pdf.set_title(title)
@@ -156,6 +157,12 @@ def note_pdf(*, clinic: dict, patient: dict, who: str, when: str, doctor: str, t
     pdf.set_draw_color(*INK)
     pdf.set_line_width(0.4)
     pdf.line(M + W - 60, y + 10, M + W, y + 10)
+    if signature:   # the doctor's own signature, sitting on the line, kept in proportion
+        import io
+        try:
+            pdf.image(io.BytesIO(signature), x=M + W - 55, y=y - 8, w=50, h=17, keep_aspect_ratio=True)
+        except Exception:
+            pass
     pdf.set_xy(M + W - 60, y + 12)
     pdf.set_font("M", "B", 8)
     pdf.set_text_color(*MUTED)

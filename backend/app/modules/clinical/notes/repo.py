@@ -60,7 +60,9 @@ def save(db, note_id: int, content: str, edited: int) -> bool:
 
 def sign(db, note_id: int, ts: str, member_id: int, name: str) -> None:
     # Only from draft, in the write itself, to block racing saves/signs.
-    NOTE.move(db, note_id, "draft", "signed", signed_at=ts, signed_by=member_id, signed_by_name=name)
+    # The signer's signature image as it is now: changing it later never changes this note.
+    sig = db.execute("select signature_id from members where id = ?", (member_id,)).fetchone()
+    NOTE.move(db, note_id, "draft", "signed", signed_at=ts, signed_by=member_id, signed_by_name=name, signature_id=sig[0] if sig else None)
 
 
 def visit(db, visit_id: int) -> dict | None:

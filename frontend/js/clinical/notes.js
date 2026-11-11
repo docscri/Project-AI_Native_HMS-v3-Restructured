@@ -16,10 +16,17 @@ const vitalsLine = n => VITALS.filter(k => (n.content.vitals?.[k] || "").trim())
 function paneNote(v) {
   const n = v.note, signed = n?.status === "signed";
   if (S.drafting === v.id) return `<div class="note-gen"><i></i><i></i><i></i></div>`;
-  if (!n) return `<div class="note-empty"><p class="muted cx-lead">${v.status === "with_doctor" ? "No note yet. Type or dictate in Consult, then press Generate note." : "No note for this visit."}</p></div>`;
+  if (!n) return `<div class="note-empty"><p class="muted cx-lead">${v.status === "with_doctor" ? "No note yet. Dictate or type, then Generate note." : "No note for this visit."}</p></div>${hiddenConsult(v)}`;
   if (S.noteEdit && !signed) return noteEditor(n, false);
-  return soapRead(v, n);
+  return soapRead(v, n) + hiddenConsult(v);
 }
+// The Note tab's mic adds to the Consult dictation: the words land in this hidden copy of the Consult box (saved the
+// same way), so the doctor can stay on the note while speaking.
+const hiddenConsult = v => v.status === "with_doctor" && v.note?.status !== "signed"
+  ? `<textarea id="free-text" data-v="${v.id}" hidden aria-hidden="true" tabindex="-1">${esc(freeText(v))}</textarea>` : "";
+const MIC_SM = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>`;
+const noteMic = v => v.status === "with_doctor" && S.me.kind === "doctor"
+  ? `<button class="dock-mic" data-a="cs-mic" data-v="${v.id}" aria-label="Dictate more" title="Dictate more">${MIC_SM}</button>` : "";
 function soapRead(v, n, still, skipEmpty = false) {
   let num = 0;
   const sec = (k, label, body) => `<div class="soap-sec"><b class="soap-tile">${k}</b><div><span class="soap-label">${label}</span><div class="soap-body">${body}</div></div></div>`;
@@ -75,10 +82,11 @@ function marked(sentence, srcs, still) {
 function noteDock(v) {
   const n = v.note, signed = n?.status === "signed";
   if (S.drafting === v.id) return `<div class="dock writing">${busy("Writing your note")}</div>`;
-  if (!n) return "";   // the empty note carries its own Generate note button
+  if (S.autoNote?.id === v.id) return autoDock(v);   // after Stop on the Note tab: the countdown shows here
+  if (!n) return v.status === "with_doctor" && S.me.kind === "doctor" ? micBtn(v) : "";   // no note yet: dictate from here too
   if (signed) return `<div class="dock"><span class="dock-msg ok">Signed · ${stampOf(n.signed_at)}${n.signed_by_name ? " · " + esc(n.signed_by_name) : ""}</span><span class="grow"></span>${S.me.kind === "doctor" ? `<button class="dock-ghost" data-a="add-addendum" data-v="${n.id}">Add addendum</button>` : ""}<button class="dock-go" data-a="note-print" data-v="${n.id}">Print</button></div>`;
   if (S.noteEdit) return `<div class="dock"><span class="dock-msg">Editing.</span><span class="grow"></span><button class="dock-go" data-a="note-done">Save</button></div>`;
-  return `<div class="dock"><span class="dock-msg">${S.aiOn ? "Drafted by AI." : "Draft."}</span><span class="grow"></span>
+  return `<div class="dock">${noteMic(v)}<span class="dock-msg">${S.aiOn ? "Drafted by AI." : "Draft."}</span><span class="grow"></span>
     <button class="dock-ghost" data-a="note-edit">Edit</button>${v.status === "with_doctor" ? `<button class="dock-ghost" data-a="cs-redraft" data-v="${v.id}">Redraft</button>` : ""}<button class="dock-go" data-a="note-sign-ro" data-v="${n.id}">Sign note</button></div>`;
 }
 function rightCol() {

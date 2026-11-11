@@ -33,7 +33,8 @@ function renderConsult() {
   if (S.ft && S.ft.id !== v?.id) { saveText(S.ft.id, S.ft); S.ft = null; }
   if (!S.ft && v && S.drafts?.[v.id] && S.drafts[v.id].saved !== S.drafts[v.id].text) S.ft = S.drafts[v.id];   // restore unsaved text
   if (S.noteVisit !== v?.id) { S.noteVisit = v?.id; S.noteEdit = false; S.allEvents = false; }
-  const floatMic = v && (["waiting", "with_doctor"].includes(v.status) || S.recState) && S.ctab !== "note";
+  // The mic bar on Brief and Consult; while recording, the recording bar on every tab (Note included), so Stop is always there.
+  const floatMic = v && ((["waiting", "with_doctor"].includes(v.status) && S.ctab !== "note") || (S.recState && S.recVisit === v.id));
   const waitingN = D.today.visits.filter(x => x.status === "waiting").length;
   $("#root").innerHTML = `<div class="cx ${S.clinic.solo ? "cx-solo" : ""} ${S.cxL ? "dl-open" : ""} ${S.cxR ? "dr-open" : ""}">
     <header class="cx-top">

@@ -1586,3 +1586,9 @@ button, a, label, [data-a], [role="button"] { -webkit-touch-callout: none; touch
 .cx-float .dock.writing { width: auto !important; padding: 0 22px !important; min-height: 50px; justify-content: center; }
 .toast.working { background: var(--ink) !important; color: var(--surface) !important; border-radius: 999px; padding: 12px 20px; box-shadow: 0 14px 30px -14px #0b1411aa; }
 .toast.working .busy { font-size: 14px; }
+/* Note tab: a small mic first in the bottom bar (lime, like the main mic), the same height as its neighbours */
+.dock-mic { flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--lime); color: var(--ink);
+  cursor: pointer; box-shadow: 0 0 18px -6px color-mix(in srgb, var(--lime) 70%, transparent); touch-action: manipulation; }
+.cx-float .dock-mic { width: 40px; height: 40px; }
+@media (max-width: 1023px) { .cx-float .dock-mic { width: 38px; height: 38px; } .cx-float .dock-mic svg { width: 17px; height: 17px; } }
+.dock-mic:active { transform: scale(.92); }

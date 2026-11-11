@@ -57,9 +57,13 @@ async function stopMic() {
   const id = S.recVisit, r = S.rec;
   S.rec = null; S.recState = null; clearInterval(S.recT);
   paintDock();
-  try { r?.finish ? await r.finish() : r?.stop(); } catch {}
+  try {
+    if (r?.finish) await r.finish();
+    else if (r) await new Promise(ok => { r.onend = ok; r.stop(); setTimeout(ok, 1500); });   // browser speech: its last words come after stop
+  } catch {}
   S.dict = null; S.dictDone = id;
-  await saveText(id); autoNote(id); refreshConsult();
+  try { await saveText(id); } catch {}   // a slow or failed save must not cost the note (the draft saves the text again)
+  autoNote(id); refreshConsult();
 }
 // Cancel: stop listening, ignore words still on their way, and put Consult back as it was before the recording.
 async function cancelMic() {
@@ -179,7 +183,7 @@ function autoNote(id) {
     if (S.data?.cur?.id !== id || S.recState) { cancelAutoNote(); return; }   // moved to another patient, or dictating again
     if (--a.left > 0) { const el = $("#auto-left"); if (el) el.textContent = a.left; return; }
     clearInterval(a.timer); S.autoNote = null;
-    run(() => draftNow(id));
+    run(async () => { if (await flushText(id)) await draftNow(id); });   // the latest words saved first, as Generate note does
   }, 1000);
 }
 function cancelAutoNote() { clearInterval(S.autoNote?.timer); S.autoNote = null; }

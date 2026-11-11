@@ -5,6 +5,7 @@ import re
 from datetime import date
 
 from app.shared import usage
+from app.core import labs
 from app.core.visit import get_visit
 from app.shared.ai import llm, tasks
 from app.shared.ai.tasks.brief_summary import task as brief_summary
@@ -17,18 +18,7 @@ from . import repo
 log = logging.getLogger(__name__)
 
 SECTIONS = {"S": "Subjective", "O": "Objective", "A": "Assessment", "P": "Plan"}
-ALIASES = {"hba1c": "HbA1c", "glycatedhb": "HbA1c", "glycatedhaemoglobin": "HbA1c", "glycatedhemoglobin": "HbA1c",
-           "fbs": "Fasting sugar", "fastingsugar": "Fasting sugar", "fastingbloodsugar": "Fasting sugar", "fastingglucose": "Fasting sugar",
-           "rbs": "Random sugar", "randomsugar": "Random sugar", "randombloodsugar": "Random sugar", "randomglucose": "Random sugar",
-           "bp": "BP", "bloodpressure": "BP", "temp": "Temperature", "temperature": "Temperature", "spo2": "SpO2",
-           "pulse": "Pulse", "hr": "Pulse", "heartrate": "Pulse", "weight": "Weight", "wt": "Weight",
-           "creatinine": "Creatinine", "serumcreatinine": "Creatinine"}
-
-
-# Usual adult ranges, used only to mark values; a value is marked only when its unit matches.
-RANGES = {"HbA1c": (4.0, 5.6, "%"), "Fasting sugar": (70, 99, "mg/dl"), "Random sugar": (70, 139, "mg/dl"),
-          "Creatinine": (0.6, 1.3, "mg/dl"), "BP systolic": (90, 139, "mmhg"), "BP diastolic": (60, 89, "mmhg"),
-          "Pulse": (60, 100, "/min"), "SpO2": (95, 100, "%"), "Temperature": (97, 99.5, "°f")}
+# Test names, units and usual ranges: app/core/labs.py (one name and one unit per test, so a chart is one line).
 
 
 def note_values(soap: dict) -> list[dict]:
@@ -37,16 +27,18 @@ def note_values(soap: dict) -> list[dict]:
 
 
 def name_of(test) -> str:
-    return ALIASES.get(re.sub(r"[^a-z0-9]", "", str(test).lower()), str(test).strip())
+    return labs.canonical(test)
 
 
 def outside(name: str, unit: str, value) -> bool:
-    r = RANGES.get(name)
+    """Outside the usual adult range, after turning the value into our unit (never for a unit we can't convert)."""
+    text, ours, conv = labs.normalise(name, value, unit)
+    r = labs.usual(name, ours) if conv else None
     try:
-        v = float(str(value).replace(",", ""))
+        v = float(text)
     except ValueError:
         return False
-    return bool(r) and (unit or "").replace(" ", "").lower() in (r[2], "") and not r[0] <= v <= r[1]
+    return bool(r) and ((r[0] is not None and v < r[0]) or (r[1] is not None and v > r[1]))
 
 
 def lab_range(text) -> list | None:
@@ -148,7 +140,6 @@ def charts(notes: list[dict], docs: list[dict], db) -> list[dict]:
     points = {}   # (test, unit) -> {date: point}; a report beats a note on the same day
     def add(test, unit, value, day, cite, from_doc, f=None):
         name = name_of(test)
-        unit = str(unit or "").strip()
         value = str(value).replace(" ", "").replace(",", "")
         if name == "BP" and "/" in value:
             sys_, dia = value.split("/", 1)
@@ -157,11 +148,16 @@ def charts(notes: list[dict], docs: list[dict], db) -> list[dict]:
             return
         if not re.fullmatch(r"\d+(?:\.\d+)?", value) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day or ""):
             return
+        printed, printed_unit = value, str(unit or "").strip()
+        value, unit, conv = labs.normalise(name, value, unit)   # one unit per test: mmol/L sugars become mg/dL, and so on
         series = points.setdefault((name, unit), {})
         if from_doc or day not in series or not series[day]["doc"]:
             said = lab_says(f) if f else None
-            series[day] = {"date": day, "value": float(value), "text": value, "cite": cite, "doc": from_doc,
-                           "out": said if said is not None else outside(name, unit, value), "lab": lab_range(f.get("range")) if f else None}
+            lab = lab_range(f.get("range")) if f else None
+            if lab and conv:   # the report's printed range, in the same unit as the value
+                lab = [None if x is None else round(conv(x), 2) for x in lab]
+            series[day] = {"date": day, "value": float(value), "text": value, "printed": "" if value == printed else f"{printed} {printed_unit}",
+                           "cite": cite, "doc": from_doc, "out": said if said is not None else outside(name, unit, value), "lab": lab}
     for d in docs:
         for f in d["extracted"].get("findings") or []:
             add(f.get("name"), f.get("unit"), f.get("value"), (f.get("date") or d["created_at"])[:10], f"D{d['id']}", True, f)
@@ -171,9 +167,9 @@ def charts(notes: list[dict], docs: list[dict], db) -> list[dict]:
     out, bp = [], {}
     for (name, unit), series in points.items():
         ordered = sorted(series.values(), key=lambda p: p["date"])
-        pts = [{k: p[k] for k in ("date", "value", "text", "cite", "out")} for p in ordered]
+        pts = [{k: p[k] for k in ("date", "value", "text", "cite", "out", "printed")} for p in ordered]
         lab = next((p["lab"] for p in reversed(ordered) if p["lab"]), None)   # the latest report's printed range wins
-        usual = list(RANGES[name][:2]) if name in RANGES and unit.replace(" ", "").lower() in (RANGES[name][2], "") else None
+        usual = labs.usual(name, unit)
         ser = {"name": name, "points": pts, "range": lab or usual, "range_from": "report" if lab else "usual" if usual else None}
         if name.startswith("BP "):
             bp[name] = ser | {"name": name.split()[1].title()}

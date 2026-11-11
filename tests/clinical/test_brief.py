@@ -98,7 +98,7 @@ def test_report_beats_note_on_the_same_day():
     docs = [{"id": 5, "created_at": "2026-10-20T09:00:00", "extracted": {"findings": [{"name": "Glycated Hb", "value": "7.2", "unit": "%"}]}}]
     out = brief.charts(notes, docs, None)
     assert out == [{"test": "HbA1c", "unit": "%", "series": [{"name": "HbA1c", "range": [4.0, 5.6], "range_from": "usual",
-                                                              "points": [{"date": "2026-10-20", "value": 7.2, "text": "7.2", "cite": "D5", "out": True}]}]}]
+                                                              "points": [{"date": "2026-10-20", "value": 7.2, "text": "7.2", "cite": "D5", "out": True, "printed": ""}]}]}]
 
 
 def test_repeated_assessments_become_one_line(monkeypatch):
@@ -141,5 +141,37 @@ def test_chart_uses_the_reports_range():
         {"name": "Cholesterol", "value": "230", "unit": "mg/dL", "range": "< 200"},
         {"name": "Fasting glucose", "value": "105", "unit": "mg/dL", "range": "70 - 110"}]}}]
     charts = {c["test"]: c["series"][0] for c in brief.charts([], docs, None)}
-    assert charts["Cholesterol"]["range"] == [None, 200] and charts["Cholesterol"]["range_from"] == "report" and charts["Cholesterol"]["points"][0]["out"]
+    assert charts["Total cholesterol"]["range"] == [None, 200] and charts["Total cholesterol"]["range_from"] == "report" and charts["Total cholesterol"]["points"][0]["out"]
     assert charts["Fasting sugar"]["range"] == [70, 110] and not charts["Fasting sugar"]["points"][0]["out"]   # 105 is fine by this lab
+
+
+def test_one_line_per_test_whatever_the_lab_calls_it_or_its_unit():
+    """'S. Creatinine' in mg/dl, 'Serum creatinine' in µmol/L and 'CREATININE' are one chart line in mg/dL, with the
+    report's range converted too; sugars in mmol/L become mg/dL; unknown tests stay as printed."""
+    from app.core import labs
+    docs = [{"id": 1, "created_at": "2026-08-01T09:00:00", "extracted": {"findings": [
+                {"name": "S. Creatinine", "value": "1.1", "unit": "mg/dl", "range": "0.6 - 1.3"},
+                {"name": "FBS", "value": "7.0", "unit": "mmol/L", "range": "3.9 - 5.5"},
+                {"name": "Glycosylated Haemoglobin", "value": "53", "unit": "mmol/mol"},
+                {"name": "Zinc", "value": "80", "unit": "µg/dL"}]}},
+            {"id": 2, "created_at": "2026-09-01T09:00:00", "extracted": {"findings": [
+                {"name": "Serum creatinine", "value": "132.6", "unit": "µmol/L", "range": "53 - 115"},
+                {"name": "Fasting Plasma Glucose", "value": "140", "unit": "mg%"}]}},
+            {"id": 3, "created_at": "2026-10-01T09:00:00", "extracted": {"findings": [
+                {"name": "CREATININE", "value": "1.4", "unit": "mg/dL"}]}}]
+    charts = {c["test"]: c for c in brief.charts([], docs, None)}
+    cr = charts["Creatinine"]
+    assert cr["unit"] == "mg/dL" and [p["value"] for p in cr["series"][0]["points"]] == [1.1, 1.5, 1.4]
+    pt = cr["series"][0]["points"][1]
+    assert pt["text"] == "1.5" and pt["printed"] == "132.6 µmol/L" and pt["out"]      # above that lab's 115 µmol/L
+    assert cr["series"][0]["range"] == [0.6, 1.3]                                  # the latest report that printed one
+    fs = charts["Fasting sugar"]
+    assert fs["unit"] == "mg/dL" and [p["value"] for p in fs["series"][0]["points"]] == [126.0, 140.0]
+    assert charts["HbA1c"]["series"][0]["points"][0]["value"] == 7.0               # 53 mmol/mol is 7.0 %
+    assert "Zinc" in charts and charts["Zinc"]["unit"] == "µg/dL"                  # not in our list: as printed
+    assert labs.canonical("Serum TSH") == "TSH" and labs.canonical("Plasma glucose fasting") == "Fasting sugar"
+    assert labs.canonical("SGPT") == labs.canonical("ALT") == "SGPT (ALT)" and labs.canonical("Hb") == "Haemoglobin"
+    assert labs.normalise("Platelets", "2.5", "lakh/cumm")[:2] == ("250000", "/µL")
+    assert labs.normalise("Temperature", "37", "°C")[:2] == ("98.6", "°F")
+    assert labs.normalise("Lithium", "0.8", "mEq/L")[:2] == ("0.8", "mmol/L")   # same unit, other spelling
+    assert labs.normalise("Creatinine", "1.2", "mg/mmol")[2] is None              # a unit we can't convert: left alone

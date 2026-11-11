@@ -244,6 +244,7 @@
           "cite": "str",
           "date": "str",
           "out": "bool",
+          "printed": "str",
           "text": "str",
           "value": "float"
          }
@@ -2062,6 +2063,7 @@
            "cite": "str",
            "date": "str",
            "out": "bool",
+           "printed": "str",
            "text": "str",
            "value": "float"
           }

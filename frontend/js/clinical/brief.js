@@ -81,5 +81,5 @@ function openChart(c) {
   modal(`<div><h2>${esc(c.test)}</h2><span class="muted">${esc(c.unit || "")}${range ? ` · ${ser.range_from === "report" ? "report range" : "usual"} ${rangeText(range)}` : ""}</span></div>
     ${c.series.length > 1 ? `<div class="bchart-legend">${c.series.map((ser, k) => `<span><i style="background:${["#2a78d6", "#D9542F"][k]}"></i>${esc(ser.name)}</span>`).join("")}</div>` : ""}
     <div class="bchart-big">${chartSvg(c, true)}</div>
-    <div class="bchart-rows">${rows.map(p => `<button data-a="cite" data-v="${p.cite}"><span>${longDate(p.date)}</span><b class="${p.out ? "abn" : ""}">${esc(p.text)} ${esc(c.unit || "")}</b><small>${esc(citeLabel(p.cite))}</small></button>`).join("")}</div>`, true);
+    <div class="bchart-rows">${rows.map(p => `<button data-a="cite" data-v="${p.cite}"><span>${longDate(p.date)}</span><b class="${p.out ? "abn" : ""}">${esc(p.text)} ${esc(c.unit || "")}${p.printed ? `<small class="as-printed">report: ${esc(p.printed)}</small>` : ""}</b><small>${esc(citeLabel(p.cite))}</small></button>`).join("")}</div>`, true);
 }

@@ -42,6 +42,7 @@ SPEECH_PRICES = {                  # model: $ per minute of audio, pay-as-you-go
     "nova-3-medical": 0.0077,
     "nova-3": 0.0077,
 }
+CACHED_INPUT_SHARE = 0.1           # input tokens Google serves from its cache cost a tenth ($0.075 vs $0.75 on 3.8 Flash)
 USD_INR = 85
 
 PACKAGES = {"DATABASE": "app.shared.db", "STORAGE": "app.shared.files", "LLM": "app.shared.ai.llm", "SPEECH": "app.shared.ai.speech"}

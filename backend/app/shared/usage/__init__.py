@@ -31,10 +31,11 @@ def job(name: str):
         _job.reset(t)
 
 
-def ai_cost(model: str, tokens_in: int, tokens_out: int) -> int:
-    """Millionths of a dollar."""
+def ai_cost(model: str, tokens_in: int, tokens_out: int, cached: int = 0) -> int:
+    """Millionths of a dollar. Cached input (part of tokens_in) is billed at a tenth of the input price."""
     p_in, p_out = config.AI_PRICES.get(model, config.AI_PRICES.get(config.value("LLM_MODEL"), (0, 0)))
-    return round(tokens_in * p_in + tokens_out * p_out)   # $ per 1M tokens x tokens = millionths of a dollar
+    cached = min(cached, tokens_in)
+    return round((tokens_in - cached) * p_in + cached * p_in * config.CACHED_INPUT_SHARE + tokens_out * p_out)
 
 
 def speech_cost(model: str, seconds: float) -> int:
@@ -45,10 +46,10 @@ def _add(row: dict) -> None:
     try:
         db = connect()
         try:
-            db.execute("""insert into usage_events (clinic_id, kind, job, model, tokens_in, tokens_out, seconds, cost_micro_usd, at)
-                          values (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            db.execute("""insert into usage_events (clinic_id, kind, job, model, tokens_in, tokens_out, tokens_cached, seconds, cost_micro_usd, at)
+                          values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                        (row["clinic_id"], row["kind"], row["job"], row["model"], row.get("tokens_in", 0), row.get("tokens_out", 0),
-                        row.get("seconds", 0), row["cost"], now()))
+                        row.get("tokens_cached", 0), row.get("seconds", 0), row["cost"], now()))
             db.commit()
         finally:
             db.close()
@@ -56,9 +57,9 @@ def _add(row: dict) -> None:
         log.exception("Usage not recorded")   # the meter must never break a note or a dictation
 
 
-def record_ai(model: str, tokens_in: int, tokens_out: int) -> None:
-    _add({"clinic_id": _clinic.get(), "kind": "ai", "job": _job.get(), "model": model,
-          "tokens_in": tokens_in, "tokens_out": tokens_out, "cost": ai_cost(model, tokens_in, tokens_out)})
+def record_ai(model: str, tokens_in: int, tokens_out: int, cached: int = 0) -> None:
+    _add({"clinic_id": _clinic.get(), "kind": "ai", "job": _job.get(), "model": model, "tokens_in": tokens_in,
+          "tokens_out": tokens_out, "tokens_cached": cached, "cost": ai_cost(model, tokens_in, tokens_out, cached)})
 
 
 def record_speech(clinic_id: int | None, model: str, seconds: float) -> None:
@@ -74,15 +75,18 @@ def report(db, month: str) -> list[dict]:
     clinics = {r["id"]: {"clinic_id": r["id"], "clinic": r["name"], "solo": bool(r["solo"])} for r in rows(db.execute("select id, name, solo from clinics"))}
     out = {}
     for r in rows(db.execute(
-            """select clinic_id, kind, job, count(*) as calls, sum(tokens_in) as t_in, sum(tokens_out) as t_out, sum(seconds) as secs,
+            """select clinic_id, kind, job, count(*) as calls, sum(tokens_in) as t_in, sum(tokens_out) as t_out,
+                      sum(tokens_cached) as t_cached, sum(seconds) as secs,
                       sum(cost_micro_usd) as cost
                from usage_events where at >= ? and at <= ? group by clinic_id, kind, job""", (start, end))):
         cid, calls, t_in, t_out, secs, cost = r["clinic_id"], r["calls"], r["t_in"] or 0, r["t_out"] or 0, r["secs"] or 0, r["cost"] or 0
+        t_cached = r["t_cached"] or 0
         c = out.setdefault(cid, clinics.get(cid, {"clinic_id": cid, "clinic": "(not linked to a clinic)", "solo": False})
-                           | {"jobs": {}, "ai_calls": 0, "tokens_in": 0, "tokens_out": 0, "dictation_minutes": 0.0, "cost_micro_usd": 0})
-        c["jobs"][r["job"]] = {"calls": calls, "tokens_in": t_in, "tokens_out": t_out, "minutes": round(secs / 60, 1), "usd": round(cost / 1e6, 4)}
+                           | {"jobs": {}, "ai_calls": 0, "tokens_in": 0, "tokens_out": 0, "tokens_cached": 0, "dictation_minutes": 0.0, "cost_micro_usd": 0})
+        c["jobs"][r["job"]] = {"calls": calls, "tokens_in": t_in, "tokens_out": t_out, "tokens_cached": t_cached,
+                               "minutes": round(secs / 60, 1), "usd": round(cost / 1e6, 4)}
         if r["kind"] == "ai":
-            c["ai_calls"] += calls; c["tokens_in"] += t_in; c["tokens_out"] += t_out
+            c["ai_calls"] += calls; c["tokens_in"] += t_in; c["tokens_out"] += t_out; c["tokens_cached"] += t_cached
         else:
             c["dictation_minutes"] += round(secs / 60, 1)
         c["cost_micro_usd"] += cost

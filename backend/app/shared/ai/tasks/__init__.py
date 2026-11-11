@@ -41,7 +41,8 @@ def version(task) -> str:
 
 
 def fill(task_file: str, **slots) -> str:
-    """The instructions with {{slots}} filled; values that aren't text are sent as JSON."""
+    """The instructions with {{slots}} filled; values that aren't text are sent as JSON. Keep each prompt.md's fixed
+    text and department slots first and the patient's data last: Google's automatic cache reuses a repeated start."""
     text = prompt(task_file)[1]
     for k, v in slots.items():
         text = text.replace("{{" + k + "}}", v if isinstance(v, str) else json.dumps(v, ensure_ascii=False))

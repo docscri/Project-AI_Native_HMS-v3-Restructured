@@ -21,5 +21,6 @@ def generate(parts: list[dict], model: str) -> dict:
     r.raise_for_status()
     body = r.json()
     u = body.get("usageMetadata") or {}   # what Google billed: thinking tokens are charged as output
-    usage.record_ai(model, u.get("promptTokenCount", 0), u.get("candidatesTokenCount", 0) + u.get("thoughtsTokenCount", 0))
+    usage.record_ai(model, u.get("promptTokenCount", 0), u.get("candidatesTokenCount", 0) + u.get("thoughtsTokenCount", 0),
+                    u.get("cachedContentTokenCount", 0))   # Google's automatic cache: the repeated start of a request, a tenth of the price
     return json.loads(body["candidates"][0]["content"]["parts"][0]["text"])

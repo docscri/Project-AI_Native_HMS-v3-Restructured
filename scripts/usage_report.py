@@ -29,10 +29,10 @@ if __name__ == "__main__":
         print(json.dumps(rows, indent=2))
         sys.exit(0)
     print(f"Usage for {args.month}\n")
-    print(f"{'Clinic':34} {'Visits':>6} {'AI calls':>8} {'Tokens in/out':>17} {'Dict. min':>9} {'$':>8} {'₹':>8} {'₹/visit':>8}")
+    print(f"{'Clinic':34} {'Visits':>6} {'AI calls':>8} {'Tokens in/out':>17} {'cached':>7} {'Dict. min':>9} {'$':>8} {'₹':>8} {'₹/visit':>8}")
     for r in rows:
         name = (r["clinic"] + (" (Just me)" if r["solo"] else ""))[:34]
         per = f"{r['inr_per_visit']:.2f}" if r["inr_per_visit"] is not None else "—"
-        print(f"{name:34} {r['visits']:>6} {r['ai_calls']:>8} {r['tokens_in']:>8}/{r['tokens_out']:<8} {r['dictation_minutes']:>9.1f} "
+        print(f"{name:34} {r['visits']:>6} {r['ai_calls']:>8} {r['tokens_in']:>8}/{r['tokens_out']:<8} {r['tokens_cached']:>7} {r['dictation_minutes']:>9.1f} "
               f"{r['usd']:>8.2f} {r['inr']:>8} {per:>8}")
     print(f"\nTotal: ${sum(r['usd'] for r in rows):.2f}  (₹{sum(r['inr'] for r in rows)})")

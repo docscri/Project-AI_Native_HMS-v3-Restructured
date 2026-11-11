@@ -27,6 +27,7 @@ def test_prices():
     assert usage.ai_cost("gemini-3.8-flash", 5000, 1200) == 8250              # $0.00375 + $0.0045
     assert usage.ai_cost("gemini-3.5-flash-lite", 6000, 1000) == 4300         # $0.0018 + $0.0025
     assert usage.speech_cost("nova-3-medical", 180) == 23100                  # 3 min x $0.0077
+    assert usage.ai_cost("gemini-3.8-flash", 5000, 1200, cached=1000) == 7575  # 1,000 of the 5,000 in from Google's cache: $0.000075
     assert config.SPEECH_MODEL == "nova-3-medical"
 
 
@@ -34,7 +35,7 @@ def test_ai_tokens_and_dictation_seconds_are_metered_per_clinic(monkeypatch):
     def fake_post(url, **kw):   # Gemini's reply, with what it billed (thinking tokens count as output)
         return httpx.Response(200, request=httpx.Request("POST", url), json={
             "candidates": [{"content": {"parts": [{"text": "{}"}]}}],
-            "usageMetadata": {"promptTokenCount": 5000, "candidatesTokenCount": 1000, "thoughtsTokenCount": 200}})
+            "usageMetadata": {"promptTokenCount": 5000, "candidatesTokenCount": 1000, "thoughtsTokenCount": 200, "cachedContentTokenCount": 1000}})
     with TestClient(app) as c:
         h, doc = clinic(c, "meter@x.in")
         cid = c.get("/api/me", headers=h).json()["clinic"]["id"]
@@ -46,7 +47,7 @@ def test_ai_tokens_and_dictation_seconds_are_metered_per_clinic(monkeypatch):
         monkeypatch.delenv("GEMINI_API_KEY")
         ai = [r for r in rows(cid) if r["kind"] == "ai"]
         assert ai and ai[0] == {"kind": "ai", "job": "draft_note", "model": "gemini-3.8-flash", "tokens_in": 5000, "tokens_out": 1200,
-                                "seconds": 0, "cost": 8250}
+                                "seconds": 0, "cost": 7575}
         monkeypatch.setenv("DEEPGRAM_API_KEY", "test")
         monkeypatch.setattr(transcribe, "DeepgramStream", FakeStream)
         with c.websocket_connect(f"/api/visits/{v['id']}/dictate", subprotocols=["dictate", token(h)]) as ws:

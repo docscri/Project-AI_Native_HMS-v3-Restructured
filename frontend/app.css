@@ -1525,7 +1525,8 @@ button, a, label, [data-a], [role="button"] { -webkit-touch-callout: none; touch
   .cx-top:has(.cx-who-top) .cx-logo { display: none; }   /* no patient open: the name stays */
   .cx:not(.cx-solo) .cx-top .cx-menu { display: flex !important; }   /* the queue on phones (a rule above hid it) */
   .cx-who-top { display: flex; align-items: center; gap: 0; min-width: 0; flex: 1; color: var(--frame-fg); font-size: 18px; letter-spacing: -.01em; }
-  .cx-who-top b { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .cx-who-top { overflow: hidden; }
+  .cx-who-top b { font-weight: 800; white-space: nowrap; min-width: 0; }
   .cx-who-top span { flex: none; font-weight: 800; white-space: nowrap; }
   .cx-who-top .cx-dot { margin-left: 10px; }
   .cx-top:has(.cx-who-top) .grow { display: none; }

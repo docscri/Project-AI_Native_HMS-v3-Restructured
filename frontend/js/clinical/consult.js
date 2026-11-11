@@ -54,6 +54,7 @@ function renderConsult() {
     </div>
     <div class="cx-scrim" data-a="cx-drawer-close"></div>
   </div>`;
+  fitName();
   if (again) { $(".cx")?.classList.add("re"); window.scrollTo(0, y); }
   restoreFree();
   clearTimeout(S.docT);
@@ -74,10 +75,23 @@ const WAVE = [4, 9, 14, 7, 11, 5, 3, 16, 10, 6, 12, 8, 5, 13, 18, 7, 11, 6, 9, 4
 // Phone and tablet: the patient sits in the dark top bar (name, age, a status dot), so the card starts with the tabs.
 const STATE_LABEL = { waiting: "Waiting", with_doctor: "In visit", done: "Signed", booked: "Booked", cancelled: "Cancelled", no_show: "Not come" };
 function whoTop(v) {
-  return `<span class="cx-who-top"><b>${esc(v.patient_name)}</b>${v.age != null ? `<span>, ${v.age}</span>` : ""}<i class="cx-dot st-${v.status}" title="${STATE_LABEL[v.status] || ""}" aria-label="${STATE_LABEL[v.status] || ""}"></i></span>`;
+  return `<span class="cx-who-top" title="${esc(v.patient_name)}"><b data-full="${esc(v.patient_name)}">${esc(v.patient_name)}</b>${v.age != null ? `<span>, ${v.age}</span>` : ""}<i class="cx-dot st-${v.status}" title="${STATE_LABEL[v.status] || ""}" aria-label="${STATE_LABEL[v.status] || ""}"></i></span>`;
 }
 // The bar at the bottom when not recording: + Report · mic · Generate note (the side buttons show on phone and tablet;
 // a laptop has them at the top). After Stop it can count down to writing the note on its own.
+// A long name in the top bar: the full name if it fits, else the first name and the others' initials
+// ("Kavya Ramachandran Nair" -> "Kavya R. N."), else the first name; a little smaller only as a last resort. No "…".
+const shortName = (full, keep) => { const w = full.trim().split(/\s+/); return [w[0], ...w.slice(1).map(x => x[0].toUpperCase() + ".")].slice(0, keep).join(" "); };
+function fitName() {
+  const box = $(".cx-who-top"), b = box?.querySelector("b"); if (!b) return;
+  const full = b.dataset.full, fits = () => box.scrollWidth <= box.clientWidth + 1;
+  b.style.fontSize = ""; b.textContent = full;
+  if (fits()) return;
+  const words = full.trim().split(/\s+/).length;
+  for (const t of [shortName(full, words), shortName(full, 2), shortName(full, 1)]) { b.textContent = t; if (fits()) return; }
+  for (let px = 17; px >= 14 && !fits(); px--) b.style.fontSize = px + "px";
+}
+addEventListener("resize", () => fitName());
 function idleDock(v) {
   const rep = S.me.kind === "doctor" && ["waiting", "with_doctor"].includes(v.status)
     ? `<button class="cx-idle-rep" data-a="rp-open" data-p="${v.patient_id}" data-v="${v.id}" data-after="consult" aria-label="Add report" title="Add report"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>` : `<span></span>`;

@@ -1598,3 +1598,4 @@ button, a, label, [data-a], [role="button"] { -webkit-touch-callout: none; touch
 .cx-float .dock:not(.rec) .grow { display: none; }
 .cx-float .dock:not(.rec) .dock-msg { margin: 0 8px 0 4px; }
 .cx-float .dock:not(.rec):has(> .dock-msg:first-child) { padding-left: 20px !important; }
+.cx-float .dock:has(> .dock-mic:first-child) { padding: 6px !important; }   /* mic first: the same space at both ends */

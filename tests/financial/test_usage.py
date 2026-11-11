@@ -83,4 +83,4 @@ def test_operator_report_needs_the_ops_token(monkeypatch):
         r = c.get("/api/ops/usage?month=2031-03", headers=ops).json()
         mine = next(x for x in r["clinics"] if x["clinic_id"] == cid)
         assert (mine["ai_calls"], mine["tokens_in"], mine["tokens_out"], mine["usd"]) == (2, 11000, 2200, 0.01)
-        assert mine["jobs"]["draft_note"]["usd"] == 0.006 and mine["inr"] == round(0.0103 * 85)   # stored costs, as recorded
+        assert mine["jobs"]["draft_note"]["usd"] == 0.006 and mine["inr"] == round(0.0103 * 94)   # stored costs, as recorded

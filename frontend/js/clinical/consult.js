@@ -55,7 +55,7 @@ function renderConsult() {
     </div>
     <div class="cx-scrim" data-a="cx-drawer-close"></div>
   </div>`;
-  fitName();
+  fitName(); sizeCaption();
   if (again) { $(".cx")?.classList.add("re"); window.scrollTo(0, y); }
   restoreFree();
   clearTimeout(S.docT);

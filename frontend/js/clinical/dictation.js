@@ -36,7 +36,7 @@ function listen(visitId) {
 // last words, saving) carry on after. Redrawing the whole consultation made the buttons feel stuck on phones.
 function paintDock() {
   const f = $(".cx-float"), v = S.data?.cur;
-  if (f && v && v.id === S.recVisit && (S.recState || S.ctab !== "note")) f.innerHTML = dock(v); else renderConsult();
+  if (f && v && v.id === S.recVisit && (S.recState || S.ctab !== "note")) { f.innerHTML = dock(v); sizeCaption(); } else renderConsult();
 }
 function pauseMic() {
   if (S.recState !== "on") return;
@@ -99,7 +99,11 @@ function captionHtml() {
   const cut = shown.length - (live ? live.trim().length : 0);
   return `<div class="rec-caption" id="rec-caption">${esc(shown.slice(0, cut))}${live ? `<span class="live">${esc(shown.slice(cut))}</span>` : ""}</div>`;
 }
+function sizeCaption() {   // the caption as wide as the recording bar under it
+  const bar = $(".cx-float .dock.rec"), f = $(".cx-float"); if (bar && f) f.style.setProperty("--rec-w", bar.getBoundingClientRect().width / 2 + "px");
+}
 function paintCaption() {
+  sizeCaption();
   const c = $("#rec-caption"); if (!c) return;
   const tmp = document.createElement("div"); tmp.innerHTML = captionHtml();
   c.replaceWith(tmp.firstElementChild || document.createTextNode(""));

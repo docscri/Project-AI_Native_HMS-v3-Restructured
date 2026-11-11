@@ -1616,3 +1616,8 @@ button, a, label, [data-a], [role="button"] { -webkit-touch-callout: none; touch
 .cx-float:has(.rec-caption) > .dock { z-index: 1; }
 /* Phone: the note viewer's buttons on one line (Add addendum · Share · Print); "Signed" is already in the line above */
 @media (max-width: 620px) { .nv-acts .pill { display: none; } .nv-acts { gap: 6px; } .nv-acts .btn.small { padding: 6px 12px; } }
+@media (min-width: 1024px) {   /* laptop: the caption spans the recording bar, so the note doesn't peek beside it */
+  .rec-caption { left: 0; right: 0; width: auto; transform: none; margin: 0 auto; max-width: none; }
+  .cx-float:has(.rec-caption) { position: sticky; }
+  .cx-float .rec-caption { left: calc(50% - var(--rec-w, 380px)); right: calc(50% - var(--rec-w, 380px)); padding-left: 24px; padding-right: 24px; }
+}

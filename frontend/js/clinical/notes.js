@@ -74,7 +74,7 @@ function marked(sentence, srcs, still) {
 }
 function noteDock(v) {
   const n = v.note, signed = n?.status === "signed";
-  if (S.drafting === v.id) return `<div class="dock"><span class="dock-text">Writing your note…</span></div>`;
+  if (S.drafting === v.id) return `<div class="dock writing" role="status"><span class="dock-spin" aria-hidden="true"><i></i><i></i><i></i></span><span class="dock-text">Writing your note</span></div>`;
   if (!n) return "";   // the empty note carries its own Generate note button
   if (signed) return `<div class="dock"><span class="dock-msg ok">Signed · ${stampOf(n.signed_at)}${n.signed_by_name ? " · " + esc(n.signed_by_name) : ""}</span><span class="grow"></span>${S.me.kind === "doctor" ? `<button class="dock-ghost" data-a="add-addendum" data-v="${n.id}">Add addendum</button>` : ""}<button class="dock-go" data-a="note-print" data-v="${n.id}">Print</button></div>`;
   if (S.noteEdit) return `<div class="dock"><span class="dock-msg">Editing.</span><span class="grow"></span><button class="dock-go" data-a="note-done">Save</button></div>`;

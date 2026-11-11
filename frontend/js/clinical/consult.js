@@ -102,7 +102,7 @@ function idleDock(v) {
 function autoDock(v) {
   const a = S.autoNote;
   if (a.ask) return `<div class="dock auto"><span class="dock-text">New dictation added</span><button class="dock-ghost" data-a="auto-cancel">Not now</button><button class="dock-go" data-a="auto-redraft" data-v="${v.id}">Redraft</button></div>`;
-  return `<div class="dock auto"><span class="dock-text">Writing your note in <b id="auto-left">${a.left}</b>…</span><button class="dock-ghost" data-a="auto-cancel">Cancel</button></div>`;
+  return `<div class="dock auto"><span class="dock-text">Writing your note in <b id="auto-left">${a.left}</b></span><button class="dock-ghost" data-a="auto-cancel">Cancel</button></div>`;
 }
 function dock(v) {
   if (S.recState && S.recVisit === v.id) {

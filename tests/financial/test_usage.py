@@ -24,9 +24,9 @@ def rows(clinic_id):
 
 
 def test_prices():
-    assert usage.ai_cost("gemini-3.8-flash", 5000, 1200) == 6000              # $0.0015 + $0.0045 = $0.006
-    assert usage.ai_cost("gemini-3.8-flash-lite", 6000, 1000) == 4300
-    assert usage.speech_cost("nova-3-medical", 180) == 19500                  # 3 min x $0.0065
+    assert usage.ai_cost("gemini-3.8-flash", 5000, 1200) == 8250              # $0.00375 + $0.0045
+    assert usage.ai_cost("gemini-3.5-flash-lite", 6000, 1000) == 4300         # $0.0018 + $0.0025
+    assert usage.speech_cost("nova-3-medical", 180) == 23100                  # 3 min x $0.0077
     assert config.SPEECH_MODEL == "nova-3-medical"
 
 
@@ -46,7 +46,7 @@ def test_ai_tokens_and_dictation_seconds_are_metered_per_clinic(monkeypatch):
         monkeypatch.delenv("GEMINI_API_KEY")
         ai = [r for r in rows(cid) if r["kind"] == "ai"]
         assert ai and ai[0] == {"kind": "ai", "job": "draft_note", "model": "gemini-3.8-flash", "tokens_in": 5000, "tokens_out": 1200,
-                                "seconds": 0, "cost": 6000}
+                                "seconds": 0, "cost": 8250}
         monkeypatch.setenv("DEEPGRAM_API_KEY", "test")
         monkeypatch.setattr(transcribe, "DeepgramStream", FakeStream)
         with c.websocket_connect(f"/api/visits/{v['id']}/dictate", subprotocols=["dictate", token(h)]) as ws:
@@ -82,4 +82,4 @@ def test_operator_report_needs_the_ops_token(monkeypatch):
         r = c.get("/api/ops/usage?month=2031-03", headers=ops).json()
         mine = next(x for x in r["clinics"] if x["clinic_id"] == cid)
         assert (mine["ai_calls"], mine["tokens_in"], mine["tokens_out"], mine["usd"]) == (2, 11000, 2200, 0.01)
-        assert mine["jobs"]["draft_note"]["usd"] == 0.006 and mine["inr"] == round(0.0103 * 85)
+        assert mine["jobs"]["draft_note"]["usd"] == 0.006 and mine["inr"] == round(0.0103 * 85)   # stored costs, as recorded

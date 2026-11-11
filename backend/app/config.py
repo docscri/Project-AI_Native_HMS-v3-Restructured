@@ -33,13 +33,13 @@ SPEECH_LANGUAGE = "en"
 
 # Prices for the usage meter (scripts/usage_report.py, /api/ops/usage). Check them against Google's and Deepgram's
 # pages now and then: the meter prices each call at the rate here when it happened.
-AI_PRICES = {                      # model: ($ per 1M input tokens, $ per 1M output tokens)
-    "gemini-3.8-flash": (0.30, 3.75),
+AI_PRICES = {                      # model: ($ per 1M input tokens, $ per 1M output tokens), standard tier
+    "gemini-3.8-flash": (0.75, 3.75),         # introductory to 31 Dec 2026; from 1 Jan 2027: (1.50, 7.50), so update it then
+    "gemini-3.5-flash-lite": (0.30, 2.50),
     "gemini-3.8-flash-lite": (0.30, 2.50),
-    "gemini-3.5-flash-lite": (0.75, 2.50),
 }
-SPEECH_PRICES = {                  # model: $ per minute of audio (live streaming)
-    "nova-3-medical": 0.0065,
+SPEECH_PRICES = {                  # model: $ per minute of audio, pay-as-you-go (no diarization / redaction add-ons used)
+    "nova-3-medical": 0.0077,
     "nova-3": 0.0077,
 }
 USD_INR = 85

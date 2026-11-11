@@ -1614,3 +1614,5 @@ button, a, label, [data-a], [role="button"] { -webkit-touch-callout: none; touch
 .cx-float:has(.rec-caption)::before { inset: 0; }
 .rec-caption { bottom: calc(100% - 36px); padding-bottom: 44px; z-index: 0; }
 .cx-float:has(.rec-caption) > .dock { z-index: 1; }
+/* Phone: the note viewer's buttons on one line (Add addendum · Share · Print); "Signed" is already in the line above */
+@media (max-width: 620px) { .nv-acts .pill { display: none; } .nv-acts { gap: 6px; } .nv-acts .btn.small { padding: 6px 12px; } }

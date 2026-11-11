@@ -89,6 +89,7 @@ document.addEventListener("change", e => {
 const RP_AFTER = {
   patient: () => { if (location.hash.startsWith("#/p/")) viewSoloPatient(Number(location.hash.split("/")[2])); },
   consult: () => { if (location.hash.startsWith("#/consult")) refreshConsult(); },
+  clinicpt: () => { const m = location.hash.match(/^#\/patients\/(\d+)/); if (m) viewPatients(Number(m[1])); },
   none: null,
 };
 const reportBtn = (cls, patientId, visitId, after, label = "+ Report") =>

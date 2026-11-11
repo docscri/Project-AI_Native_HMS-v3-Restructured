@@ -18,15 +18,14 @@ STORAGE = "local"
 LLM = "gemini"
 LLM_MODEL = "gemini-3.8-flash"     # newest stable Flash on our key (Oct 2026); "gemini-flash-latest" follows Google's current Flash
 # The model for each AI job (a folder in shared/ai/tasks/); "" uses LLM_MODEL. The stronger model reads reports and
-# writes the note, where a mistake costs most; summaries of already-checked text use 3.8 Flash-Lite
-# (same $0.30 per 1M in as 3.8 Flash, $2.50 out instead of $3.75).
+# writes the note, where a mistake costs most; summaries of already-checked text use 3.5 Flash-Lite.
 # Override one job without editing this file: LLM_MODEL_<JOB>=<model>, e.g. LLM_MODEL_BRIEF_SUMMARY=gemini-3.8-flash
 LLM_MODELS = {
     "read_report": "",                       # lab reports and scans (images, PDFs)
     "draft_note": "",                        # the note and prescription
-    "brief_summary": "gemini-3.8-flash-lite",
-    "visit_lines": "gemini-3.8-flash-lite",
-    "note_values": "gemini-3.8-flash-lite",
+    "brief_summary": "gemini-3.5-flash-lite",
+    "visit_lines": "gemini-3.5-flash-lite",
+    "note_values": "gemini-3.5-flash-lite",
 }
 SPEECH = "deepgram"
 SPEECH_MODEL = "nova-3-medical"   # medical vocabulary (drugs, doses, MSE...); patients' audio opted out of Deepgram training
@@ -37,6 +36,7 @@ SPEECH_LANGUAGE = "en"
 AI_PRICES = {                      # model: ($ per 1M input tokens, $ per 1M output tokens)
     "gemini-3.8-flash": (0.30, 3.75),
     "gemini-3.8-flash-lite": (0.30, 2.50),
+    "gemini-3.5-flash-lite": (0.75, 2.50),
 }
 SPEECH_PRICES = {                  # model: $ per minute of audio (live streaming)
     "nova-3-medical": 0.0065,

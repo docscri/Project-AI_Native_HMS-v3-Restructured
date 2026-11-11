@@ -149,8 +149,8 @@ def test_each_job_uses_its_own_model(ai, monkeypatch):
     used = {}
     monkeypatch.setattr(llm, "generate", lambda parts, model=None: used.setdefault("model", model) and {"values": []})
     tasks.run(note_values, **INPUTS[note_values])
-    assert used["model"] == config.LLM_MODELS["note_values"] == "gemini-3.8-flash-lite"
+    assert used["model"] == config.LLM_MODELS["note_values"] == "gemini-3.5-flash-lite"
     assert config.model_for("read_report") == config.model_for("draft_note") == config.LLM_MODEL == "gemini-3.8-flash"   # "" means the main model
-    monkeypatch.setenv("LLM_MODEL_NOTE_VALUES", "gemini-3.5-flash-lite")                                # one job changed without code
+    monkeypatch.setenv("LLM_MODEL_NOTE_VALUES", "gemini-3.8-flash-lite")                                # one job changed without code
     used.clear(); tasks.run(note_values, **INPUTS[note_values])
-    assert used["model"] == "gemini-3.5-flash-lite" and config.model_for("brief_summary") == "gemini-3.8-flash-lite"
+    assert used["model"] == "gemini-3.8-flash-lite" and config.model_for("brief_summary") == "gemini-3.5-flash-lite"

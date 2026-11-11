@@ -213,6 +213,7 @@ document.addEventListener("click", e => {
       case "note-save": await api(`/notes/${v}`, { method: "PUT", body: readNote() }); toast("Draft saved"); refreshConsult(); break;
       case "note-sign": await api(`/notes/${v}`, { method: "PUT", body: readNote() }); await api(`/notes/${v}/sign`, { body: {} }); toast("Signed. Visit complete."); refreshConsult(); break;
       case "note-view": await openNoteView(Number(v)); break;
+      case "note-share": await shareNote(Number(v)); break;   // the note as a PDF, both apps
       case "note-print": openPrint(`/notes/${v}/print?auto=1`); break;
       case "print": openPrint(`/notes/${v}/print`); break;
       case "doc-retry": await api(`/documents/${v}/retry`, { body: {} }); toast("Reading the document again…"); location.hash.startsWith("#/consult") ? refreshConsult() : route(); break;

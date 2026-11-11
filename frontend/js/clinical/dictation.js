@@ -25,6 +25,7 @@ function listen(visitId) {
     }
     if (interim) putSpeech(el, interim, false);
     edit(visitId, el.value);
+    paintCaption();
   };
   // Chrome stops after silence; restart until the doctor stops.
   r.onend = () => { if (S.rec === r && S.recState === "on") { try { r.start(); } catch { listen(visitId); } } };
@@ -84,6 +85,24 @@ function speech(visitId, text, final) {
   if (!text) return;
   putSpeech(el, final ? text + " " : text, final);
   edit(visitId, el.value);
+  paintCaption();
+}
+// Note tab: the words being heard, live, in light italics above the recording bar (Consult shows them in its box).
+// Settled words in the caption's colour, words still being worked out fainter; only the last line or two.
+function captionHtml() {
+  const el = $("#free-text"); if (!el || S.ctab !== "note") return "";
+  const all = el.value, base = (S.recBase || "").length, d = S.dict;
+  const live = d?.len ? all.slice(d.start, d.start + d.len) : "", said = (d?.len ? all.slice(0, d.start) + all.slice(d.start + d.len) : all).slice(base).trim();
+  const tail = s => s.length > 140 ? s.slice(-140).replace(/^\S*\s/, "") : s;
+  const shown = tail((said + (live ? " " + live.trim() : "")).trim());
+  if (!shown) return `<div class="rec-caption" id="rec-caption"><span class="wait">Listening</span></div>`;
+  const cut = shown.length - (live ? live.trim().length : 0);
+  return `<div class="rec-caption" id="rec-caption">${esc(shown.slice(0, cut))}${live ? `<span class="live">${esc(shown.slice(cut))}</span>` : ""}</div>`;
+}
+function paintCaption() {
+  const c = $("#rec-caption"); if (!c) return;
+  const tmp = document.createElement("div"); tmp.innerHTML = captionHtml();
+  c.replaceWith(tmp.firstElementChild || document.createTextNode(""));
 }
 // Mic → 16 kHz PCM frames (ported from Project-Dictate). The AudioContext is made at the click, before any await.
 const audioContext = () => { const C = window.AudioContext || window.webkitAudioContext; const c = new C({ latencyHint: "interactive" }); c.resume().catch(() => {}); return c; };

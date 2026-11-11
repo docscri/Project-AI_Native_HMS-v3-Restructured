@@ -108,7 +108,7 @@ function autoDock(v) {
 function dock(v) {
   if (S.recState && S.recVisit === v.id) {
     const paused = S.recState === "paused";
-    return `<div class="dock rec ${paused ? "paused" : ""}"><button class="dock-cancel" data-a="mic-cancel" aria-label="Cancel dictation" title="Cancel — discard this recording">${ICON.x}</button>
+    return `${captionHtml()}<div class="dock rec ${paused ? "paused" : ""}"><button class="dock-cancel" data-a="mic-cancel" aria-label="Cancel dictation" title="Cancel — discard this recording">${ICON.x}</button>
       <div class="dock-wave">${WAVE.map((h, i) => `<i style="--h:${h}px;animation-delay:${(i * 97) % 900}ms"></i>`).join("")}</div>
       <span class="dock-time" id="dock-timer">${fmtClock(recElapsed())}</span>
       <button class="dock-round" data-a="${paused ? "mic-resume" : "mic-pause"}" aria-label="${paused ? "Resume" : "Pause"}" title="${paused ? "Resume" : "Pause"}">${paused ? ICON.play : ICON.pause}</button>

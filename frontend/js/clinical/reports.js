@@ -7,7 +7,7 @@ const RP_CAM = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stro
 const RP_FILE = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7v18h10V6z"/><path d="M14 3v3h3M10 12h4M10 16h4"/></svg>`;   // { patientId, visitId, done, timer }
 
 const repLayer = () => document.getElementById("rep-layer") || document.body.appendChild(Object.assign(document.createElement("div"), { id: "rep-layer" }));
-const repStatus = d => d.ai_status === "processing" ? `<span class="rp-st reading">Reading…</span>`
+const repStatus = d => d.ai_status === "processing" ? `<span class="rp-st reading">${busy("Reading", "light")}</span>`
   : d.ai_status === "failed" ? `<button class="rp-st failed" data-a="rp-retry" data-v="${d.id}">Couldn't read · Try again</button>` : `<span class="rp-st ok">Ready</span>`;
 
 async function repList() {
@@ -21,7 +21,7 @@ async function openReports(opts) {
   await paintReports();
 }
 
-async function paintReports(busy) {
+async function paintReports(working) {
   if (!RP) return;
   const docs = await repList();
   if (!RP) return;
@@ -30,7 +30,7 @@ async function paintReports(busy) {
     <h2>Reports</h2>
     ${docs.length ? `<div class="rp-list">${docs.map(d => `<div class="rp-row"><span class="rp-name">${esc(d.filename)}</span>${repStatus(d)}
         <button class="icon-x" data-a="rp-remove" data-v="${d.id}" aria-label="Remove ${esc(d.filename)}">×</button></div>`).join("")}</div>` : ""}
-    ${busy ? `<div class="rp-busy">${esc(busy)}</div>` : `<div class="rp-pick">
+    ${working ? `<div class="rp-busy">${busy(working, "light")}</div>` : `<div class="rp-pick">
       <label class="rp-btn"><input type="file" accept="image/*" capture="environment" data-a="rp-file" hidden>${RP_CAM}<span>Take photo</span></label>
       <label class="rp-btn"><input type="file" accept="image/*,.pdf,.txt" multiple data-a="rp-file" hidden>${RP_FILE}<span>Choose files</span></label></div>`}
     <div class="foot"><button class="btn primary" data-a="rp-close">Done</button></div></div></div>`;
@@ -60,7 +60,7 @@ async function uploadReports(files) {
   const url = RP.visitId ? `/visits/${RP.visitId}/documents` : `/patients/${RP.patientId}/documents`;
   let ok = 0;
   for (const [i, f] of files.entries()) {
-    await paintReports(files.length > 1 ? `Uploading ${i + 1} of ${files.length}…` : "Uploading…");
+    await paintReports(files.length > 1 ? `Uploading ${i + 1} of ${files.length}` : "Uploading");
     const fd = new FormData(); fd.append("file", await shrink(f));
     try { await api(url, { body: fd }); ok++; } catch (e) { toast(`${f.name}: ${e.message}`, true); }
   }

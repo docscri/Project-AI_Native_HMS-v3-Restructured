@@ -91,7 +91,7 @@ async function openPlaces() {
 async function shareNote(visitId) {
   const v = await api(`/visits/${visitId}`);
   if (!v.note) return;
-  toast("Preparing PDF…");
+  toast("Preparing PDF", false, true);
   const res = await fetch(`/api/notes/${v.note.id}/pdf`, { headers: { Authorization: "Bearer " + S.token } });
   if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || "Could not make the PDF.");
   const name = (res.headers.get("content-disposition") || "").match(/filename="([^"]+)"/)?.[1] || "note.pdf";

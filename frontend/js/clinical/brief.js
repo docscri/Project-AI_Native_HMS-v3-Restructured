@@ -1,7 +1,7 @@
 // Brief: summary (new reports first, then history), past visits as events, and values over time. All cited.
 function paneBrief(v) {
   const b = v.brief, tab = S.btab || "summary";
-  if (!b?.summary) return `<p class="muted cx-lead">${["waiting", "with_doctor"].includes(v.status) ? "Preparing brief…" : "—"}</p>`;
+  if (!b?.summary) return (["waiting", "with_doctor"].includes(v.status) ? `<div class="cx-lead">${busy("Preparing brief", "light")}</div>` : `<p class="muted cx-lead">—</p>`);
   if (tab === "events") {
     if (!b.events.length) return `<p class="muted cx-lead">First visit.</p>`;
     const shown = S.allEvents ? b.events : b.events.slice(0, 5);

@@ -84,8 +84,11 @@ async function api(path, opts = {}) {
   }
   return data;
 }
-function toast(msg, err) {
-  $("#toast").innerHTML = `<div class="toast ${err ? "err" : ""}" role="status">${esc(msg)}</div>`;
+// The app's one "working on it" sign: three moving dots and a few words, no "…" (Writing your note, Preparing brief,
+// Reading, Uploading, Preparing PDF). Lime dots on dark, dark dots on light.
+const busy = (text, cls = "") => `<span class="busy ${cls}" role="status"><span class="dock-spin" aria-hidden="true"><i></i><i></i><i></i></span><span>${esc(text)}</span></span>`;
+function toast(msg, err, working) {
+  $("#toast").innerHTML = `<div class="toast ${err ? "err" : ""} ${working ? "working" : ""}" role="status">${working ? busy(msg) : esc(msg)}</div>`;
   clearTimeout(toast.t); toast.t = setTimeout(() => ($("#toast").innerHTML = ""), err ? 4200 : 2600);
 }
 async function run(fn) { try { return await fn(); } catch (e) { toast(e.message, true); } }

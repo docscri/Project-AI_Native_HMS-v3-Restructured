@@ -59,7 +59,7 @@ async function stopMic() {
   paintDock();
   try { r?.finish ? await r.finish() : r?.stop(); } catch {}
   S.dict = null; S.dictDone = id;
-  await saveText(id); refreshConsult();
+  await saveText(id); autoNote(id); refreshConsult();
 }
 // Cancel: stop listening, ignore words still on their way, and put Consult back as it was before the recording.
 async function cancelMic() {
@@ -163,3 +163,36 @@ const sentences = text => {
   }
   return out;
 };
+
+// After Stop: write the note on its own (Account setting, on by default), after a 3 s countdown that can be cancelled.
+// Never over the doctor's own edits (asks instead), never on a signed note, never for a few stray words.
+function autoNote(id) {
+  const v = S.data?.cur;
+  if (!v || v.id !== id || S.me.kind !== "doctor" || S.me.auto_note === false || v.status !== "with_doctor" || v.note?.status === "signed") return;
+  const box = $("#free-text"), text = box && Number(box.dataset.v) === id ? box.value : freeText(v);
+  if (text.trim() === (S.recBase || "").trim() || text.trim().split(/\s+/).length < 5) return;
+  clearInterval(S.autoNote?.timer);
+  if (v.note?.edited) { S.autoNote = { id, ask: true }; return; }
+  S.autoNote = { id, left: 3 };
+  S.autoNote.timer = setInterval(() => {
+    const a = S.autoNote; if (!a || a.id !== id) return;
+    if (S.data?.cur?.id !== id || S.recState) { cancelAutoNote(); return; }   // moved to another patient, or dictating again
+    if (--a.left > 0) { const el = $("#auto-left"); if (el) el.textContent = a.left; return; }
+    clearInterval(a.timer); S.autoNote = null;
+    run(() => draftNow(id));
+  }, 1000);
+}
+function cancelAutoNote() { clearInterval(S.autoNote?.timer); S.autoNote = null; }
+async function draftNow(id) {
+  cancelAutoNote();
+  S.ctab = "note"; S.drafting = id; S.noteEdit = false; renderConsult();
+  try { await Promise.all([api(`/visits/${id}/note/draft`, { body: {} }), new Promise(r => setTimeout(r, 1400))]); }
+  finally { S.drafting = null; S.dictDone = null; }
+  refreshConsult();
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest('[data-a="auto-cancel"], [data-a="auto-redraft"]'); if (!t) return;
+  e.preventDefault(); e.stopPropagation();
+  if (t.dataset.a === "auto-cancel") { cancelAutoNote(); renderConsult(); }
+  else run(async () => { if (await flushText(Number(t.dataset.v))) await draftNow(Number(t.dataset.v)); });
+}, true);

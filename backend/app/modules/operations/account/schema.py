@@ -27,6 +27,7 @@ class MyProfile(BaseModel):
     phone: str = ""
     speciality: str = ""
     designation: str = ""
+    auto_note: bool | None = None   # write the note when they stop dictating; left as is when not sent
 
 
 class Owner(BaseModel):

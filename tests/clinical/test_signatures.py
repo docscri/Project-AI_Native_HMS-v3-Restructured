@@ -58,3 +58,13 @@ def test_only_the_doctor_sets_their_own_and_other_clinics_cannot_see_it():
         other, _ = clinic(c, "sig3@x.in")
         assert c.get(f"/api/signatures/{sid}", headers=other).status_code == 404
         assert c.get(f"/api/signatures/{sid}").status_code == 401
+
+
+def test_auto_note_setting_is_on_by_default_and_kept_when_not_sent():
+    with TestClient(app) as c:
+        h, _ = clinic(c, "autonote@x.in")
+        me = c.get("/api/me", headers=h).json()["member"]
+        assert me["auto_note"] is True
+        base = {"name": me["name"], "email": me["email"], "speciality": me["speciality"] or ""}
+        assert c.put("/api/me", headers=h, json=base | {"auto_note": False}).json()["auto_note"] is False
+        assert c.put("/api/me", headers=h, json=base).json()["auto_note"] is False      # not sent: unchanged

@@ -38,12 +38,13 @@ function renderConsult() {
   $("#root").innerHTML = `<div class="cx ${S.clinic.solo ? "cx-solo" : ""} ${S.cxL ? "dl-open" : ""} ${S.cxR ? "dr-open" : ""}">
     <header class="cx-top">
       <button class="cx-menu" data-a="cx-drawer" data-v="left" aria-label="Queue and menu" title="Queue and menu"><i></i><i></i><i></i>${waitingN ? `<span class="cx-badge">${waitingN}</span>` : ""}</button>
-      ${S.clinic.solo ? `<a class="cx-back" href="#/p/${v?.patient_id || D.pid || ""}" aria-label="Back to patient">‹</a>` : ""}<b class="cx-logo">Dictate</b>
+      ${S.clinic.solo ? `<a class="cx-back" href="#/p/${v?.patient_id || D.pid || ""}" aria-label="Back to patient">‹</a>` : ""}<b class="cx-logo">Dictate</b>${v ? whoTop(v) : ""}
       <span class="cx-chip">${esc(S.clinic.name)} · OPD</span>
       <nav class="cx-links">${SCREENS.filter(s => m.screens.includes(s[0]) && s[0] !== "consultation").map(([, h, l]) => `<a href="${h}">${l}</a>`).join("")}</nav>
       <span class="grow"></span>
       ${S.doctors.length > 1 || m.kind !== "doctor" ? `<select class="cx-select" id="cs-doc" data-a="cs-doc" aria-label="Doctor">${S.doctors.map(d => `<option value="${d.id}" ${d.id === D.doctorId ? "selected" : ""}>${esc(d.name)}</option>`).join("")}</select>` : ""}
       <span class="cx-chip solid">${m.kind === "doctor" ? "Doctor" : esc(m.designation || "Staff")}</span>
+      ${v ? `<button class="cx-info-top" data-a="cx-drawer" data-v="right" aria-label="Profile and sources" title="Profile and sources"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/></svg></button>` : ""}
       <button class="cx-avatar" data-a="account" title="Account">${esc(firstName(m.name)[0].toUpperCase())}</button>
     </header>
     <div class="cx-body ${S.rightCollapsed ? "wide" : ""}">
@@ -70,6 +71,25 @@ const ICON = {
   stop: '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>',
 };
 const WAVE = [4, 9, 14, 7, 11, 5, 3, 16, 10, 6, 12, 8, 5, 13, 18, 7, 11, 6, 9, 4];
+// Phone and tablet: the patient sits in the dark top bar (name, age, a status dot), so the card starts with the tabs.
+const STATE_LABEL = { waiting: "Waiting", with_doctor: "In visit", done: "Signed", booked: "Booked", cancelled: "Cancelled", no_show: "Not come" };
+function whoTop(v) {
+  return `<span class="cx-who-top"><b>${esc(v.patient_name)}</b>${v.age != null ? `<span>, ${v.age}</span>` : ""}<i class="cx-dot st-${v.status}" title="${STATE_LABEL[v.status] || ""}" aria-label="${STATE_LABEL[v.status] || ""}"></i></span>`;
+}
+// The bar at the bottom when not recording: + Report · mic · Generate note (the side buttons show on phone and tablet;
+// a laptop has them at the top). After Stop it can count down to writing the note on its own.
+function idleDock(v) {
+  const rep = S.me.kind === "doctor" && ["waiting", "with_doctor"].includes(v.status)
+    ? `<button class="cx-idle-rep" data-a="rp-open" data-p="${v.patient_id}" data-v="${v.id}" data-after="consult" aria-label="Add report" title="Add report"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>` : `<span></span>`;
+  const gen = v.status === "with_doctor" && v.note?.status !== "signed"
+    ? `<button class="cx-idle-gen" data-a="${v.note ? "cs-redraft" : "cs-draft"}" data-v="${v.id}">Generate note</button>` : `<span></span>`;
+  return `<div class="cx-idle">${rep}${micBtn(v)}${gen}</div>`;
+}
+function autoDock(v) {
+  const a = S.autoNote;
+  if (a.ask) return `<div class="dock auto"><span class="dock-text">New dictation added</span><button class="dock-ghost" data-a="auto-cancel">Not now</button><button class="dock-go" data-a="auto-redraft" data-v="${v.id}">Redraft</button></div>`;
+  return `<div class="dock auto"><span class="dock-text">Writing your note in <b id="auto-left">${a.left}</b>…</span><button class="dock-ghost" data-a="auto-cancel">Cancel</button></div>`;
+}
 function dock(v) {
   if (S.recState && S.recVisit === v.id) {
     const paused = S.recState === "paused";
@@ -79,7 +99,8 @@ function dock(v) {
       <button class="dock-round" data-a="${paused ? "mic-resume" : "mic-pause"}" aria-label="${paused ? "Resume" : "Pause"}" title="${paused ? "Resume" : "Pause"}">${paused ? ICON.play : ICON.pause}</button>
       <button class="dock-stop" data-a="mic-stop" aria-label="Stop" title="Stop">${ICON.stop}</button></div>`;
   }
-  return micBtn(v);
+  if (S.autoNote?.id === v.id) return autoDock(v);
+  return idleDock(v);
 }
 // Generate note sits at the top beside Follow-up, on every tab, while the visit is under way and the note unsigned.
 function genBtn(v) {

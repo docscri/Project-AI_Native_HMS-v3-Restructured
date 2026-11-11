@@ -114,6 +114,8 @@ def edit_me(db, me: dict, body) -> dict:
     repo.update_profile(db, me["id"], " ".join(body.name.split()), email, clean_phone(body.phone),
                         departments.chosen(body.speciality, me.get("speciality")) if me["kind"] == "doctor" else None,
                         body.designation.strip() or None if me["kind"] != "doctor" else me.get("designation"))
+    if body.auto_note is not None:
+        db.execute("update members set auto_note = ? where id = ?", (int(body.auto_note), me["id"]))
     log_event(db, me["clinic_id"], me["id"], "member", me["id"], "updated")
     return public_member(repo.member(db, me["id"]))
 

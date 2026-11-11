@@ -35,7 +35,7 @@ document.addEventListener("click", e => {
         const nw = $("#ac-new").value;
         if (nw && nw !== $("#ac-new2").value) return toast("New passwords don't match", true);
         const doc = S.me.kind === "doctor", role = $("#ac-role").value;
-        const me = await api("/me", { method: "PUT", body: { name: $("#ac-name").value, email: $("#ac-email").value, phone: $("#ac-phone").value, speciality: doc ? role : "", designation: doc ? "" : role } });
+        const me = await api("/me", { method: "PUT", body: { name: $("#ac-name").value, email: $("#ac-email").value, phone: $("#ac-phone").value, speciality: doc ? role : "", designation: doc ? "" : role, ...(doc ? { auto_note: $("#ac-auto").checked } : {}) } });
         if (nw) await api("/auth/change-password", { body: { current: $("#ac-cur").value, new: nw } });
         S.me = me; S.doctors = await api("/doctors"); S.shellFor = null; closeModal(); toast("Saved"); route(); break; }
       case "my-schedule": await openSchedules(S.me.id, true); break;
@@ -191,6 +191,7 @@ document.addEventListener("click", e => {
       case "cs-mic": {
         const cur = D.cur;
         if (S.recState) { await stopMic(); break; }
+        cancelAutoNote();
         if (S.dictBy === "deepgram") S.audioCtx = audioContext();
         if (cur.status === "waiting") { await api(`/visits/${cur.id}/start`, { body: {} }); }
         if (S.ctab === "brief") S.ctab = "dictate";
@@ -204,9 +205,8 @@ document.addEventListener("click", e => {
       // falls through
       case "cs-redraft-go": if (a === "cs-redraft-go") closeModal();
       // falls through
-      case "cs-draft": if (!(await flushText(Number(v)))) break; if (S.recState) await stopMic(); S.ctab = "note"; S.drafting = Number(v); S.noteEdit = false; renderConsult();
-        try { await Promise.all([api(`/visits/${v}/note/draft`, { body: {} }), new Promise(r => setTimeout(r, 1400))]); } finally { S.drafting = null; S.dictDone = null; } refreshConsult(); break;
-      case "mic": if (S.recState) await stopMic(); else { S.ctab = "dictate"; startMic(Number(v)); } break;
+      case "cs-draft": if (!(await flushText(Number(v)))) break; if (S.recState) { await stopMic(); cancelAutoNote(); } await draftNow(Number(v)); break;
+      case "mic": if (S.recState) await stopMic(); else { cancelAutoNote(); S.ctab = "dictate"; startMic(Number(v)); } break;
       case "spk": S.speaker = v; document.querySelectorAll('[data-a="spk"]').forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v)); break;
       case "rx-add": { const n = D.cur.note; n.content = readNote(); n.content.rx.push({ medicine: "", dose: "", duration: "", instructions: "" }); rerenderNote(); break; }
       case "rx-del": { const n = D.cur.note; n.content = readNote(); n.content.rx.splice(Number(v), 1); rerenderNote(); break; }

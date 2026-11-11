@@ -79,6 +79,7 @@ def public_member(m: dict) -> dict:
         x for x in json.loads(m["screens"]) if x in SCREENS
         and (x != "administration" or m["is_admin"]) and (x != "consultation" or m["kind"] == "doctor")]
     m["has_signature"] = bool(m.get("signature_id"))
+    m["auto_note"] = bool(m.get("auto_note", 1))
     m["invite_expired"] = bool(m.get("invite_expires_at") and m["invite_expires_at"] < now())
     return m
 

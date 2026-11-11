@@ -1592,3 +1592,9 @@ button, a, label, [data-a], [role="button"] { -webkit-touch-callout: none; touch
 .cx-float .dock-mic { width: 40px; height: 40px; }
 @media (max-width: 1023px) { .cx-float .dock-mic { width: 38px; height: 38px; } .cx-float .dock-mic svg { width: 17px; height: 17px; } }
 .dock-mic:active { transform: scale(.92); }
+/* Note bars (draft, editing, signed) fit their contents on every screen: no stretched middle. The recording bar keeps
+   its width for the wave. */
+.cx-float .dock:not(.rec) { width: auto !important; max-width: calc(100% - 24px); }
+.cx-float .dock:not(.rec) .grow { display: none; }
+.cx-float .dock:not(.rec) .dock-msg { margin: 0 8px 0 4px; }
+.cx-float .dock:not(.rec):has(> .dock-msg:first-child) { padding-left: 20px !important; }

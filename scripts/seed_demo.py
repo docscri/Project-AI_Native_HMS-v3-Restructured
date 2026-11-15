@@ -8,6 +8,9 @@ sneha@demo.in; password demo1234. Invented people only: never load it into a dat
 import os
 import sys
 
+# The demo's notes are fixed text, so loading it never calls the AI: fast and free on every start, and never held up
+# by a busy or rate-limited key (the app server, started after this, keeps its AI).
+os.environ["LLM"] = "none"
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backend"))
 
 from app.demo.psychiatry import seed, seed_solo  # noqa: E402

@@ -1,6 +1,8 @@
 """The usage meter: every Gemini call (tokens the provider billed) and every dictation stream (seconds of audio sent),
 tagged with the clinic and the job, priced at the rates in app/config.py. Never stops the work it measures."""
 import logging
+import queue
+import threading
 from contextlib import contextmanager
 from contextvars import ContextVar
 
@@ -42,19 +44,60 @@ def speech_cost(model: str, seconds: float) -> int:
     return round(seconds / 60 * config.SPEECH_PRICES.get(model, 0) * 1_000_000)
 
 
+_queue: "queue.Queue[dict]" = queue.Queue()
+_writer: threading.Thread | None = None
+_lock = threading.Lock()
+
+
 def _add(row: dict) -> None:
-    try:
-        db = connect()
+    """Queued and written by a background thread: never slows the call it measures, and a busy database
+    (another request writing) only delays the row, it doesn't lose it."""
+    global _writer
+    _queue.put(row | {"at": now()})
+    with _lock:
+        if _writer is None or not _writer.is_alive():
+            _writer = threading.Thread(target=_drain, name="usage-writer", daemon=True)
+            _writer.start()
+
+
+def flush(timeout: float = 5.0) -> None:
+    """Waits (up to timeout seconds) until queued rows are written: for tests and scripts."""
+    import time
+    end = time.monotonic() + timeout
+    while _queue.unfinished_tasks and time.monotonic() < end:
+        time.sleep(0.02)
+
+
+def _drain() -> None:
+    import time
+    while True:
+        row = _queue.get()
         try:
-            db.execute("""insert into usage_events (clinic_id, kind, job, model, tokens_in, tokens_out, tokens_cached, seconds, cost_micro_usd, at)
-                          values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                       (row["clinic_id"], row["kind"], row["job"], row["model"], row.get("tokens_in", 0), row.get("tokens_out", 0),
-                        row.get("tokens_cached", 0), row.get("seconds", 0), row["cost"], now()))
-            db.commit()
+            for attempt in range(60):   # up to ~2 minutes of a busy database
+                try:
+                    _write(row)
+                    break
+                except Exception as e:
+                    if "locked" not in str(e).lower() and "busy" not in str(e).lower():
+                        log.exception("Usage not recorded")
+                        break
+                    time.sleep(2)
+            else:
+                log.warning("Usage not recorded: database busy for too long")
         finally:
-            db.close()
-    except Exception:
-        log.exception("Usage not recorded")   # the meter must never break a note or a dictation
+            _queue.task_done()
+
+
+def _write(row: dict) -> None:
+    db = connect()
+    try:
+        db.execute("""insert into usage_events (clinic_id, kind, job, model, tokens_in, tokens_out, tokens_cached, seconds, cost_micro_usd, at)
+                      values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   (row["clinic_id"], row["kind"], row["job"], row["model"], row.get("tokens_in", 0), row.get("tokens_out", 0),
+                    row.get("tokens_cached", 0), row.get("seconds", 0), row["cost"], row["at"]))
+        db.commit()
+    finally:
+        db.close()
 
 
 def record_ai(model: str, tokens_in: int, tokens_out: int, cached: int = 0) -> None:

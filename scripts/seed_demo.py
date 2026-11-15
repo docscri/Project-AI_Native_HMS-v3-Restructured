@@ -15,6 +15,13 @@ from app.demo.psychiatry import seed, seed_solo  # noqa: E402
 if __name__ == "__main__":
     if os.environ.get("SEED_DEMO", "1") != "1":
         sys.exit(0)
-    print("Psychiatry demo loaded." if seed() else "The database already has a clinic; nothing was added.")
-    if seed_solo():   # its own account, so it is added even where the clinic demo already exists
-        print("Solo psychiatrist demo loaded (arun@demo.in).")
+    # A demo that can't load must never stop the app from starting (Render runs this before the server).
+    try:
+        print("Psychiatry demo loaded." if seed() else "The database already has a clinic; nothing was added.")
+    except Exception as e:
+        print(f"Psychiatry demo not loaded: {e}", file=sys.stderr)
+    try:
+        if seed_solo():   # its own account, so it is added even where the clinic demo already exists
+            print("Solo psychiatrist demo loaded (arun@demo.in).")
+    except Exception as e:
+        print(f"Solo demo not loaded: {e}", file=sys.stderr)

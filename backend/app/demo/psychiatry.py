@@ -399,7 +399,7 @@ def seed(client: TestClient | None = None) -> bool:
                                                          "phone": "9847000101", "is_doctor": True, "speciality": "Psychiatry"})["token"]
         call("PUT", "/clinic", owner, json={"name": "Manas Mind Clinic", "phone": "0495 2720 100", "address": "Mavoor Road, Kozhikode"})
         all_day = [{"start": "00:00", "end": "23:59"}]   # while seeding, so walk-ins work at any hour; real hours are set at the end
-        call("PUT", "/clinic/rules", owner, json={"fee": FEE, "days": [0, 1, 2, 3, 4, 5], "limit_by": "patients", "limit_value": 20,
+        call("PUT", "/clinic/rules", owner, json={"fee": FEE, "days": [0, 1, 2, 3, 4, 5, 6], "limit_by": "patients", "limit_value": 20,
                                                    "token_timing": "booking", "sessions": all_day})
         call("POST", "/onboarding/finish", owner)
         tokens, ids = {"anitha": owner}, {"anitha": call("GET", "/me", owner)["member"]["id"]}

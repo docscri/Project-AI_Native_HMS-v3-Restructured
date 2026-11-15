@@ -120,6 +120,7 @@ def values_of(db, n: dict) -> list[dict]:
         saved = {"version": current, "values": note_values(n["content"]["soap"])}
         n["vals"] = json.dumps(saved)
         repo.save_values(db, n["id"], n["vals"])
+        db.commit()   # saved at once: an open write would hold the database through the next AI call (SQLite: one writer)
     return saved["values"]
 
 

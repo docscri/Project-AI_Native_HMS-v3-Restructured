@@ -133,6 +133,7 @@ def test_a_new_prompt_version_refreshes_saved_note_values_and_briefs(monkeypatch
     n = {"id": 1, "content": {"soap": {"O": "BP 130/85."}}, "vals": None}
     class Db:
         def execute(self, *a): return None
+        def commit(self): return None
     brief.values_of(Db(), n); brief.values_of(Db(), n)
     assert len(calls) == 1                                                            # read once, then reused
     monkeypatch.setattr(tasks, "version", lambda t: f"{t.NAME}@99")

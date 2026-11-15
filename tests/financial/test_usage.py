@@ -15,6 +15,7 @@ from tests.helpers import clinic, started_visit
 
 
 def rows(clinic_id):
+    usage.flush()   # the meter writes in the background
     db = connect()
     try:
         return db_rows(db.execute("select kind, job, model, tokens_in, tokens_out, seconds, cost_micro_usd as cost from usage_events "
@@ -84,3 +85,48 @@ def test_operator_report_needs_the_ops_token(monkeypatch):
         mine = next(x for x in r["clinics"] if x["clinic_id"] == cid)
         assert (mine["ai_calls"], mine["tokens_in"], mine["tokens_out"], mine["usd"]) == (2, 11000, 2200, 0.01)
         assert mine["jobs"]["draft_note"]["usd"] == 0.006 and mine["inr"] == round(0.0103 * 94)   # stored costs, as recorded
+
+
+def test_the_database_is_free_while_the_ai_works_and_the_meter_waits_out_a_busy_one(monkeypatch):
+    """The Render log: 'database is locked' while a brief waited on Gemini. The brief no longer holds a write open across
+    AI calls, and a usage row written while someone else holds the lock is kept, not lost."""
+    import os
+    import pytest
+    from app.shared.ai import llm
+    if os.environ.get("DATABASE") == "postgres":
+        pytest.skip("SQLite's one-writer lock")
+    with TestClient(app) as c:
+        h, doc = clinic(c, "meter-lock@x.in")
+        cid = c.get("/api/me", headers=h).json()["clinic"]["id"]
+        p = c.post("/api/patients", headers=h, json={"name": "Lock", "consent": True}).json()
+        for i in range(2):   # two signed notes, so the brief reads values from each
+            v = c.post("/api/visits/walk-in", headers=h, json={"patient_id": p["id"], "doctor_id": doc, "payment_method": "cash"}).json()
+            c.post(f"/api/visits/{v['id']}/start", headers=h)
+            c.put(f"/api/visits/{v['id']}/text", headers=h, json={"text": f"BP 13{i}/80. Fever.", "rev": 0})
+            n = c.post(f"/api/visits/{v['id']}/note/draft", headers=h).json()
+            c.post(f"/api/notes/{n['id']}/sign", headers=h)
+            db = connect(); db.execute("update visits set date = ? where id = ?", (f"2026-0{i + 1}-10", v["id"])); db.commit(); db.close()
+        today = c.post("/api/visits/walk-in", headers=h, json={"patient_id": p["id"], "doctor_id": doc, "payment_method": "cash"}).json()
+        db = connect(); db.execute("update notes set vals = null where patient_id = ?", (p["id"],)); db.commit(); db.close()   # values read again
+        blocked = []
+        def ai(parts, model=None):   # while "Gemini" works, another request must be able to write
+            other = connect()
+            try:
+                other.conn.execute("pragma busy_timeout = 200")
+                other.execute("begin immediate"); other.rollback()
+            except Exception as e:
+                blocked.append(str(e))
+            finally:
+                other.close()
+            usage.record_ai("gemini-3.5-flash-lite", 100, 10)
+            return {}
+        monkeypatch.setattr(llm, "enabled", lambda: True)
+        monkeypatch.setattr(llm, "generate", ai)
+        c.post(f"/api/visits/{today['id']}/brief", headers=h)
+        assert blocked == []
+        # a busy database only delays the meter
+        hold = connect(); hold.execute("begin immediate")
+        with usage.clinic(cid), usage.job("held"):
+            usage.record_ai("gemini-3.8-flash", 10, 1)
+        time.sleep(0.5); hold.rollback(); hold.close()
+        assert any(r["job"] == "held" for r in rows(cid))

@@ -123,3 +123,23 @@ def test_report_filed_under_the_patient_before_a_visit_reaches_the_brief():
         other, _ = clinic(c, "docpatient-other@x.in")
         assert c.post(f"/api/patients/{p['id']}/documents", headers=other, files={"file": ("x.txt", b"x", "text/plain")}).status_code == 404
         assert c.delete(f"/api/documents/{d['id']}", headers=h).json() == {"ok": True}   # no signed note relies on it yet
+
+
+def test_gemini_busy_is_tried_again_briefly(monkeypatch):
+    """A 429 (busy / per-minute limit) gets two short retries before the plain fallback is used."""
+    calls = []
+    def post(url, **kw):
+        calls.append(1)
+        code = 429 if len(calls) < 3 else 200
+        return httpx.Response(code, request=httpx.Request("POST", url), headers={"retry-after": "0"},
+                              json={"candidates": [{"content": {"parts": [{"text": "{\"ok\": 1}"}]}}]} if code == 200 else {})
+    monkeypatch.setenv("GEMINI_API_KEY", KEY)
+    monkeypatch.setattr(httpx, "post", post)
+    assert gemini.generate([{"text": "hi"}], "gemini-3.8-flash") == {"ok": 1} and len(calls) == 3
+    calls.clear()
+    monkeypatch.setattr(gemini, "WAITS", (0, 0))
+    monkeypatch.setattr(httpx, "post", lambda url, **kw: (calls.append(1), httpx.Response(429, request=httpx.Request("POST", url), json={}))[1])
+    import pytest
+    with pytest.raises(httpx.HTTPStatusError):
+        gemini.generate([{"text": "hi"}], "gemini-3.8-flash")
+    assert len(calls) == 3                                                         # then it gives up: the plain draft takes over

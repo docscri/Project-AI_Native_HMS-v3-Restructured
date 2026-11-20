@@ -1,16 +1,14 @@
 # Demo videos (HyperFrames)
 
-Sales demo films for Dictate, built with [HyperFrames](https://github.com/heygen-com/hyperframes) (HTML to MP4) from real screens of
-the app running the psychiatry demo clinic (`python scripts/seed_demo.py`). Invented people only.
-
-- `main/`: the main film, 16:9, about 66 s. `build_main.py` writes its `index.html` and `compositions/` from the script
-  (`main/script.txt`), the voice-over clip lengths (`main/assets/audio/vo-N.mp3`) and the measured button positions.
-- Voice-over: Kokoro (open-source text-to-speech, run locally), a 50/50 blend of its `hf_alpha` and `bf_emma` voices, speed 0.95.
-  Music: a slow ambient pad synthesised for this film (no licence needed).
+Two sales films built with [HyperFrames](https://hyperframes.heygen.com) (HTML → MP4) from real screens of the psychiatry demo clinic.
+- `main/`: 16:9, about 1:21. `short/`: 9:16, about 0:29, with the contact numbers.
+- `build_main.py` / `build_short.py` write each project's `index.html` and `compositions/` from `script.txt`, the
+  voice clip lengths (`assets/audio/vo-N.mp3`) and measured button positions.
+- Voice: Gemini TTS (voice Kore), one request per script, split at pauses. Music ducks under the voice, mixed to about −16 LUFS.
+  GSAP is vendored in `assets/vendor/` (the CDN may be blocked).
 
 Rebuild and render (Node 22+, FFmpeg):
-
-    python marketing/video/build_main.py
-    cd marketing/video/main
-    npx hyperframes check
-    npx hyperframes render --quality delivery -o dictate-main.mp4
+```bash
+python marketing/video/build_main.py      # or build_short.py
+cd marketing/video/main && npx hyperframes check && npx hyperframes render --quality delivery -o dictate-main.mp4
+```
